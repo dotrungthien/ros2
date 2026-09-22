@@ -1,0 +1,11 @@
+# colcon workspace build artifacts (not source, do not commit)
+dev_ws/build/
+dev_ws/install/
+dev_ws/log/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor
+.vscode/

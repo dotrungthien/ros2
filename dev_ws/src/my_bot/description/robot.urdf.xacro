@@ -1,7 +1,105 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="robot">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
 
-    <!-- Example link -->
-    <link name="base_link"></link>
+  <!-- ===== 임시 측정값 (실측 예정, 곧 정확한 치수 전달받을 예정) ===== -->
+  <xacro:property name="chassis_length" value="0.42"/>   <!-- 40~45cm 사이, 실측 전 임시값 -->
+  <xacro:property name="chassis_width" value="0.15"/>    <!-- 확정값 15cm -->
+  <xacro:property name="chassis_height" value="0.06"/>   <!-- 미확정, 임시값 -->
+  <xacro:property name="wheel_radius" value="0.0325"/>   <!-- 미확정, 임시값 -->
+  <xacro:property name="wheel_thickness" value="0.026"/> <!-- 미확정, 임시값 -->
+  <xacro:property name="wheel_separation" value="0.16"/> <!-- 미확정, 임시값 -->
+  <xacro:property name="caster_radius" value="0.015"/>   <!-- 미확정, 임시값 -->
+
+  <material name="chassis_gray"><color rgba="0.6 0.6 0.6 1"/></material>
+  <material name="wheel_black"><color rgba="0.1 0.1 0.1 1"/></material>
+
+  <!-- base_footprint: 지면에 투영된 가상 기준 프레임 (Nav2가 요구하는 표준 이름, 임의 변경 금지) -->
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- base_link: 좌우 바퀴 회전축의 정중앙에 위치 (ROS2/Nav2 표준 이름, 임의 변경 금지) -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 ${chassis_height/2}"/>
+      <geometry><box size="${chassis_length} ${chassis_width} ${chassis_height}"/></geometry>
+      <material name="chassis_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 ${chassis_height/2}"/>
+      <geometry><box size="${chassis_length} ${chassis_width} ${chassis_height}"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 ${chassis_height/2}"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.02"/>
+    </inertial>
+  </link>
+
+  <!-- 왼쪽 바퀴 -->
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="left_wheel"/>
+    <origin xyz="0 ${wheel_separation/2} 0" rpy="-1.5708 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <link name="left_wheel">
+    <visual>
+      <geometry><cylinder radius="${wheel_radius}" length="${wheel_thickness}"/></geometry>
+      <material name="wheel_black"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="${wheel_radius}" length="${wheel_thickness}"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- 오른쪽 바퀴 -->
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="right_wheel"/>
+    <origin xyz="0 ${-wheel_separation/2} 0" rpy="-1.5708 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <link name="right_wheel">
+    <visual>
+      <geometry><cylinder radius="${wheel_radius}" length="${wheel_thickness}"/></geometry>
+      <material name="wheel_black"/>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="${wheel_radius}" length="${wheel_thickness}"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- 앞쪽 캐스터 바퀴 (보조 바퀴, 구동되지 않음) -->
+  <joint name="caster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="caster_wheel"/>
+    <origin xyz="${chassis_length/2 - caster_radius} 0 ${-(wheel_radius - caster_radius)}"/>
+  </joint>
+  <link name="caster_wheel">
+    <visual>
+      <geometry><sphere radius="${caster_radius}"/></geometry>
+      <material name="wheel_black"/>
+    </visual>
+    <collision>
+      <geometry><sphere radius="${caster_radius}"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.01"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
 
 </robot>

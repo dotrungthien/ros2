@@ -9,3 +9,4 @@ __pycache__/
 
 # Editor
 .vscode/
+dev_ws/src/my_bot/models/

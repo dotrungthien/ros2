@@ -15,4 +15,6 @@
   <export>
     <build_type>ament_cmake</build_type>
   </export>
+<exec_depend>ros-humble-vision-msgs</exec_depend>
+<exec_depend>ros-humble-cv-bridge</exec_depend>
 </package>

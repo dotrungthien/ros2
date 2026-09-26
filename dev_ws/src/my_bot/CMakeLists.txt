@@ -37,4 +37,9 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(PROGRAMS
+  scripts/cam_bien.py
+  scripts/test_image_publisher.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 ament_package()

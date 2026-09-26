@@ -43,4 +43,4 @@ ros2 launch my_bot rsp.launch.py
 
 ## Ghi chú mạng
 
-Robot đặt cố định tại trường, Wi-Fi "project" cô lập (`192.168.0.x`, không Internet). Pi: `192.168.0.5` (user `project1`), PC base station: `192.168.0.20`. Xem chi tiết trong tài liệu nội bộ nhóm.
+Robot đặt cố định tại trường, Wi-Fi "project" (`192.168.0.x`, đã có Internet). Pi: `192.168.0.2` (user `project1`), PC base station: `192.168.0.20`. Xem chi tiết trong tài liệu nội bộ nhóm.

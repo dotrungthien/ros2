@@ -39,7 +39,8 @@ install(
 
 install(PROGRAMS
   scripts/cam_bien.py
-  scripts/test_image_publisher.py
+  scripts/test_static_image_publisher.py
+  scripts/dieu_khien.py
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()

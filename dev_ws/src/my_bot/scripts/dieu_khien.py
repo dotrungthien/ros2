@@ -39,10 +39,14 @@ class DieuKhienNode(Node):
         self.declare_parameter('max_wheel_speed', 0.5)
         # watchdog_timeout: 이 시간 [s] 동안 /cmd_vel 이 없으면 모터 정지.
         self.declare_parameter('watchdog_timeout', 0.5)
+        # dao_chieu: 배선이 반대로 되어 있을 때, GPIO 에 쓰기 전에 좌/우 바퀴 속도의 부호를 뒤집는다.
+        # True(기본값) 이면 linear.x 가 양수일 때 실제로 차량이 전진하도록 맞춰준다.
+        self.declare_parameter('dao_chieu', True)
 
         self.wheel_separation = self.get_parameter('wheel_separation').get_parameter_value().double_value
         self.max_wheel_speed = self.get_parameter('max_wheel_speed').get_parameter_value().double_value
         self.watchdog_timeout = self.get_parameter('watchdog_timeout').get_parameter_value().double_value
+        self.dao_chieu = self.get_parameter('dao_chieu').get_parameter_value().bool_value
 
         # ---- 모터 초기화 ----
         # gpiozero.Motor: forward/backward 핀에 PWM 을 출력하고, enable 핀은 HIGH 로 유지한다.
@@ -86,6 +90,9 @@ class DieuKhienNode(Node):
 
     def set_motor(self, motor, wheel_speed):
         """바퀴 선속도 [m/s] 를 PWM 듀티로 변환하고 [0, 1] 로 제한한 뒤 방향에 맞게 출력한다."""
+        # dao_chieu 가 True 이면 GPIO 에 쓰기 직전에 부호를 뒤집는다 (watchdog/clamp 로직에는 영향 없음).
+        if self.dao_chieu:
+            wheel_speed = -wheel_speed
         duty = clamp(abs(wheel_speed) / self.max_wheel_speed)
         if duty == 0.0:
             motor.stop()

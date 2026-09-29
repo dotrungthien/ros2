@@ -3,7 +3,7 @@
 cam_bien.py — Node ROS2 phát hiện vật thể bằng SSD MobileNet V2 (cv2.dnn).
 
 Vai trò trong kiến trúc "bộ não":
-    cam_bien.py (node này)  -->  /detections  -->  logic_quyet_dinh.py  -->  /cmd_vel_camera  -->  dieu_khien.py
+    cam_bien.py (node này)  -->  /detections  -->  logic_quyet_dinh.py  -->  /cmd_vel_avoid  -->  dieu_khien.py
 
 Input:
     /image_raw  (sensor_msgs/Image)
@@ -36,12 +36,14 @@ class CamBienNode(Node):
         self.declare_parameter('confidence_threshold', 0.5)
         self.declare_parameter('publish_debug_image', True)
         self.declare_parameter('input_size', 300)  # SSD MobileNet V2 chuẩn 300x300
+        self.declare_parameter('process_every_n', 3)  # chỉ suy luận 1 lần mỗi N frame
 
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
         config_path = self.get_parameter('config_path').get_parameter_value().string_value
         self.conf_threshold = self.get_parameter('confidence_threshold').get_parameter_value().double_value
         self.publish_debug = self.get_parameter('publish_debug_image').get_parameter_value().bool_value
         self.input_size = self.get_parameter('input_size').get_parameter_value().integer_value
+        self.process_every_n = self.get_parameter('process_every_n').get_parameter_value().integer_value
 
         # ---- Load model ----
         if not os.path.exists(model_path) or not os.path.exists(config_path):
@@ -76,6 +78,7 @@ class CamBienNode(Node):
 
         # ---- ROS interfaces ----
         self.bridge = CvBridge()
+        self.frame_count = 0  # đếm frame để bỏ qua suy luận theo process_every_n
         self.sub = self.create_subscription(Image, '/image_raw', self.image_callback, 10)
         self.pub_detections = self.create_publisher(Detection2DArray, '/detections', 10)
         if self.publish_debug:
@@ -84,6 +87,11 @@ class CamBienNode(Node):
         self.get_logger().info('cam_bien node đã khởi động, đang chờ ảnh trên /image_raw ...')
 
     def image_callback(self, msg: Image):
+        # Chỉ suy luận mỗi N frame, các frame còn lại bỏ qua ngay để tiết kiệm tài nguyên
+        self.frame_count += 1
+        if self.frame_count % self.process_every_n != 0:
+            return
+
         try:
             frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         except Exception as e:

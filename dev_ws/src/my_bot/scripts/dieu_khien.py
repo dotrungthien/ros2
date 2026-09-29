@@ -43,7 +43,7 @@ class DieuKhienNode(Node):
         # True(기본값) 이면 linear.x 가 양수일 때 실제로 차량이 전진하도록 맞춰준다.
         self.declare_parameter('dao_chieu', True)
         # he_so_trai: 왼쪽 바퀴 보정 계수. 좌/우 모터 특성 차이를 보정하기 위해 왼쪽 속도에만 곱한다.
-        self.declare_parameter('he_so_trai', 0.94)
+        self.declare_parameter('he_so_trai', 0.92)
 
         self.wheel_separation = self.get_parameter('wheel_separation').get_parameter_value().double_value
         self.max_wheel_speed = self.get_parameter('max_wheel_speed').get_parameter_value().double_value

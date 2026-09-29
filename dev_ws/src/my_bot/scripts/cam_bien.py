@@ -37,7 +37,7 @@ class CamBienNode(Node):
         self.declare_parameter('publish_debug_image', True)
         self.declare_parameter('input_size', 300)  # SSD MobileNet V2 표준 300x300
         self.declare_parameter('process_every_n', 3)  # N프레임마다 한 번만 추론 실행
-        self.declare_parameter('num_threads', 2)  # OpenCV(cv2.dnn)가 사용할 스레드 수
+        self.declare_parameter('num_threads', 1)  # OpenCV(cv2.dnn)가 사용할 스레드 수
 
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
         config_path = self.get_parameter('config_path').get_parameter_value().string_value

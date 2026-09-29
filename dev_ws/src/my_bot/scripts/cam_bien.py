@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-cam_bien.py — Node ROS2 phát hiện vật thể bằng SSD MobileNet V2 (cv2.dnn).
+cam_bien.py — SSD MobileNet V2(cv2.dnn)를 이용한 객체 탐지 ROS2 노드.
 
-Vai trò trong kiến trúc "bộ não":
-    cam_bien.py (node này)  -->  /detections  -->  logic_quyet_dinh.py  -->  /cmd_vel_avoid  -->  dieu_khien.py
+"두뇌" 아키텍처에서의 역할:
+    cam_bien.py (이 노드)  -->  /detections  -->  logic_quyet_dinh.py  -->  /cmd_vel_avoid  -->  dieu_khien.py
 
-Input:
+입력:
     /image_raw  (sensor_msgs/Image)
 
-Output:
-    /detections        (vision_msgs/Detection2DArray)  — luôn publish
-    /detections_image  (sensor_msgs/Image)              — chỉ publish nếu param publish_debug_image=True
+출력:
+    /detections        (vision_msgs/Detection2DArray)  — 항상 publish
+    /detections_image  (sensor_msgs/Image)              — publish_debug_image=True 일 때만 publish
 
-Yêu cầu cài đặt trước khi build:
+빌드 전 설치 필요:
     sudo apt install ros-humble-vision-msgs ros-humble-cv-bridge python3-opencv
 """
 
@@ -30,13 +30,14 @@ class CamBienNode(Node):
     def __init__(self):
         super().__init__('cam_bien')
 
-        # ---- Parameters (có thể override qua launch file hoặc CLI) ----
+        # ---- 파라미터 (launch 파일이나 CLI로 오버라이드 가능) ----
         self.declare_parameter('model_path', 'models/frozen_inference_graph.pb')
         self.declare_parameter('config_path', 'models/ssd_mobilenet_v2_coco.pbtxt')
         self.declare_parameter('confidence_threshold', 0.5)
         self.declare_parameter('publish_debug_image', True)
-        self.declare_parameter('input_size', 300)  # SSD MobileNet V2 chuẩn 300x300
-        self.declare_parameter('process_every_n', 3)  # chỉ suy luận 1 lần mỗi N frame
+        self.declare_parameter('input_size', 300)  # SSD MobileNet V2 표준 300x300
+        self.declare_parameter('process_every_n', 3)  # N프레임마다 한 번만 추론 실행
+        self.declare_parameter('num_threads', 2)  # OpenCV(cv2.dnn)가 사용할 스레드 수
 
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
         config_path = self.get_parameter('config_path').get_parameter_value().string_value
@@ -44,8 +45,12 @@ class CamBienNode(Node):
         self.publish_debug = self.get_parameter('publish_debug_image').get_parameter_value().bool_value
         self.input_size = self.get_parameter('input_size').get_parameter_value().integer_value
         self.process_every_n = self.get_parameter('process_every_n').get_parameter_value().integer_value
+        num_threads = self.get_parameter('num_threads').get_parameter_value().integer_value
 
-        # ---- Load model ----
+        # ---- 모델 로드 전에 OpenCV 스레드 수 설정 ----
+        cv2.setNumThreads(num_threads)
+
+        # ---- 모델 로드 ----
         if not os.path.exists(model_path) or not os.path.exists(config_path):
             self.get_logger().error(
                 f"Không tìm thấy model tại '{model_path}' hoặc config tại '{config_path}'. "
@@ -53,9 +58,9 @@ class CamBienNode(Node):
             )
         self.net = cv2.dnn.readNetFromTensorflow(model_path, config_path)
 
-        # ---- Nhãn COCO — copy CHÍNH XÁC từ project_37/main37.py (myProjects.zip) ----
-        # Lưu ý: dict này có CHỦ ĐÍCH bỏ qua 1 số id (12, 26, 29, 30, 45, 66, 68, 69, 71, 83)
-        # vì đó là cách đánh số gốc của tập COCO 90 lớp — KHÔNG được đổi thành list liên tục.
+        # ---- COCO 라벨 — project_37/main37.py (myProjects.zip)에서 정확히 복사 ----
+        # 참고: 이 dict는 의도적으로 일부 id(12, 26, 29, 30, 45, 66, 68, 69, 71, 83)를 건너뜀
+        # COCO 90개 클래스의 원래 번호 체계이기 때문 — 연속된 list로 바꾸면 안 됨.
         self.class_names = {
             0: 'background',
             1: 'person', 2: 'bicycle', 3: 'car', 4: 'motorcycle', 5: 'airplane', 6: 'bus',
@@ -76,9 +81,9 @@ class CamBienNode(Node):
             86: 'vase', 87: 'scissors', 88: 'teddy bear', 89: 'hair drier', 90: 'toothbrush'
         }
 
-        # ---- ROS interfaces ----
+        # ---- ROS 인터페이스 ----
         self.bridge = CvBridge()
-        self.frame_count = 0  # đếm frame để bỏ qua suy luận theo process_every_n
+        self.frame_count = 0  # process_every_n에 따라 추론을 건너뛰기 위한 프레임 카운터
         self.sub = self.create_subscription(Image, '/image_raw', self.image_callback, 10)
         self.pub_detections = self.create_publisher(Detection2DArray, '/detections', 10)
         if self.publish_debug:
@@ -87,7 +92,7 @@ class CamBienNode(Node):
         self.get_logger().info('cam_bien node đã khởi động, đang chờ ảnh trên /image_raw ...')
 
     def image_callback(self, msg: Image):
-        # Chỉ suy luận mỗi N frame, các frame còn lại bỏ qua ngay để tiết kiệm tài nguyên
+        # N프레임마다 한 번만 추론하고, 나머지 프레임은 리소스 절약을 위해 즉시 건너뜀
         self.frame_count += 1
         if self.frame_count % self.process_every_n != 0:
             return
@@ -133,7 +138,7 @@ class CamBienNode(Node):
             det.bbox.size_y = float(box_h)
 
             hyp = ObjectHypothesisWithPose()
-            hyp.hypothesis.class_id = label_name  # vision_msgs 3.x (Humble): class_id là string
+            hyp.hypothesis.class_id = label_name  # vision_msgs 3.x (Humble): class_id는 string
             hyp.hypothesis.score = confidence
             det.results.append(hyp)
 

@@ -118,11 +118,20 @@ class CameraCsiNode(Node):
         self._use_pipe = True
 
     def _start_pipe_process(self):
+        # VideoCapture 시도 과정에서 드라이버 포맷이 YUYV로 되돌아갈 수 있으므로
+        # 파이프 서브프로세스를 실행하기 직전에 GB10 포맷을 다시 강제 설정한다
+        self._set_v4l2_format()
+
         cmd = [
             'v4l2-ctl', '-d', self.device,
             '--stream-mmap', '--stream-to=-', '--stream-count=0',
         ]
-        self._proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=FRAME_BYTES * 4)
+        # stderr를 PIPE로 두면 읽지 않을 경우 버퍼가 가득 차 막힐 수 있으므로
+        # 파일로 리다이렉트한다
+        stderr_log = open('/tmp/camera_csi_v4l2.log', 'ab')
+        self._proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=stderr_log, bufsize=FRAME_BYTES * 4
+        )
 
     def _read_exact(self, stream, n):
         # 파이프에서 정확히 n바이트가 모일 때까지 반복해서 읽는다

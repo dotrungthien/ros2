@@ -32,8 +32,8 @@ class DieuKhienNode(Node):
 
         # ---- 파라미터 (launch 파일 또는 CLI 로 변경 가능) ----
         # wheel_separation: 좌/우 바퀴 중심 사이 거리 [m].
-        # 0.3 은 임시값이다. 실제 로봇(RB080 섀시)에서 반드시 측정한 뒤 값을 갱신할 것!
-        self.declare_parameter('wheel_separation', 0.133)
+        # 이 값은 실제 자로 측정한 0.133 m 와 다르며, 제자리 회전(스킨 스티어 특성상 바퀴 미끄러짐 발생) 측정을 통해 보정한 유효값이다.
+        self.declare_parameter('wheel_separation', 0.17)
         # max_wheel_speed: PWM 듀티 1.0 일 때의 바퀴 선속도 [m/s].
         # 엔코더가 없으므로 실제 주행으로 대략 측정해서 보정해야 한다.
         self.declare_parameter('max_wheel_speed', 0.23)

@@ -41,6 +41,7 @@ install(PROGRAMS
   scripts/cam_bien.py
   scripts/test_static_image_publisher.py
   scripts/dieu_khien.py
+  scripts/camera_csi.py
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()

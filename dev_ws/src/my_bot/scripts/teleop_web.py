@@ -73,6 +73,9 @@ class TeleopNode(Node):
             if fresh:
                 twist.linear.x = self.target_linear
                 twist.angular.z = self.target_angular
+        # 명령이 끊기면 발행을 멈춘다 (twist_mux 가 timeout 후 다음 우선순위로 넘어가도록)
+        if not fresh:
+            return
         self.pub.publish(twist)
 
     def get_jpeg(self):

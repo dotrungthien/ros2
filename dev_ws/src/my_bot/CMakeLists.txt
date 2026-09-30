@@ -33,7 +33,7 @@ if(BUILD_TESTING)
 endif()
 
 install(
-  DIRECTORY config description launch worlds
+  DIRECTORY config description launch worlds templates
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -42,6 +42,7 @@ install(PROGRAMS
   scripts/test_static_image_publisher.py
   scripts/dieu_khien.py
   scripts/camera_csi.py
+  scripts/teleop_web.py
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>AMR 원격 조종</title>
+<style>
+  body { font-family: sans-serif; background:#111; color:#eee; text-align:center; margin:0; padding:8px; }
+  img#video { width:100%; max-width:640px; max-height:45vh; object-fit:contain; background:#000; border-radius:8px; }
+  .pad { display:grid; grid-template-columns:repeat(3,80px); grid-gap:8px; justify-content:center; margin:12px 0; }
+  .pad button { height:80px; font-size:28px; border:none; border-radius:12px; background:#2a5; color:#fff;
+                touch-action:none; user-select:none; -webkit-user-select:none; }
+  .pad button.stop { background:#c33; }
+  .pad button.active { background:#7d7; color:#000; }
+  #info { font-size:14px; color:#aaa; }
+</style>
+</head>
+<body>
+  <h3>AMR 원격 조종</h3>
+  <img id="video" src="/video" alt="camera">
+  <div>속도 <input id="speed" type="range" min="20" max="100" value="60"> <span id="speedVal">60</span>%</div>
+  <div class="pad">
+    <span></span><button data-l="1" data-a="0">▲</button><span></span>
+    <button data-l="0" data-a="1">◀</button><button class="stop" data-l="0" data-a="0">■</button><button data-l="0" data-a="-1">▶</button>
+    <span></span><button data-l="-1" data-a="0">▼</button><span></span>
+  </div>
+  <div id="info">누르고 있는 동안만 움직입니다 · 키보드: W A S D, 스페이스=정지</div>
+<script>
+  let linear = 0, angular = 0;     // -1 ~ 1
+  const speed = document.getElementById('speed');
+  document.getElementById('speedVal').textContent = speed.value;
+  speed.oninput = () => document.getElementById('speedVal').textContent = speed.value;
+
+  function send() {
+    const k = speed.value / 100;
+    fetch('/cmd', { method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({linear: linear*k, angular: angular*k}), keepalive:true })
+      .catch(() => {});
+  }
+  // 누르고 있는 동안 10 Hz 로 반복 전송 (서버는 0.3초 이상 끊기면 정지)
+  setInterval(() => { if (linear !== 0 || angular !== 0) send(); }, 100);
+
+  function setCmd(l, a) { linear = l; angular = a; send(); }
+  function stopAll() { setCmd(0, 0); document.querySelectorAll('.pad button').forEach(b => b.classList.remove('active')); }
+
+  document.querySelectorAll('.pad button').forEach(b => {
+    const l = +b.dataset.l, a = +b.dataset.a;
+    b.addEventListener('pointerdown', e => { e.preventDefault(); b.setPointerCapture(e.pointerId); b.classList.add('active'); setCmd(l, a); });
+    ['pointerup','pointercancel','lostpointercapture'].forEach(ev => b.addEventListener(ev, stopAll));
+  });
+
+  const keys = {w:[1,0], s:[-1,0], a:[0,1], d:[0,-1]};
+  const down = new Set();
+  function fromKeys() {
+    let l = 0, a = 0;
+    down.forEach(k => { l += keys[k][0]; a += keys[k][1]; });
+    setCmd(Math.max(-1, Math.min(1, l)), Math.max(-1, Math.min(1, a)));
+  }
+  addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    if (k === ' ') { down.clear(); stopAll(); return; }
+    if (k in keys && !down.has(k)) { down.add(k); fromKeys(); }
+  });
+  addEventListener('keyup', e => { down.delete(e.key.toLowerCase()); fromKeys(); });
+  // 탭 전환이나 창 포커스를 잃으면 즉시 정지
+  addEventListener('blur', () => { down.clear(); stopAll(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { down.clear(); stopAll(); } });
+</script>
+</body>
+</html>

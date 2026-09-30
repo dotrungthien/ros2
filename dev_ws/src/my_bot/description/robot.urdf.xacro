@@ -3,7 +3,7 @@
 
   <!-- ===== 실측값 (본체/바퀴 치수) ===== -->
   <xacro:property name="chassis_length" value="0.25"/>    <!-- 본체 길이(전후), 실측 -->
-  <xacro:property name="chassis_width" value="0.135"/>    <!-- 본체 폭(좌우), 실측 -->
+  <xacro:property name="chassis_width" value="0.103"/>    <!-- 본체 폭(좌우), PCB 실측 103mm (바퀴 포함 외곽 160mm) -->
   <xacro:property name="chassis_height" value="0.06"/>    <!-- 본체 높이, 미확정 임시값 -->
   <xacro:property name="wheel_radius" value="0.0325"/>    <!-- 바퀴 반지름, 실측 -->
   <xacro:property name="wheel_width" value="0.025"/>      <!-- 바퀴 폭(두께), 실측 -->

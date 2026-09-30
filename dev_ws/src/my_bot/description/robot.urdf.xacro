@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
 
-  <!-- ===== 임시 측정값 (실측 예정, 곧 정확한 치수 전달받을 예정) ===== -->
-  <xacro:property name="chassis_length" value="0.42"/>   <!-- 40~45cm 사이, 실측 전 임시값 -->
-  <xacro:property name="chassis_width" value="0.15"/>    <!-- 확정값 15cm -->
-  <xacro:property name="chassis_height" value="0.06"/>   <!-- 미확정, 임시값 -->
-  <xacro:property name="wheel_radius" value="0.0325"/>   <!-- 미확정, 임시값 -->
-  <xacro:property name="wheel_thickness" value="0.026"/> <!-- 미확정, 임시값 -->
-  <xacro:property name="wheel_separation" value="0.16"/> <!-- 미확정, 임시값 -->
-  <xacro:property name="caster_radius" value="0.015"/>   <!-- 미확정, 임시값 -->
+  <!-- ===== 실측값 (본체/바퀴 치수) ===== -->
+  <xacro:property name="chassis_length" value="0.25"/>    <!-- 본체 길이(전후), 실측 -->
+  <xacro:property name="chassis_width" value="0.135"/>    <!-- 본체 폭(좌우), 실측 -->
+  <xacro:property name="chassis_height" value="0.06"/>    <!-- 본체 높이, 미확정 임시값 -->
+  <xacro:property name="wheel_radius" value="0.0325"/>    <!-- 바퀴 반지름, 실측 -->
+  <xacro:property name="wheel_width" value="0.025"/>      <!-- 바퀴 폭(두께), 실측 -->
+  <xacro:property name="wheel_separation" value="0.133"/> <!-- 좌우 바퀴 중심 간 거리, 실측 -->
+  <xacro:property name="wheelbase" value="0.12"/>         <!-- 앞뒤 바퀴 축 간 거리, 실측 -->
 
   <material name="chassis_gray"><color rgba="0.6 0.6 0.6 1"/></material>
   <material name="wheel_black"><color rgba="0.1 0.1 0.1 1"/></material>
@@ -22,7 +22,7 @@
     <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
   </joint>
 
-  <!-- base_link: 좌우 바퀴 회전축의 정중앙에 위치 (ROS2/Nav2 표준 이름, 임의 변경 금지) -->
+  <!-- base_link: 네 바퀴 회전축이 이루는 사각형의 정중앙에 위치 (ROS2/Nav2 표준 이름, 임의 변경 금지) -->
   <link name="base_link">
     <visual>
       <origin xyz="0 0 ${chassis_height/2}"/>
@@ -40,66 +40,33 @@
     </inertial>
   </link>
 
-  <!-- 왼쪽 바퀴 -->
-  <joint name="left_wheel_joint" type="continuous">
-    <parent link="base_link"/>
-    <child link="left_wheel"/>
-    <origin xyz="0 ${wheel_separation/2} 0" rpy="-1.5708 0 0"/>
-    <axis xyz="0 0 1"/>
-  </joint>
-  <link name="left_wheel">
-    <visual>
-      <geometry><cylinder radius="${wheel_radius}" length="${wheel_thickness}"/></geometry>
-      <material name="wheel_black"/>
-    </visual>
-    <collision>
-      <geometry><cylinder radius="${wheel_radius}" length="${wheel_thickness}"/></geometry>
-    </collision>
-    <inertial>
-      <mass value="0.05"/>
-      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
-    </inertial>
-  </link>
+  <!-- 바퀴 링크/조인트 공통 매크로: prefix(x, y부호)만 바꿔 4개 바퀴에 재사용 -->
+  <xacro:macro name="wheel" params="name x_sign y_sign">
+    <joint name="${name}_wheel_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${name}_wheel"/>
+      <origin xyz="${x_sign * wheelbase/2} ${y_sign * wheel_separation/2} 0" rpy="-1.5708 0 0"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+    <link name="${name}_wheel">
+      <visual>
+        <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
+        <material name="wheel_black"/>
+      </visual>
+      <collision>
+        <geometry><cylinder radius="${wheel_radius}" length="${wheel_width}"/></geometry>
+      </collision>
+      <inertial>
+        <mass value="0.05"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+      </inertial>
+    </link>
+  </xacro:macro>
 
-  <!-- 오른쪽 바퀴 -->
-  <joint name="right_wheel_joint" type="continuous">
-    <parent link="base_link"/>
-    <child link="right_wheel"/>
-    <origin xyz="0 ${-wheel_separation/2} 0" rpy="-1.5708 0 0"/>
-    <axis xyz="0 0 1"/>
-  </joint>
-  <link name="right_wheel">
-    <visual>
-      <geometry><cylinder radius="${wheel_radius}" length="${wheel_thickness}"/></geometry>
-      <material name="wheel_black"/>
-    </visual>
-    <collision>
-      <geometry><cylinder radius="${wheel_radius}" length="${wheel_thickness}"/></geometry>
-    </collision>
-    <inertial>
-      <mass value="0.05"/>
-      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
-    </inertial>
-  </link>
-
-  <!-- 앞쪽 캐스터 바퀴 (보조 바퀴, 구동되지 않음) -->
-  <joint name="caster_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="caster_wheel"/>
-    <origin xyz="${chassis_length/2 - caster_radius} 0 ${-(wheel_radius - caster_radius)}"/>
-  </joint>
-  <link name="caster_wheel">
-    <visual>
-      <geometry><sphere radius="${caster_radius}"/></geometry>
-      <material name="wheel_black"/>
-    </visual>
-    <collision>
-      <geometry><sphere radius="${caster_radius}"/></geometry>
-    </collision>
-    <inertial>
-      <mass value="0.01"/>
-      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
-    </inertial>
-  </link>
+  <!-- 좌전, 좌후, 우전, 우후 4개 바퀴 (모두 continuous, 캐스터 없음) -->
+  <xacro:wheel name="left_front" x_sign="1" y_sign="1"/>
+  <xacro:wheel name="left_rear" x_sign="-1" y_sign="1"/>
+  <xacro:wheel name="right_front" x_sign="1" y_sign="-1"/>
+  <xacro:wheel name="right_rear" x_sign="-1" y_sign="-1"/>
 
 </robot>

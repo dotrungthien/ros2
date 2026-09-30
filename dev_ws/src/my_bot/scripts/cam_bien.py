@@ -111,7 +111,7 @@ class CamBienNode(Node):
         detections = self.net.forward()
 
         detection_array = Detection2DArray()
-        detection_array.header = msg.header
+        detection_array.header = msg.header  # 입력 이미지의 header(stamp, frame_id)를 그대로 복사
 
         for i in range(detections.shape[2]):
             confidence = float(detections[0, 0, i, 2])
@@ -132,6 +132,7 @@ class CamBienNode(Node):
             label_name = self.class_names.get(class_id, str(class_id))
 
             det = Detection2D()
+            det.header = msg.header  # 입력 이미지의 header(stamp, frame_id)를 그대로 복사
             det.bbox.center.position.x = cx
             det.bbox.center.position.y = cy
             det.bbox.size_x = float(box_w)
@@ -155,7 +156,7 @@ class CamBienNode(Node):
 
         if self.publish_debug:
             debug_msg = self.bridge.cv2_to_imgmsg(frame, encoding='bgr8')
-            debug_msg.header = msg.header
+            debug_msg.header = msg.header  # 원본 이미지 header 유지 (stamp, frame_id 동일)
             self.pub_debug_image.publish(debug_msg)
 
 

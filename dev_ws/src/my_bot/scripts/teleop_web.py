@@ -55,7 +55,7 @@ class TeleopNode(Node):
     def image_callback(self, msg):
         with self.lock:
             self.latest_image = msg
-            self.latest_image_time = time.time()
+            self.latest_image_time = time.monotonic()
 
     def set_command(self, linear_norm, angular_norm):
         # 입력은 -1.0 ~ 1.0 으로 제한한 뒤 최대 속도를 곱한다
@@ -64,12 +64,12 @@ class TeleopNode(Node):
         with self.lock:
             self.target_linear = linear_norm * self.max_linear
             self.target_angular = angular_norm * self.max_angular
-            self.last_cmd_time = time.time()
+            self.last_cmd_time = time.monotonic()
 
     def publish_cmd(self):
         twist = Twist()
         with self.lock:
-            fresh = (time.time() - self.last_cmd_time) < self.cmd_timeout
+            fresh = (time.monotonic() - self.last_cmd_time) < self.cmd_timeout
             if fresh:
                 twist.linear.x = self.target_linear
                 twist.angular.z = self.target_angular
@@ -93,8 +93,8 @@ class TeleopNode(Node):
             return {
                 'linear': self.target_linear,
                 'angular': self.target_angular,
-                'cmd_age': round(time.time() - self.last_cmd_time, 2),
-                'image_age': round(time.time() - self.latest_image_time, 2)
+                'cmd_age': round(time.monotonic() - self.last_cmd_time, 2),
+                'image_age': round(time.monotonic() - self.latest_image_time, 2)
                 if self.latest_image_time else None,
             }
 

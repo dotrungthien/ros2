@@ -43,6 +43,8 @@ install(PROGRAMS
   scripts/dieu_khien.py
   scripts/camera_csi.py
   scripts/teleop_web.py
+  scripts/logic_quyet_dinh.py
+  scripts/test_fake_scan.py
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()

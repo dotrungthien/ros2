@@ -8,7 +8,7 @@ twist_mux:
         priority: 100
       avoid:
         topic: /cmd_vel_avoid
-        timeout: 0.5
+        timeout: 0.2
         priority: 60
       nav:
         topic: /cmd_vel_nav

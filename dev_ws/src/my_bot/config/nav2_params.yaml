@@ -1,0 +1,243 @@
+# Nav2 (ROS 2 Humble) 파라미터 - Regulated Pure Pursuit 컨트롤러
+# 구조/키 이름은 /opt/ros/humble/share/nav2_bringup/params/nav2_params.yaml 을 따랐고,
+# 이 로봇에 필요한 노드만 남겼다 (amcl, map_server, waypoint_follower, smoother_server,
+# collision_monitor 는 제외). 오도메트리는 엔코더 없는 명령 적분(/odom, odom_tu_lenh) 이므로
+# 오픈 루프 오차가 누적된다는 점을 전제로 허용 오차를 넉넉하게 잡았다.
+# 토픽/프레임 이름은 ASCII 유지. use_sim_time 은 모든 노드에서 false.
+#
+# 로봇 풋프린트 (base_footprint 중심, x = 앞, y = 왼쪽):
+#   폭 0.16 m (바퀴 포함 최외곽) x 길이 0.25 m (PCB). 베이스(받침대)를 달면 다시 측정할 것.
+
+bt_navigator:
+  ros__parameters:
+    use_sim_time: false
+    global_frame: map
+    robot_base_frame: base_footprint
+    odom_topic: /odom
+    bt_loop_duration: 10
+    default_server_timeout: 20
+    wait_for_service_timeout: 1000
+    # BT XML 은 지정하지 않는다 -> Nav2 기본 트리 (navigate_to_pose_w_replanning_and_recovery) 사용
+    plugin_lib_names:
+      - nav2_compute_path_to_pose_action_bt_node
+      - nav2_compute_path_through_poses_action_bt_node
+      - nav2_smooth_path_action_bt_node
+      - nav2_follow_path_action_bt_node
+      - nav2_spin_action_bt_node
+      - nav2_wait_action_bt_node
+      - nav2_assisted_teleop_action_bt_node
+      - nav2_back_up_action_bt_node
+      - nav2_drive_on_heading_bt_node
+      - nav2_clear_costmap_service_bt_node
+      - nav2_is_stuck_condition_bt_node
+      - nav2_goal_reached_condition_bt_node
+      - nav2_goal_updated_condition_bt_node
+      - nav2_globally_updated_goal_condition_bt_node
+      - nav2_is_path_valid_condition_bt_node
+      - nav2_initial_pose_received_condition_bt_node
+      - nav2_reinitialize_global_localization_service_bt_node
+      - nav2_rate_controller_bt_node
+      - nav2_distance_controller_bt_node
+      - nav2_speed_controller_bt_node
+      - nav2_truncate_path_action_bt_node
+      - nav2_truncate_path_local_action_bt_node
+      - nav2_goal_updater_node_bt_node
+      - nav2_recovery_node_bt_node
+      - nav2_pipeline_sequence_bt_node
+      - nav2_round_robin_node_bt_node
+      - nav2_transform_available_condition_bt_node
+      - nav2_time_expired_condition_bt_node
+      - nav2_path_expiring_timer_condition
+      - nav2_distance_traveled_condition_bt_node
+      - nav2_single_trigger_bt_node
+      - nav2_goal_updated_controller_bt_node
+      - nav2_is_battery_low_condition_bt_node
+      - nav2_navigate_through_poses_action_bt_node
+      - nav2_navigate_to_pose_action_bt_node
+      - nav2_remove_passed_goals_action_bt_node
+      - nav2_planner_selector_bt_node
+      - nav2_controller_selector_bt_node
+      - nav2_goal_checker_selector_bt_node
+      - nav2_controller_cancel_bt_node
+      - nav2_path_longer_on_approach_bt_node
+      - nav2_wait_cancel_bt_node
+      - nav2_spin_cancel_bt_node
+      - nav2_back_up_cancel_bt_node
+      - nav2_assisted_teleop_cancel_bt_node
+      - nav2_drive_on_heading_cancel_bt_node
+      - nav2_is_battery_charging_condition_bt_node
+
+bt_navigator_navigate_through_poses_rclcpp_node:
+  ros__parameters:
+    use_sim_time: false
+
+bt_navigator_navigate_to_pose_rclcpp_node:
+  ros__parameters:
+    use_sim_time: false
+
+controller_server:
+  ros__parameters:
+    use_sim_time: false
+    controller_frequency: 10.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.5
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+    odom_topic: /odom
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["general_goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    # 진행 확인: 15초 안에 0.2 m 이상 움직이지 못하면 실패로 본다
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.2
+      movement_time_allowance: 15.0
+
+    # 목표 도달 판정: 오픈 루프 오도메트리라 너무 엄격하게 잡지 않는다
+    general_goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      stateful: true
+      xy_goal_tolerance: 0.15
+      yaw_goal_tolerance: 0.3
+
+    # Regulated Pure Pursuit
+    FollowPath:
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+      desired_linear_vel: 0.15
+      use_velocity_scaled_lookahead_dist: true
+      lookahead_time: 2.0
+      min_lookahead_dist: 0.25
+      max_lookahead_dist: 0.6
+      allow_reversing: false
+      use_rotate_to_heading: true
+      rotate_to_heading_angular_vel: 1.0
+      rotate_to_heading_min_angle: 0.785
+      max_angular_accel: 3.2
+      use_regulated_linear_velocity_scaling: true
+      use_cost_regulated_linear_velocity_scaling: true
+      # 모터 데드존: 약 0.046 m/s 미만에서는 로봇이 움직이지 않으므로 하한을 0.06 으로 둔다
+      min_approach_linear_velocity: 0.06
+      regulated_linear_scaling_min_speed: 0.06
+      use_collision_detection: true
+      max_allowed_time_to_collision_up_to_carrot: 1.0
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      use_sim_time: false
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: odom
+      robot_base_frame: base_footprint
+      rolling_window: true
+      width: 3
+      height: 3
+      resolution: 0.05
+      # 직사각형 풋프린트 (베이스를 달면 다시 측정할 것)
+      footprint: "[[0.125, 0.08], [0.125, -0.08], [-0.125, -0.08], [-0.125, 0.08]]"
+      # 가볍게 하려고 voxel_layer 는 쓰지 않는다 (2D 라이다만 사용)
+      plugins: ["obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan
+        scan:
+          topic: /scan
+          data_type: "LaserScan"
+          marking: true
+          clearing: true
+          max_obstacle_height: 2.0
+          obstacle_max_range: 2.5
+          raytrace_max_range: 3.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.25
+      always_send_full_costmap: true
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: false
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_footprint
+      resolution: 0.05
+      track_unknown_space: true
+      # 로컬 코스트맵과 같은 풋프린트 (베이스를 달면 다시 측정할 것)
+      footprint: "[[0.125, 0.08], [0.125, -0.08], [-0.125, -0.08], [-0.125, 0.08]]"
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan
+        scan:
+          topic: /scan
+          data_type: "LaserScan"
+          marking: true
+          clearing: true
+          max_obstacle_height: 2.0
+          obstacle_max_range: 2.5
+          raytrace_max_range: 3.0
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.25
+      always_send_full_costmap: true
+
+planner_server:
+  ros__parameters:
+    use_sim_time: false
+    expected_planner_frequency: 1.0
+    planner_plugins: ["GridBased"]
+    GridBased:
+      # Smac 보다 가벼운 NavFn 사용
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.3
+      use_astar: false
+      allow_unknown: true
+
+behavior_server:
+  ros__parameters:
+    use_sim_time: false
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+    backup:
+      # 주의: 오도메트리가 오픈 루프라서 후진 거리/충돌 판단이 부정확하다 (사실상 눈을 감고 후진).
+      # 후진 속도는 이 yaml 이 아니라 BT XML 의 backup_speed 포트에서 정해진다.
+      plugin: "nav2_behaviors/BackUp"
+    wait:
+      plugin: "nav2_behaviors/Wait"
+    global_frame: odom
+    robot_base_frame: base_footprint
+    transform_tolerance: 0.1
+    simulate_ahead_time: 2.0
+    max_rotational_vel: 1.0
+    min_rotational_vel: 0.6     # 모터 데드존을 피하기 위해 높게 둔다
+    rotational_acc_lim: 3.2
+
+# 입출력 토픽 remap (cmd_vel -> cmd_vel_nav, cmd_vel_smoothed -> ...) 은 launch 파일에서 한다.
+# 이 yaml 에서는 하지 않는다.
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: false
+    smoothing_frequency: 10.0
+    scale_velocities: false
+    feedback: "OPEN_LOOP"
+    max_velocity: [0.2, 0.0, 1.0]
+    min_velocity: [-0.1, 0.0, -1.0]
+    max_accel: [0.3, 0.0, 2.0]
+    max_decel: [-0.5, 0.0, -2.0]
+    odom_topic: /odom
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0

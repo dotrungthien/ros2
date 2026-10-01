@@ -42,6 +42,19 @@ def front_distance(pts, half_width, max_look):
     return d
 
 
+def corridor_has_ray(pts, half_width, max_look):
+    """전방 복도 안에 유효한 점이 하나라도 있는지. front_distance 와 같은 영역 조건을 쓴다.
+
+    front_distance 는 점이 없으면 max_look 을 돌려주므로 "트임"과 "측정 불가"를 구분할 수 없다.
+    장애물이 min_valid_range 안쪽으로 들어오면 점이 모두 걸러져 front 가 갑자기 커지는데,
+    이 함수로 그 상황을 구분한다.
+    """
+    for _r, _th, x, y in pts:
+        if 0.0 < x < max_look and abs(y) < half_width:
+            return True
+    return False
+
+
 def side_clearance(pts, look):
     """전방 좌/우 사분면에서 가장 가까운 거리. 값이 클수록 그쪽이 트여 있다."""
     left = right = look
@@ -86,6 +99,7 @@ class LogicNode(Node):
         d('min_valid_range', 0.12)        # m, X4 Pro 최소 측정 거리 근처 노이즈 제외
         d('lidar_angle_offset_deg', 0.0)  # 라이다 0도 방향이 로봇 앞과 다를 때 보정
         d('escape_angular', 1.0)          # rad/s, 회피 회전 속도 (듀티 0.2 미만이면 안 움직임)
+        d('escape_hold_time', 0.5)        # s, 복도에 유효한 점이 없을 때 회피 상태/방향을 유지하는 시간
         d('scan_timeout', 0.5)            # s, 이 시간 동안 /scan 이 없으면 안전 정지
         # 사람 검출 결합
         d('person_class_ids', ['person', '1'])
@@ -101,6 +115,7 @@ class LogicNode(Node):
         self.persons = []
         self.persons_time = 0.0
         self.escape_dir = 0      # +1 = 왼쪽 회전, -1 = 오른쪽 회전, 0 = 회피 안 함
+        self.no_ray_since = None  # 복도에 유효한 점이 없어진 시각 (time.monotonic 기준), 있으면 None
         self.was_active = False
         self.last_state = ''
 
@@ -165,6 +180,7 @@ class LogicNode(Node):
             # 안전 우선: 센서가 없으면 자율주행 명령을 막는다 (teleop 은 우선순위가 더 높아 영향 없음)
             twist = Twist()
             state = 'NO_SCAN'
+            self.no_ray_since = None  # scan 이 돌아오면 유지 시간을 처음부터 다시 잰다
             self.get_logger().warning('scan 수신 없음: 안전 정지 명령 발행', throttle_duration_sec=2.0)
         else:
             pts = scan_to_points(
@@ -178,10 +194,23 @@ class LogicNode(Node):
                 twist = Twist()          # 사람은 움직이므로 회전하지 않고 정지
                 state = 'PERSON_STOP'
                 self.escape_dir = 0
+                self.no_ray_since = None
             else:
                 if self.escape_dir != 0:
-                    if front > stop_d + self.p('clear_margin'):
-                        self.escape_dir = 0
+                    if corridor_has_ray(pts, self.p('corridor_half_width'), self.p('max_look')):
+                        # 유효한 점이 있으면 일반 히스테리시스로 해제 판단
+                        self.no_ray_since = None
+                        if front > stop_d + self.p('clear_margin'):
+                            self.escape_dir = 0
+                    else:
+                        # 장애물이 min_valid_range 안쪽으로 들어와 점이 사라진 경우:
+                        # front 가 max_look 으로 튀므로 해제하지 않고 escape_hold_time 동안
+                        # 상태와 회전 방향을 그대로 유지한다 (명령은 계속 발행).
+                        if self.no_ray_since is None:
+                            self.no_ray_since = now
+                        if now - self.no_ray_since > self.p('escape_hold_time'):
+                            self.escape_dir = 0   # 유지 시간 초과: CLEAR 로 복귀
+                            self.no_ray_since = None
                 elif front < stop_d:
                     left, right = side_clearance(pts, self.p('side_look'))
                     self.escape_dir = 1 if left >= right else -1

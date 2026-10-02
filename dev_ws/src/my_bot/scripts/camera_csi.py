@@ -40,6 +40,7 @@ class CameraCsiNode(Node):
         self.declare_parameter('gain_r', 1.47)
         self.declare_parameter('gamma', 1.0 / 2.2)
         self.declare_parameter('frame_id', 'camera_link')
+        self.declare_parameter('vertical_blanking', 5820)  # 0 이면 설정하지 않음
 
         self.device = self.get_parameter('device').get_parameter_value().string_value
         self.gain = self.get_parameter('gain').get_parameter_value().integer_value
@@ -49,6 +50,7 @@ class CameraCsiNode(Node):
         self.gain_r = self.get_parameter('gain_r').get_parameter_value().double_value
         self.gamma = self.get_parameter('gamma').get_parameter_value().double_value
         self.frame_id = self.get_parameter('frame_id').get_parameter_value().string_value
+        self.vertical_blanking = self.get_parameter('vertical_blanking').get_parameter_value().integer_value
 
         self.bridge = CvBridge()
         self.pub = self.create_publisher(Image, '/image_raw', 10)
@@ -56,6 +58,8 @@ class CameraCsiNode(Node):
         # ---- 센서 초기화: analogue_gain 및 GB10 640x480 포맷 설정 ----
         self._set_analogue_gain()
         self._set_v4l2_format()
+        # 프레임을 읽기 시작하기 전(_init_capture 보다 먼저)에 vertical_blanking 을 설정한다
+        self._set_vertical_blanking()
 
         # ---- 프레임 읽기 방식 결정 (VideoCapture 우선, 실패 시 파이프) ----
         self._cap = None
@@ -97,6 +101,36 @@ class CameraCsiNode(Node):
                 f"GB10 포맷 설정 실패 ({self.device}): {result.stderr.strip()}"
             )
 
+    def _set_vertical_blanking(self):
+        # 센서 fps = pixel_rate / ((640 + hblank) x (480 + vblank)), 640x480 모드 기준:
+        #   vblank=5820 -> 58 333 000 / (1852 x (480 + 5820)) = 58 333 000 / 11 667 600 ~= 4.9996 fps
+        #   (5 fps 보다 아주 조금 낮게 일부러 잡았다: 센서가 노드의 5 fps 타이머보다 빠르면
+        #    큐에 프레임이 쌓여 영상이 지연되기 때문)
+        #   vblank 기본값 24 이면 1852 x 504 -> 약 62.49 fps (영상 지연의 원인)
+        # 이 값은 현재 640x480 모드에 묶여 있다. 해상도/모드를 바꾸면 다시 계산할 것.
+        # 실패해도 노드는 종료하지 않고 경고만 남긴 채 계속 실행한다.
+        if self.vertical_blanking == 0:
+            return  # 0 = 설정하지 않음
+        fallback = "카메라는 센서 기본 속도(약 62.5 fps)로 동작하므로 영상이 지연될 수 있습니다."
+        cmd = ['v4l2-ctl', '-d', SUBDEV, f'--set-ctrl=vertical_blanking={self.vertical_blanking}']
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3)
+        except FileNotFoundError:
+            self.get_logger().warn(f"vertical_blanking 설정 실패: v4l2-ctl 을 찾을 수 없습니다. {fallback}")
+            return
+        except subprocess.TimeoutExpired:
+            self.get_logger().warn(f"vertical_blanking 설정 실패: v4l2-ctl 이 3초 안에 끝나지 않았습니다 ({SUBDEV}). {fallback}")
+            return
+        except OSError as e:
+            self.get_logger().warn(f"vertical_blanking 설정 실패: v4l2-ctl 실행 오류 ({e}). {fallback}")
+            return
+        if result.returncode != 0:
+            self.get_logger().warn(
+                f"vertical_blanking 설정 실패 ({SUBDEV}, returncode={result.returncode}): "
+                f"{result.stderr.strip()}. {fallback}")
+            return
+        self.get_logger().info(f"vertical_blanking={self.vertical_blanking} 설정 완료 ({SUBDEV})")
+
     def _init_capture(self):
         cap = cv2.VideoCapture(self.device, cv2.CAP_V4L2)
         if cap.isOpened():
@@ -121,6 +155,10 @@ class CameraCsiNode(Node):
         # VideoCapture 시도 과정에서 드라이버 포맷이 YUYV로 되돌아갈 수 있으므로
         # 파이프 서브프로세스를 실행하기 직전에 GB10 포맷을 다시 강제 설정한다
         self._set_v4l2_format()
+        # Pi 에서는 이 pipe 방식이 실제로 사용된다. 포맷을 다시 설정하면 vertical_blanking 이
+        # 초기화되는지 아직 검증하지 못했으므로 여기서 한 번 더 설정한다
+        # (같은 값을 다시 쓰는 것이라 여러 번 호출해도 결과가 같다).
+        self._set_vertical_blanking()
 
         cmd = [
             'v4l2-ctl', '-d', self.device,

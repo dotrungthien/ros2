@@ -135,7 +135,8 @@ local_costmap:
       height: 3
       resolution: 0.05
       # 직사각형 풋프린트 (베이스를 달면 다시 측정할 것)
-      footprint: "[[0.125, 0.08], [0.125, -0.08], [-0.125, -0.08], [-0.125, 0.08]]"
+      # 2026-10-06 실측 (LiDAR 중심 기준 앞 12cm, 뒤 13cm, 좌우 8cm; LiDAR는 base_link 기준 앞쪽 +2.5cm), 미검증.
+      footprint: "[[0.145, 0.08], [0.145, -0.08], [-0.105, -0.08], [-0.105, 0.08]]"
       # 가볍게 하려고 voxel_layer 는 쓰지 않는다 (2D 라이다만 사용)
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
@@ -167,7 +168,8 @@ global_costmap:
       resolution: 0.05
       track_unknown_space: true
       # 로컬 코스트맵과 같은 풋프린트 (베이스를 달면 다시 측정할 것)
-      footprint: "[[0.125, 0.08], [0.125, -0.08], [-0.125, -0.08], [-0.125, 0.08]]"
+      # 2026-10-06 실측 (LiDAR 중심 기준 앞 12cm, 뒤 13cm, 좌우 8cm; LiDAR는 base_link 기준 앞쪽 +2.5cm), 미검증.
+      footprint: "[[0.145, 0.08], [0.145, -0.08], [-0.105, -0.08], [-0.105, 0.08]]"
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"

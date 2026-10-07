@@ -75,6 +75,12 @@ def generate_launch_description():
         'bat_dong_co', default_value='false',
         description='Launch dieu_khien (motor control, needs Raspberry Pi GPIO) AND teleop_web together')
 
+    # max_wheel_speed: PWM 듀티 1.0 일 때의 바퀴 선속도 [m/s]. dieu_khien 에 문자열이 아니라 실수로 전달한다.
+    # (dieu_khien.py 자체의 기본값 0.23 은 바꾸지 않고, 이 launch 에서만 0.437 로 덮어쓴다)
+    declare_max_wheel_speed_cmd = DeclareLaunchArgument(
+        'max_wheel_speed', default_value='0.437',
+        description='Wheel linear speed [m/s] at PWM duty 1.0, passed to dieu_khien')
+
     declare_bat_camera_cmd = DeclareLaunchArgument(
         'bat_camera', default_value='false',
         description='Launch camera_csi (CSI camera node)')
@@ -116,6 +122,8 @@ def generate_launch_description():
         executable='dieu_khien.py',
         name='dieu_khien',
         output='screen',
+        # access_code 와 같은 방식으로 타입을 명시한다 (float 로 강제)
+        parameters=[{'max_wheel_speed': ParameterValue(LaunchConfiguration('max_wheel_speed'), value_type=float)}],
         condition=IfCondition(bat_dong_co))
 
     camera_cmd = Node(
@@ -133,6 +141,7 @@ def generate_launch_description():
     ld.add_action(declare_slam_params_file_cmd)
     ld.add_action(declare_bat_lidar_cmd)
     ld.add_action(declare_bat_dong_co_cmd)
+    ld.add_action(declare_max_wheel_speed_cmd)
     ld.add_action(declare_bat_camera_cmd)
 
     # access_code 검사를 가장 먼저 둔다 (없으면 다른 노드가 하나도 뜨기 전에 중단)

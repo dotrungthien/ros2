@@ -44,12 +44,21 @@ class DieuKhienNode(Node):
         self.declare_parameter('dao_chieu', True)
         # he_so_trai: 왼쪽 바퀴 보정 계수. 좌/우 모터 특성 차이를 보정하기 위해 왼쪽 속도에만 곱한다.
         self.declare_parameter('he_so_trai', 0.92)
+        # duty_min_trai / duty_min_phai: 모터 데드존 보정. 해당 쪽 PWM 듀티가 이 값보다 작으면
+        # 모터가 움직이지 않으므로 이 값으로 올려준다. 0.0 이면 보정하지 않는다(기존 동작).
+        self.declare_parameter('duty_min_trai', 0.21)
+        self.declare_parameter('duty_min_phai', 0.21)
+        # duty_ngung: 듀티가 이 값보다 작으면 올리지 않고 정지(0)로 처리한다 (아주 작은 명령에 튀지 않도록).
+        self.declare_parameter('duty_ngung', 0.05)
 
         self.wheel_separation = self.get_parameter('wheel_separation').get_parameter_value().double_value
         self.max_wheel_speed = self.get_parameter('max_wheel_speed').get_parameter_value().double_value
         self.watchdog_timeout = self.get_parameter('watchdog_timeout').get_parameter_value().double_value
         self.dao_chieu = self.get_parameter('dao_chieu').get_parameter_value().bool_value
         self.he_so_trai = self.get_parameter('he_so_trai').get_parameter_value().double_value
+        self.duty_min_trai = self.get_parameter('duty_min_trai').get_parameter_value().double_value
+        self.duty_min_phai = self.get_parameter('duty_min_phai').get_parameter_value().double_value
+        self.duty_ngung = self.get_parameter('duty_ngung').get_parameter_value().double_value
 
         # ---- 모터 초기화 ----
         # gpiozero.Motor: forward/backward 핀에 PWM 을 출력하고, enable 핀은 HIGH 로 유지한다.
@@ -70,7 +79,9 @@ class DieuKhienNode(Node):
             f'dieu_khien 시작: wheel_separation={self.wheel_separation} m, '
             f'max_wheel_speed={self.max_wheel_speed} m/s, '
             f'watchdog_timeout={self.watchdog_timeout} s, '
-            f'he_so_trai={self.he_so_trai}'
+            f'he_so_trai={self.he_so_trai}, '
+            f'duty_min_trai={self.duty_min_trai}, duty_min_phai={self.duty_min_phai}, '
+            f'duty_ngung={self.duty_ngung}'
         )
 
     def cmd_vel_callback(self, msg):
@@ -101,6 +112,13 @@ class DieuKhienNode(Node):
         if self.dao_chieu:
             wheel_speed = -wheel_speed
         duty = clamp(abs(wheel_speed) / self.max_wheel_speed)
+        # 데드존 보정: duty_min 이 0 보다 클 때만 적용 (0.0 이면 기존 동작 그대로)
+        duty_min = self.duty_min_trai if is_left else self.duty_min_phai
+        if duty_min > 0.0:
+            if duty < self.duty_ngung:
+                duty = 0.0           # 너무 작은 명령은 정지로 처리
+            elif duty < duty_min:
+                duty = duty_min      # 데드존 아래면 움직이기 시작하는 최소 듀티로 올림
         if duty == 0.0:
             motor.stop()
         elif wheel_speed > 0.0:

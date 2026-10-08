@@ -5,6 +5,8 @@
 #   teleop_web 만 켜지면 로봇은 서 있는데 odom_tu_lenh 가 /cmd_vel 을 적분해 지도가 틀어지기 때문이다.
 # 필수: 원격 조종 웹의 접근 코드 access_code (기본값 없음, 코드는 파일에 쓰지 않는다;
 #       teleop_web 이 꺼져 있어도 항상 검사한다)
+#   bat_rf2o: rf2o 라이다 오도메트리를 켠다. 켜면 odom_tu_lenh 의 yaw_nguon 이 'rf2o' 가 되고 rf2o 는 TF 를 발행하지 않는다.
+#   bat_ket_detector: 막힘 감지 노드를 켠다 (/ket 만 발행하고 로봇은 제어하지 않는다). 둘 다 기본값 false.
 # Nav2, cam_bien, logic_quyet_dinh 는 이 launch 에 포함하지 않는다.
 #
 # 사용 예:
@@ -18,7 +20,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
@@ -57,6 +59,8 @@ def generate_launch_description():
     bat_lidar = LaunchConfiguration('bat_lidar')
     bat_dong_co = LaunchConfiguration('bat_dong_co')
     bat_camera = LaunchConfiguration('bat_camera')
+    bat_rf2o = LaunchConfiguration('bat_rf2o')
+    bat_ket_detector = LaunchConfiguration('bat_ket_detector')
 
     declare_access_code_cmd = DeclareLaunchArgument(
         'access_code',
@@ -85,6 +89,14 @@ def generate_launch_description():
         'bat_camera', default_value='false',
         description='Launch camera_csi (CSI camera node)')
 
+    declare_bat_rf2o_cmd = DeclareLaunchArgument(
+        'bat_rf2o', default_value='false',
+        description='Launch rf2o_laser_odometry (publishes /odom_rf2o, no TF) and make odom_tu_lenh use its yaw')
+
+    declare_bat_ket_detector_cmd = DeclareLaunchArgument(
+        'bat_ket_detector', default_value='false',
+        description='Launch ket_detector (stuck detector, publishes /ket only)')
+
     # 로봇 모델 (robot_state_publisher + joint_state_publisher). 지도 작성은 항상 실제 시계 사용
     rsp_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(bringup_dir, 'launch', 'rsp.launch.py')),
@@ -99,7 +111,12 @@ def generate_launch_description():
         package='my_bot',
         executable='odom_tu_lenh.py',
         name='odom_tu_lenh',
-        output='screen')
+        output='screen',
+        # bat_rf2o 가 켜져 있으면 theta 를 rf2o yaw 에서 가져온다. 켜짐 판정은 IfCondition 과 같은 값
+        # ('true', '1' 및 대소문자 변형) 으로 하고, 문자열(str)로 명시해서 전달한다.
+        parameters=[{'yaw_nguon': ParameterValue(
+            PythonExpression(["'rf2o' if '", bat_rf2o, "'.lower() in ('true', '1') else 'lenh'"]),
+            value_type=str)}])
 
     # SLAM Toolbox online async. 샘플 launch 의 use_sim_time 기본값은 'true' 이므로 반드시 'false' 로 덮어쓴다
     slam_cmd = IncludeLaunchDescription(
@@ -133,6 +150,31 @@ def generate_launch_description():
         output='screen',
         condition=IfCondition(bat_camera))
 
+    # rf2o 라이다 오도메트리. 파라미터는 ~/rf2o_thu 의 rf2o_laser_odometry.launch.py 와 같고
+    # publish_tf 만 False: TF(odom -> base_footprint) 는 odom_tu_lenh 하나만 발행한다
+    rf2o_cmd = Node(
+        package='rf2o_laser_odometry',
+        executable='rf2o_laser_odometry_node',
+        name='rf2o_laser_odometry',
+        output='screen',
+        parameters=[{
+            'laser_scan_topic': '/scan',
+            'odom_topic': '/odom_rf2o',
+            'publish_tf': False,
+            'base_frame_id': 'base_link',
+            'odom_frame_id': 'odom',
+            'init_pose_from_topic': '',
+            'freq': 20.0}],
+        condition=IfCondition(bat_rf2o))
+
+    # 막힘 감지 (로봇을 제어하지 않고 /ket 만 발행한다)
+    ket_detector_cmd = Node(
+        package='my_bot',
+        executable='ket_detector.py',
+        name='ket_detector',
+        output='screen',
+        condition=IfCondition(bat_ket_detector))
+
     # LaunchDescription 을 생성하고 액션을 채운다
     ld = LaunchDescription()
 
@@ -143,6 +185,8 @@ def generate_launch_description():
     ld.add_action(declare_bat_dong_co_cmd)
     ld.add_action(declare_max_wheel_speed_cmd)
     ld.add_action(declare_bat_camera_cmd)
+    ld.add_action(declare_bat_rf2o_cmd)
+    ld.add_action(declare_bat_ket_detector_cmd)
 
     # access_code 검사를 가장 먼저 둔다 (없으면 다른 노드가 하나도 뜨기 전에 중단)
     ld.add_action(OpaqueFunction(function=start_teleop_web))
@@ -157,5 +201,7 @@ def generate_launch_description():
     ld.add_action(lidar_cmd)
     ld.add_action(dong_co_cmd)
     ld.add_action(camera_cmd)
+    ld.add_action(rf2o_cmd)
+    ld.add_action(ket_detector_cmd)
 
     return ld

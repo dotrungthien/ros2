@@ -46,6 +46,7 @@ install(PROGRAMS
   scripts/logic_quyet_dinh.py
   scripts/test_fake_scan.py
   scripts/odom_tu_lenh.py
+  scripts/ket_detector.py
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()

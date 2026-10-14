@@ -6,6 +6,7 @@
 # 필수: 원격 조종 웹의 접근 코드 access_code (기본값 없음, 코드는 파일에 쓰지 않는다;
 #       teleop_web 이 꺼져 있어도 항상 검사한다)
 #   bat_rf2o: rf2o 라이다 오도메트리를 켠다. 켜면 odom_tu_lenh 의 yaw_nguon 이 'rf2o' 가 되고 rf2o 는 TF 를 발행하지 않는다.
+#   bat_mo_hinh_san: odom_tu_lenh 의 바닥 데드존 모델(mo_hinh_san)을 켠다. 기본값 false (기존 동작).
 #   bat_ket_detector: 막힘 감지 노드를 켠다 (/ket 만 발행하고 로봇은 제어하지 않는다). 둘 다 기본값 false.
 # Nav2, cam_bien, logic_quyet_dinh 는 이 launch 에 포함하지 않는다.
 #
@@ -61,6 +62,7 @@ def generate_launch_description():
     bat_camera = LaunchConfiguration('bat_camera')
     bat_rf2o = LaunchConfiguration('bat_rf2o')
     bat_ket_detector = LaunchConfiguration('bat_ket_detector')
+    bat_mo_hinh_san = LaunchConfiguration('bat_mo_hinh_san')
 
     declare_access_code_cmd = DeclareLaunchArgument(
         'access_code',
@@ -97,6 +99,10 @@ def generate_launch_description():
         'bat_ket_detector', default_value='false',
         description='Launch ket_detector (stuck detector, publishes /ket only)')
 
+    declare_bat_mo_hinh_san_cmd = DeclareLaunchArgument(
+        'bat_mo_hinh_san', default_value='false',
+        description='Enable odom_tu_lenh floor dead-zone model (mo_hinh_san)')
+
     # 로봇 모델 (robot_state_publisher + joint_state_publisher). 지도 작성은 항상 실제 시계 사용
     rsp_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(bringup_dir, 'launch', 'rsp.launch.py')),
@@ -116,7 +122,10 @@ def generate_launch_description():
         # ('true', '1' 및 대소문자 변형) 으로 하고, 문자열(str)로 명시해서 전달한다.
         parameters=[{'yaw_nguon': ParameterValue(
             PythonExpression(["'rf2o' if '", bat_rf2o, "'.lower() in ('true', '1') else 'lenh'"]),
-            value_type=str)}])
+            value_type=str),
+            'mo_hinh_san': ParameterValue(
+                PythonExpression(["'", bat_mo_hinh_san, "'.lower() in ('true', '1')"]),
+                value_type=bool)}])
 
     # SLAM Toolbox online async. 샘플 launch 의 use_sim_time 기본값은 'true' 이므로 반드시 'false' 로 덮어쓴다
     slam_cmd = IncludeLaunchDescription(
@@ -187,6 +196,7 @@ def generate_launch_description():
     ld.add_action(declare_bat_camera_cmd)
     ld.add_action(declare_bat_rf2o_cmd)
     ld.add_action(declare_bat_ket_detector_cmd)
+    ld.add_action(declare_bat_mo_hinh_san_cmd)
 
     # access_code 검사를 가장 먼저 둔다 (없으면 다른 노드가 하나도 뜨기 전에 중단)
     ld.add_action(OpaqueFunction(function=start_teleop_web))

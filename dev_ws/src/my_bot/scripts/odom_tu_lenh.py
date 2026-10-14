@@ -64,6 +64,16 @@ class OdomTuLenhNode(Node):
         self.declare_parameter('rf2o_timeout', 0.5)           # s, 이 시간 넘게 rf2o 가 없으면 명령 적분으로 복귀
         self.declare_parameter('rf2o_cho_tin_dau', 3.0)       # s, 시작 후 이 시간 넘게 rf2o 첫 메시지가 없으면 경고
 
+        # mo_hinh_san: 바닥 모델 (bánh bị nâng / dead-zone duty). 기본 꺼짐 = 기존 동작
+        self.declare_parameter('mo_hinh_san', False)
+        self.declare_parameter('max_wheel_speed', 0.437)      # m/s
+        self.declare_parameter('wheel_separation', 0.155)     # m
+        self.declare_parameter('he_so_trai', 0.92)
+        self.declare_parameter('duty_min_trai', 0.21)
+        self.declare_parameter('duty_min_phai', 0.21)
+        self.declare_parameter('duty_ngung', 0.05)
+        self.declare_parameter('he_so_xoay', 0.53)
+
         def param(name):
             return self.get_parameter(name).value
 
@@ -96,6 +106,14 @@ class OdomTuLenhNode(Node):
         self.rf2o_topic = param('rf2o_topic')
         self.rf2o_timeout = float(param('rf2o_timeout'))
         self.rf2o_cho_tin_dau = float(param('rf2o_cho_tin_dau'))
+        self.mo_hinh_san = bool(param('mo_hinh_san'))
+        self.max_wheel_speed = float(param('max_wheel_speed'))
+        self.wheel_sep = float(param('wheel_separation'))
+        self.he_so_trai = float(param('he_so_trai'))
+        self.duty_min_trai = float(param('duty_min_trai'))
+        self.duty_min_phai = float(param('duty_min_phai'))
+        self.duty_ngung = float(param('duty_ngung'))
+        self.he_so_xoay = float(param('he_so_xoay'))
 
         if self.publish_rate <= 0.0:
             self.get_logger().error('publish_rate 는 0 보다 커야 합니다. 노드를 종료합니다.')
@@ -187,6 +205,24 @@ class OdomTuLenhNode(Node):
             v = 0.0
         if abs(w) < self.min_angular:
             w = 0.0
+        if self.mo_hinh_san:
+            sr = v + w * self.wheel_sep / 2.0
+            sl = v - w * self.wheel_sep / 2.0
+            nang = False
+            eff = []
+            for s, k, dmin in ((sr, 1.0, self.duty_min_phai), (sl, self.he_so_trai, self.duty_min_trai)):
+                duty0 = min(1.0, abs(s) * k / self.max_wheel_speed)
+                if duty0 >= dmin:
+                    eff.append(s)
+                elif duty0 < self.duty_ngung:
+                    eff.append(0.0)
+                else:   # 바퀴가 들린 상태: 최소 duty 로 구동
+                    nang = True
+                    eff.append(math.copysign(dmin * self.max_wheel_speed, s))
+            v = (eff[0] + eff[1]) / 2.0
+            w = (eff[0] - eff[1]) / self.wheel_sep
+            if nang:
+                w *= self.he_so_xoay
         return v * self.scale_linear, w * self.scale_angular
 
     def tick(self):

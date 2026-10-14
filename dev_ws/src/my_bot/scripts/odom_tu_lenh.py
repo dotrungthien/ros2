@@ -73,6 +73,9 @@ class OdomTuLenhNode(Node):
         self.declare_parameter('duty_min_phai', 0.21)
         self.declare_parameter('duty_ngung', 0.05)
         self.declare_parameter('he_so_xoay', 0.46)
+        # tre_khoi_dong_xoay: 제자리 회전(v=0, w!=0) 명령이 시작된 뒤 이 시간(s) 동안은 아직 안 돌고 있다고 본다
+        # (모터가 움직이기 시작하기까지의 지연). mo_hinh_san 이 True 일 때만 쓴다.
+        self.declare_parameter('tre_khoi_dong_xoay', 0.5)
 
         def param(name):
             return self.get_parameter(name).value
@@ -114,6 +117,7 @@ class OdomTuLenhNode(Node):
         self.duty_min_phai = float(param('duty_min_phai'))
         self.duty_ngung = float(param('duty_ngung'))
         self.he_so_xoay = float(param('he_so_xoay'))
+        self.tre_khoi_dong_xoay = float(param('tre_khoi_dong_xoay'))
 
         if self.publish_rate <= 0.0:
             self.get_logger().error('publish_rate 는 0 보다 커야 합니다. 노드를 종료합니다.')
@@ -127,6 +131,7 @@ class OdomTuLenhNode(Node):
         self.cmd_angular = 0.0
         self.last_cmd_time = None   # time.monotonic() 기준, 아직 명령이 없으면 None
         self.last_tick_time = None  # 이전 적분 시각 (time.monotonic())
+        self.bat_dau_xoay = None    # 제자리 회전이 시작된 시각 (time.monotonic()), 회전 중이 아니면 None
         # rf2o yaw 상태 (yaw_nguon == 'rf2o' 일 때만 사용)
         self.rf2o_yaw = 0.0         # 마지막으로 받은 rf2o yaw [rad]
         self.rf2o_time = None       # 마지막 수신 시각 (time.monotonic()), 아직 없으면 None
@@ -197,6 +202,7 @@ class OdomTuLenhNode(Node):
         """watchdog, 데드존, 보정 계수를 적용한 (v, w) 를 돌려준다."""
         # dieu_khien 의 watchdog 을 흉내: 명령이 없거나 오래되면 정지로 본다
         if self.last_cmd_time is None or now - self.last_cmd_time > self.cmd_timeout:
+            self.bat_dau_xoay = None   # 명령이 끊기면 회전 시작 지연도 처음부터 다시 잰다
             return 0.0, 0.0
         v = self.cmd_linear
         w = self.cmd_angular
@@ -223,6 +229,14 @@ class OdomTuLenhNode(Node):
             w = (eff[0] - eff[1]) / self.wheel_sep
             if nang:
                 w *= self.he_so_xoay
+            # 제자리 회전 시작 지연: v == 0 이고 w != 0 인 동안 tre_khoi_dong_xoay 초가 지나기 전에는 w = 0
+            if v == 0.0 and w != 0.0:
+                if self.bat_dau_xoay is None:
+                    self.bat_dau_xoay = now
+                if now - self.bat_dau_xoay < self.tre_khoi_dong_xoay:
+                    w = 0.0
+            else:
+                self.bat_dau_xoay = None
         return v * self.scale_linear, w * self.scale_angular
 
     def tick(self):

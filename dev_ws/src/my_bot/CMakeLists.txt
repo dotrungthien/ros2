@@ -47,6 +47,7 @@ install(PROGRAMS
   scripts/test_fake_scan.py
   scripts/odom_tu_lenh.py
   scripts/ket_detector.py
+  scripts/gyro_mpu6050.py
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()

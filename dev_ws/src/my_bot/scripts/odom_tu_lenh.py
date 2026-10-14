@@ -72,7 +72,7 @@ class OdomTuLenhNode(Node):
         self.declare_parameter('duty_min_trai', 0.21)
         self.declare_parameter('duty_min_phai', 0.21)
         self.declare_parameter('duty_ngung', 0.05)
-        self.declare_parameter('he_so_xoay', 0.53)
+        self.declare_parameter('he_so_xoay', 0.46)
 
         def param(name):
             return self.get_parameter(name).value

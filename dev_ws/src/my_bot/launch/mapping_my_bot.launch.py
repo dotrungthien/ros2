@@ -6,6 +6,8 @@
 # 필수: 원격 조종 웹의 접근 코드 access_code (기본값 없음, 코드는 파일에 쓰지 않는다;
 #       teleop_web 이 꺼져 있어도 항상 검사한다)
 #   bat_rf2o: rf2o 라이다 오도메트리를 켠다. 켜면 odom_tu_lenh 의 yaw_nguon 이 'rf2o' 가 되고 rf2o 는 TF 를 발행하지 않는다.
+#   bat_gyro: gyro_mpu6050(MPU6050 자이로) 노드를 켠다. 켜면 odom_tu_lenh 의 yaw_nguon 이 'gyro' 가 된다
+#     (bat_rf2o 도 켜져 있으면 gyro 가 우선). gyro_scale 은 이 launch 에서만 64.85 로 덮어쓴다 (노드 기본값 131.0).
 #   bat_mo_hinh_san: odom_tu_lenh 의 바닥 데드존 모델(mo_hinh_san)을 켠다. 기본값 false (기존 동작).
 #   bat_ket_detector: 막힘 감지 노드를 켠다 (/ket 만 발행하고 로봇은 제어하지 않는다). 둘 다 기본값 false.
 # Nav2, cam_bien, logic_quyet_dinh 는 이 launch 에 포함하지 않는다.
@@ -61,6 +63,7 @@ def generate_launch_description():
     bat_dong_co = LaunchConfiguration('bat_dong_co')
     bat_camera = LaunchConfiguration('bat_camera')
     bat_rf2o = LaunchConfiguration('bat_rf2o')
+    bat_gyro = LaunchConfiguration('bat_gyro')
     bat_ket_detector = LaunchConfiguration('bat_ket_detector')
     bat_mo_hinh_san = LaunchConfiguration('bat_mo_hinh_san')
 
@@ -95,6 +98,14 @@ def generate_launch_description():
         'bat_rf2o', default_value='false',
         description='Launch rf2o_laser_odometry (publishes /odom_rf2o, no TF) and make odom_tu_lenh use its yaw')
 
+    declare_bat_gyro_cmd = DeclareLaunchArgument(
+        'bat_gyro', default_value='false',
+        description='Launch gyro_mpu6050 (publishes /gyro_yaw) and make odom_tu_lenh use its yaw (takes priority over rf2o)')
+
+    declare_gyro_scale_cmd = DeclareLaunchArgument(
+        'gyro_scale', default_value='64.85',
+        description='MPU6050 gyro scale [LSB/(deg/s)] passed to gyro_mpu6050')
+
     declare_bat_ket_detector_cmd = DeclareLaunchArgument(
         'bat_ket_detector', default_value='false',
         description='Launch ket_detector (stuck detector, publishes /ket only)')
@@ -118,10 +129,11 @@ def generate_launch_description():
         executable='odom_tu_lenh.py',
         name='odom_tu_lenh',
         output='screen',
-        # bat_rf2o 가 켜져 있으면 theta 를 rf2o yaw 에서 가져온다. 켜짐 판정은 IfCondition 과 같은 값
-        # ('true', '1' 및 대소문자 변형) 으로 하고, 문자열(str)로 명시해서 전달한다.
+        # theta 출처: bat_gyro 가 켜져 있으면 'gyro', 아니면 bat_rf2o 가 켜져 있으면 'rf2o', 아니면 'lenh'.
+        # 켜짐 판정은 IfCondition 과 같은 값 ('true', '1' 및 대소문자 변형) 으로 하고, 문자열(str)로 명시해서 전달한다.
         parameters=[{'yaw_nguon': ParameterValue(
-            PythonExpression(["'rf2o' if '", bat_rf2o, "'.lower() in ('true', '1') else 'lenh'"]),
+            PythonExpression(["'gyro' if '", bat_gyro, "'.lower() in ('true', '1') else ('rf2o' if '",
+                              bat_rf2o, "'.lower() in ('true', '1') else 'lenh')"]),
             value_type=str),
             'mo_hinh_san': ParameterValue(
                 PythonExpression(["'", bat_mo_hinh_san, "'.lower() in ('true', '1')"]),
@@ -184,6 +196,16 @@ def generate_launch_description():
         output='screen',
         condition=IfCondition(bat_ket_detector))
 
+    # MPU6050 자이로: Z 축을 적분해 /gyro_yaw 를 발행한다 (로봇을 제어하지 않는다)
+    gyro_cmd = Node(
+        package='my_bot',
+        executable='gyro_mpu6050.py',
+        name='gyro_mpu6050',
+        output='screen',
+        # max_wheel_speed 와 같은 방식으로 타입을 명시한다 (float 로 강제)
+        parameters=[{'gyro_scale': ParameterValue(LaunchConfiguration('gyro_scale'), value_type=float)}],
+        condition=IfCondition(bat_gyro))
+
     # LaunchDescription 을 생성하고 액션을 채운다
     ld = LaunchDescription()
 
@@ -195,6 +217,8 @@ def generate_launch_description():
     ld.add_action(declare_max_wheel_speed_cmd)
     ld.add_action(declare_bat_camera_cmd)
     ld.add_action(declare_bat_rf2o_cmd)
+    ld.add_action(declare_bat_gyro_cmd)
+    ld.add_action(declare_gyro_scale_cmd)
     ld.add_action(declare_bat_ket_detector_cmd)
     ld.add_action(declare_bat_mo_hinh_san_cmd)
 
@@ -213,5 +237,6 @@ def generate_launch_description():
     ld.add_action(camera_cmd)
     ld.add_action(rf2o_cmd)
     ld.add_action(ket_detector_cmd)
+    ld.add_action(gyro_cmd)
 
     return ld

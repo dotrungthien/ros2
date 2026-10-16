@@ -18,6 +18,7 @@ import rclpy
 from geometry_msgs.msg import Transform, TransformStamped, Twist
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
+from std_msgs.msg import Float64
 from tf2_ros import TransformBroadcaster
 
 # 공분산 (6x6 행 우선, 대각선만 사용). x, y, z, roll, pitch, yaw 순서.
@@ -57,12 +58,16 @@ class OdomTuLenhNode(Node):
         self.declare_parameter('scale_angular', 1.0)       # 각속도 보정 계수 (실측 필요)
         self.declare_parameter('min_linear_effective', 0.0)   # m/s, 이보다 작으면 정지로 간주
         self.declare_parameter('min_angular_effective', 0.0)  # rad/s, 이보다 작으면 정지로 간주
-        # yaw_nguon: theta(방향) 의 출처. 'lenh' = 명령 적분(기본), 'rf2o' = rf2o 라이다 오도메트리의 yaw.
-        # 'rf2o' 에서도 x, y 는 계속 명령 속도로 적분한다. odom_source 와는 별개의 파라미터이다.
+        # yaw_nguon: theta(방향) 의 출처. 'lenh' = 명령 적분(기본), 'rf2o' = rf2o 라이다 오도메트리의 yaw,
+        # 'gyro' = gyro_mpu6050 이 발행하는 /gyro_yaw (std_msgs/Float64).
+        # 'rf2o', 'gyro' 에서도 x, y 는 계속 명령 속도로 적분한다. odom_source 와는 별개의 파라미터이다.
         self.declare_parameter('yaw_nguon', 'lenh')
         self.declare_parameter('rf2o_topic', '/odom_rf2o')
         self.declare_parameter('rf2o_timeout', 0.5)           # s, 이 시간 넘게 rf2o 가 없으면 명령 적분으로 복귀
         self.declare_parameter('rf2o_cho_tin_dau', 3.0)       # s, 시작 후 이 시간 넘게 rf2o 첫 메시지가 없으면 경고
+        self.declare_parameter('gyro_topic', '/gyro_yaw')
+        self.declare_parameter('gyro_timeout', 0.5)           # s, 이 시간 넘게 gyro 가 없으면 명령 적분으로 복귀
+        self.declare_parameter('gyro_cho_tin_dau', 3.0)       # s, 시작 후 이 시간 넘게 gyro 첫 메시지가 없으면 경고
 
         # mo_hinh_san: 바닥 모델 (bánh bị nâng / dead-zone duty). 기본 꺼짐 = 기존 동작
         self.declare_parameter('mo_hinh_san', False)
@@ -89,10 +94,10 @@ class OdomTuLenhNode(Node):
             raise SystemExit(1)
 
         yaw_nguon = param('yaw_nguon')
-        if yaw_nguon not in ('lenh', 'rf2o'):
+        if yaw_nguon not in ('lenh', 'rf2o', 'gyro'):
             self.get_logger().error(
                 f"yaw_nguon='{yaw_nguon}' 는 지원하지 않습니다. "
-                f"'lenh' 또는 'rf2o' 만 사용할 수 있습니다. 노드를 종료합니다.")
+                f"'lenh', 'rf2o' 또는 'gyro' 만 사용할 수 있습니다. 노드를 종료합니다.")
             raise SystemExit(1)
 
         self.cmd_topic = param('cmd_topic')
@@ -109,6 +114,9 @@ class OdomTuLenhNode(Node):
         self.rf2o_topic = param('rf2o_topic')
         self.rf2o_timeout = float(param('rf2o_timeout'))
         self.rf2o_cho_tin_dau = float(param('rf2o_cho_tin_dau'))
+        self.gyro_topic = param('gyro_topic')
+        self.gyro_timeout = float(param('gyro_timeout'))
+        self.gyro_cho_tin_dau = float(param('gyro_cho_tin_dau'))
         self.mo_hinh_san = bool(param('mo_hinh_san'))
         self.max_wheel_speed = float(param('max_wheel_speed'))
         self.wheel_sep = float(param('wheel_separation'))
@@ -139,6 +147,13 @@ class OdomTuLenhNode(Node):
         self.rf2o_active = False    # True 이면 현재 theta 를 rf2o 에서 가져오는 중
         self.rf2o_khoi_dong = time.monotonic()  # 노드 시작 시각 (첫 메시지 대기 시간 계산용)
         self.rf2o_da_canh_bao = False           # 첫 메시지 미수신 경고를 이미 냈는지
+        # gyro yaw 상태 (yaw_nguon == 'gyro' 일 때만 사용; rf2o 와 같은 방식)
+        self.gyro_yaw = 0.0         # 마지막으로 받은 /gyro_yaw [rad]
+        self.gyro_time = None       # 마지막 수신 시각 (time.monotonic()), 아직 없으면 None
+        self.gyro_offset = 0.0      # theta = gyro_yaw + offset
+        self.gyro_active = False    # True 이면 현재 theta 를 gyro 에서 가져오는 중
+        self.gyro_khoi_dong = time.monotonic()  # 노드 시작 시각 (첫 메시지 대기 시간 계산용)
+        self.gyro_da_canh_bao = False           # 첫 메시지 미수신 경고를 이미 냈는지
 
         self.pose_cov = diag_covariance(POSE_COV_DIAG)
         self.twist_cov = diag_covariance(TWIST_COV_DIAG)
@@ -148,6 +163,8 @@ class OdomTuLenhNode(Node):
         self.create_subscription(Twist, self.cmd_topic, self.cmd_callback, 10)
         if self.yaw_nguon == 'rf2o':
             self.create_subscription(Odometry, self.rf2o_topic, self.rf2o_callback, 10)
+        if self.yaw_nguon == 'gyro':
+            self.create_subscription(Float64, self.gyro_topic, self.gyro_callback, 10)
         self.create_timer(1.0 / self.publish_rate, self.tick)
 
         self.get_logger().info(
@@ -198,6 +215,42 @@ class OdomTuLenhNode(Node):
             return None
         return normalize_angle(self.rf2o_yaw + self.rf2o_offset)
 
+    def gyro_callback(self, msg):
+        """/gyro_yaw 값과 수신 시각(monotonic)만 저장한다."""
+        self.gyro_yaw = msg.data
+        self.gyro_time = time.monotonic()
+
+    def gyro_theta(self, now):
+        """gyro 를 쓸 수 있으면 보정된 새 theta 를, 아니면 None 을 돌려준다 (rf2o_theta 와 같은 방식).
+
+        상태가 바뀔 때(수신 시작/복구, 끊김)만 로그를 한 줄 남기고, 매 tick 마다 로그를 남기지 않는다.
+        """
+        if self.yaw_nguon != 'gyro':
+            return None
+        fresh = self.gyro_time is not None and now - self.gyro_time < self.gyro_timeout
+        # gyro 노드가 아예 안 떠 있으면 gyro_time 이 계속 None 이라 조용히 명령 적분으로만 돌게 된다.
+        # 시작 후 gyro_cho_tin_dau 초가 지나도 첫 메시지가 없으면 경고를 한 번만 남긴다.
+        if (self.gyro_time is None and not self.gyro_da_canh_bao
+                and now - self.gyro_khoi_dong > self.gyro_cho_tin_dau):
+            self.get_logger().warning(
+                f'yaw_nguon=gyro nhưng chưa nhận tin nào trên {self.gyro_topic} '
+                f'sau {self.gyro_cho_tin_dau} s: đang dùng theta từ lệnh. '
+                f'Kiểm tra node gyro_mpu6050 và tên topic.')
+            self.gyro_da_canh_bao = True
+        if fresh and not self.gyro_active:
+            # 첫 수신 또는 끊긴 뒤 복구: theta 가 갑자기 튀지 않도록 offset 을 다시 맞춘다
+            self.gyro_offset = normalize_angle(self.theta - self.gyro_yaw)
+            self.gyro_active = True
+            self.get_logger().info(
+                f'{self.gyro_topic} 수신: theta 를 gyro yaw 로 전환 (offset={self.gyro_offset:.3f} rad)')
+        elif not fresh and self.gyro_active:
+            self.gyro_active = False
+            self.get_logger().warning(
+                f'{self.gyro_topic} 가 {self.gyro_timeout} s 이상 없음: 명령 적분 theta 로 임시 복귀')
+        if not fresh:
+            return None
+        return normalize_angle(self.gyro_yaw + self.gyro_offset)
+
     def effective_velocity(self, now):
         """watchdog, 데드존, 보정 계수를 적용한 (v, w) 를 돌려준다."""
         # dieu_khien 의 watchdog 을 흉내: 명령이 없거나 오래되면 정지로 본다
@@ -244,6 +297,8 @@ class OdomTuLenhNode(Node):
         v, w = self.effective_velocity(now)
 
         theta_moi = self.rf2o_theta(now)   # rf2o 를 쓸 수 없으면 None
+        if theta_moi is None:
+            theta_moi = self.gyro_theta(now)   # gyro 도 쓸 수 없으면 None -> 명령 적분
         if self.last_tick_time is not None:
             dt = now - self.last_tick_time
             if theta_moi is not None:

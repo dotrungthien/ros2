@@ -8,6 +8,7 @@ I2C 로 MPU6050 의 GYRO_ZOUT(0x47) 을 읽어 yaw 각도를 적분해 발행한
   1) 시작 후 calib_s 초 동안은 raw 값의 평균을 bias 로 구하고 적분하지 않는다 (이때 로봇은 정지해 있어야 한다).
      raw 표준편차가 30 을 넘으면 로봇이 움직이고 있을 수 있다고 경고한다.
   2) 그 뒤에는 yaw += dau_yaw * (raw - bias) / gyro_scale * dt * pi / 180 로 적분한다 (raw 단위: LSB, 131 LSB = 1 deg/s).
+     기본값 dau_yaw = -1: 왼쪽(반시계) 회전이 양수가 되도록 한다 (ROS 규약).
   3) I2C 오류(OSError) 가 나면 그 tick 은 건너뛰고, 끊긴 구간은 적분하지 않는다 (시간 기준점을 다시 잡는다).
 
 주의: 모든 숫자 파라미터의 기본값은 측정하지 않은 가정값이다. 자이로 bias 는 온도에 따라 변하므로
@@ -43,7 +44,7 @@ class GyroMpu6050Node(Node):
         self.declare_parameter('rate_hz', 100.0)              # Hz, 읽기/적분 주기
         self.declare_parameter('calib_s', 2.0)                # s, 시작 후 bias 를 구하는 시간 (정지 상태 필요)
         self.declare_parameter('gyro_scale', 131.0)           # LSB/(deg/s), 기본 범위 +-250 deg/s
-        self.declare_parameter('dau_yaw', 1.0)                # yaw 부호 (+1 / -1), 장착 방향에 따라 바꾼다
+        self.declare_parameter('dau_yaw', -1.0)               # yaw 부호 (+1 / -1). 왼쪽(반시계) 회전 = 양수 (ROS). 10/21 측정: +1 일 때 오른쪽 회전 -> +, 왼쪽 회전 -> -, 모터 왼쪽 회전 -> - 라서 -1
         self.declare_parameter('topic_yaw', '/gyro_yaw')
 
         def param(name):

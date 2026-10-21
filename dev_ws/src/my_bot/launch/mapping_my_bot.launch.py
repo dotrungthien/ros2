@@ -7,7 +7,7 @@
 #       teleop_web 이 꺼져 있어도 항상 검사한다)
 #   bat_rf2o: rf2o 라이다 오도메트리를 켠다. 켜면 odom_tu_lenh 의 yaw_nguon 이 'rf2o' 가 되고 rf2o 는 TF 를 발행하지 않는다.
 #   bat_gyro: gyro_mpu6050(MPU6050 자이로) 노드를 켠다. 켜면 odom_tu_lenh 의 yaw_nguon 이 'gyro' 가 된다
-#     (bat_rf2o 도 켜져 있으면 gyro 가 우선). gyro_scale 은 이 launch 에서만 64.85 로 덮어쓴다 (노드 기본값 131.0).
+#     (bat_rf2o 도 켜져 있으면 gyro 가 우선). gyro_scale 의 올바른 값은 131 이다 (10/21 측정: 자를 대고 손으로 돌리고 모터로도 회전).
 #   bat_mo_hinh_san: odom_tu_lenh 의 바닥 데드존 모델(mo_hinh_san)을 켠다. 기본값 false (기존 동작).
 #   bat_ket_detector: 막힘 감지 노드를 켠다 (/ket 만 발행하고 로봇은 제어하지 않는다). 둘 다 기본값 false.
 # Nav2, cam_bien, logic_quyet_dinh 는 이 launch 에 포함하지 않는다.
@@ -103,7 +103,7 @@ def generate_launch_description():
         description='Launch gyro_mpu6050 (publishes /gyro_yaw) and make odom_tu_lenh use its yaw (takes priority over rf2o)')
 
     declare_gyro_scale_cmd = DeclareLaunchArgument(
-        'gyro_scale', default_value='64.85',
+        'gyro_scale', default_value='131',
         description='MPU6050 gyro scale [LSB/(deg/s)] passed to gyro_mpu6050')
 
     declare_bat_ket_detector_cmd = DeclareLaunchArgument(

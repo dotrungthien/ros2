@@ -1,0 +1,8 @@
+Repo (nhánh pi-30-10) là thư mục hiện tại; gói sự cố nằm ở ./incident_31_10 (không git add). Đọc incident_31_10/BAO_CAO_SU_CO_31_10_CHIEU.md, kể cả mục ĐÍNH CHÍNH ở đầu.
+Việc duy nhất: rà độ đồng bộ giữa bat_xe.sh, kiem_xe.sh, chuyen.sh, ghi_bag.sh, cau_noi_xe.py, cai_cau_noi.sh, nav2_params_cho.yaml, bt_cho.xml và launch trong repo, rồi tìm vì sao Nav2/TF không ổn trên Pi (ssh project1@192.168.0.2).
+CHỈ ĐỌC: không sửa tệp, không tắt hay khởi động gì trên Pi, không dùng ps -ef hay in dòng lệnh đầy đủ (có mã truy cập teleop).
+Kiểm 1: ssh project1@192.168.0.2 'ps -eo pid,ppid,etimes,comm | grep -E "joint|robot_state|twist_mux|static_tf|ros2|python3|slam|lidar|gyro|odom"'
+Kiểm 2: ssh project1@192.168.0.2 'ls /dev/shm | wc -l; timedatectl | head -4'
+Kiểm 3: grep -n "base_link\|base_footprint\|NODES\|CHINH" incident_31_10/*.sh incident_31_10/*.py
+Báo: (a) chỗ lệch giữa các tệp, (b) kết quả 3 kiểm, (c) giả thuyết nào còn đứng; đề xuất MỘT thay đổi, có đường lui.
+Mỗi bước dừng, báo kết quả, chờ Thiên gõ tiếp.

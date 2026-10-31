@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>목적지 선택</title>
+<style>
+  body{margin:0;font-family:system-ui,sans-serif;background:#111;color:#eee}
+  #top{padding:10px 12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  #tt{font-size:22px;font-weight:700}
+  #sub{font-size:14px;color:#bbb;margin-top:2px;min-height:18px}
+  #chip{font-size:12px;padding:4px 10px;border-radius:12px;background:#555;white-space:nowrap}
+  #chip.on{background:#1a9a4a} #chip.off{background:#c0392b}
+  #banner{margin:0 8px 6px;padding:10px;border-radius:8px;background:#7a1f16;display:none;font-size:15px}
+  #banner.warn{background:#7a5a10}
+  #legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:6px 12px;font-size:12px;color:#ccc}
+  #legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-2px}
+  button.small{font-size:13px;padding:8px 0;background:#2b2b2b;color:#aaa}
+  #wrap{padding:0 8px;position:relative}
+  canvas{width:100%;height:auto;background:#000;display:block;touch-action:manipulation;border-radius:6px}
+  canvas.dim{opacity:.35}
+  #photo{margin:6px 8px;height:140px;border-radius:8px;background:#222;display:none;align-items:center;justify-content:center;color:#888;overflow:hidden}
+  #photo img{width:100%;height:100%;object-fit:cover}
+  .row{display:flex;gap:10px;padding:8px 12px 0}
+  button{flex:1;font-size:19px;padding:14px 0;border:0;border-radius:10px;color:#fff;background:#555}
+  button.green{background:#1a9a4a} button.blue{background:#2a6fd1} button.red{background:#c0392b}
+  button:disabled{opacity:.4}
+  #tools,#demo{padding:8px 12px;font-size:12px;color:#888}
+  #demo button{font-size:12px;padding:6px 8px;flex:none;background:#333;margin:2px}
+  #dbg{font:12px/1.5 monospace;color:#9ad;padding:4px 12px 14px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div id="top"><div><div id="tt"></div><div id="sub"></div></div><div id="chip"></div></div>
+<div id="banner"></div>
+<div id="wrap"><canvas id="cv"></canvas></div>
+<div id="legend"></div>
+<div id="photo"></div>
+<div class="row" id="row1"></div>
+<div class="row" id="row2"></div>
+<div class="row" id="row3"></div>
+<div id="demo"></div>
+<div id="tools">지도 불러오기 (map_xuong_v2.pgm + .yaml): <input type="file" id="files" multiple accept=".pgm,.png,.yaml,.yml"></div>
+<div id="dbg"></div>
+
+<script>
+/* ============================================================
+   HỢP ĐỒNG VỚI Pi (phía Pi chưa viết; trang này chỉ ĐỌC 1 đối tượng status)
+   GET  /api/b/status -> {
+      link:  'off'|'connecting'|'fail'|'on',   connect_s: giây đã chờ,
+      nav:   'idle'|'going'|'arrived'|'aborted',
+      drv:   'none'|'wait'|'back'|'rotate'|'search'|'blocked',  wait_s: số giây đã chờ,
+      pose:  {x,y,yaw},  manual: true|false,
+      photo: url ảnh phía trước hoặc null,  notified: true|false,
+      han_s: số giây còn lại của 8 phút kể từ lúc con quay lấy số 0 (null nếu chưa biết),
+      chi_tiet: lý do khi link='fail' }
+   drv='blocked' CHỈ khi mọi đường tới B đều bị chặn (bộ lái LiDAR đã thử lùi/quay/đường khác).
+   nav='aborted' mà drv khác 'blocked' = Nav2 báo lỗi vì lý do khác -> màn 이동 실패.
+   POST /api/b/connect {time:'YYYY-MM-DD HH:MM:SS'} | /goal {x,y} | /stop | /retry | /manual | /auto
+   (header X-Pin nếu Pi có tệp PIN). Server trả 501 cho lệnh chưa nối.
+   ============================================================ */
+</script>
+<script>
+/* ===== Cấu hình (R: xem dòng const R bên dưới) ===== */
+const R = 0.1855;        // m: ngưỡng XANH = tâm xe cách vật cản ≥ 18,55 cm (xe quay tại chỗ được, R_XOAY của bộ lái). Trước 31/10 15:50 là 0,25 (quy tắc chọn B 29/10); bản đồ thật cho thấy tâm hành lang chỉ ~20-24 cm nên hành lang không có ô xanh
+const PX = 8;            // pixel canvas cho mỗi ô bản đồ
+
+/* ===== Bản đồ mẫu (KHÔNG phải bản đồ thật) =====
+   51 x 32 ô, 0,05 m/ô, gốc (-0.40; -0.45). Hai hành lang + khối giữa. */
+function demoMap(){
+  const W=51,H=32,res=0.05,ox=-0.40,oy=-0.45;
+  const occ=new Uint8Array(W*H); // 0 trống, 1 vật cản, 2 chưa biết
+  const set=(x0,x1,y0,y1,v)=>{ // theo mét, hệ map
+    for(let r=0;r<H;r++)for(let c=0;c<W;c++){
+      const x=ox+(c+.5)*res, y=oy+(H-r-.5)*res;
+      if(x>=x0&&x<=x1&&y>=y0&&y<=y1) occ[r*W+c]=v;
+    }};
+  occ.fill(2);
+  set(-0.20,2.10,-0.15,1.12,0);        // phòng
+  set(0.45,1.25,0.39,0.55,1);          // khối giữa hai hành lang
+  set(-0.20,2.10,-0.17,-0.15,1);       // tường dưới
+  set(-0.20,2.10,1.12,1.14,1);         // tường trên
+  set(-0.22,-0.20,-0.15,1.12,1);       // tường trái
+  set(2.10,2.12,-0.15,1.12,1);         // tường phải
+  return {W,H,res,ox,oy,occ,ten:'BẢN ĐỒ MẪU (không phải map thật)'};
+}
+
+/* ===== Đọc PGM (P5) + YAML ===== */
+function parsePGM(buf){
+  const b=new Uint8Array(buf); let p=0;
+  const tok=()=>{ while(true){ while(b[p]<=32)p++; if(b[p]===35){while(b[p]!==10)p++;} else break;}
+    let s=''; while(b[p]>32){s+=String.fromCharCode(b[p]);p++;} return s;};
+  if(tok()!=='P5') throw new Error('PGM không phải P5');
+  const W=+tok(),H=+tok(); tok(); p++;
+  return {W,H,px:b.subarray(p,p+W*H)};
+}
+async function parsePNG(blob){   // map_saver có thể lưu .png (gray 8 bit): 254 trống, 0 vật cản, 205 chưa biết
+  const bmp=await createImageBitmap(blob,{colorSpaceConversion:'none'});
+  const cv=document.createElement('canvas'); cv.width=bmp.width; cv.height=bmp.height;
+  const c=cv.getContext('2d'); c.drawImage(bmp,0,0); const d=c.getImageData(0,0,bmp.width,bmp.height).data;
+  const px=new Uint8Array(bmp.width*bmp.height); for(let i=0;i<px.length;i++) px[i]=d[i*4];
+  return {W:bmp.width,H:bmp.height,px}; }
+function parseYAML(t){
+  const g=k=>{const m=t.match(new RegExp('^'+k+':\\s*(.+)$','m'));return m?m[1].trim():null;};
+  const o=g('origin').replace(/[\[\]]/g,'').split(',').map(Number);
+  return {res:+g('resolution'),ox:o[0],oy:o[1],neg:+(g('negate')||0),
+          occT:+(g('occupied_thresh')||0.65),freeT:+(g('free_thresh')||0.25)};
+}
+function mapFromFiles(pgm,y){
+  const occ=new Uint8Array(pgm.W*pgm.H);
+  for(let i=0;i<occ.length;i++){
+    const v=y.neg?pgm.px[i]:255-pgm.px[i]; const p=v/255;
+    occ[i]= p>y.occT?1 : (p<y.freeT?0:2);
+  }
+  return {W:pgm.W,H:pgm.H,res:y.res,ox:y.ox,oy:y.oy,occ,ten:'bản đồ thật'};
+}
+
+/* ===== Phép đổi: pixel <-> mét (hệ map). Hàng 0 ở TRÊN. ===== */
+let M, dist, gray, zona;
+const Z_DO = 0.13;       // m: tâm xe cách vật cản < 13 cm = khe < 26 cm: xe không lọt (Thiên chốt khe tối thiểu 26 cm, 31/10)
+const BAND_DO = 0.08, BAND_VANG = 0.15;   // m, vành an toàn quanh THÂN xe (bộ lái LiDAR; đề xuất, chờ đo quãng dừng)
+const XE = {mui:0.145, duoi:-0.105, hong:0.08};   // m, so với tâm xe
+const cell2m=(c,r)=>[M.ox+(c+.5)*M.res, M.oy+(M.H-r-.5)*M.res];
+const m2cell=(x,y)=>[Math.floor((x-M.ox)/M.res), Math.floor(M.H-(y-M.oy)/M.res)];
+
+/* Khoảng cách tới ô không-trống gần nhất (mét) — quét 2 lượt (chamfer 3-4) */
+function tinhVungXam(){
+  const {W,H,res,occ}=M, INF=1e9; dist=new Float32Array(W*H);
+  for(let i=0;i<W*H;i++) dist[i]= occ[i]!==0 ? 0 : INF;
+  const at=(c,r)=> (c<0||r<0||c>=W||r>=H)?0:dist[r*W+c]; // ngoài bản đồ = chưa biết
+  for(let r=0;r<H;r++)for(let c=0;c<W;c++){
+    const i=r*W+c; let d=dist[i];
+    d=Math.min(d,at(c-1,r)+1,at(c,r-1)+1,at(c-1,r-1)+1.4142,at(c+1,r-1)+1.4142);
+    dist[i]=d;
+  }
+  for(let r=H-1;r>=0;r--)for(let c=W-1;c>=0;c--){
+    const i=r*W+c; let d=dist[i];
+    d=Math.min(d,at(c+1,r)+1,at(c,r+1)+1,at(c+1,r+1)+1.4142,at(c-1,r+1)+1.4142);
+    dist[i]=d;
+  }
+  gray=new Uint8Array(W*H); zona=new Uint8Array(W*H);   // zona: 0 vật cản/chưa biết, 1 đỏ, 2 vàng, 3 xanh
+  for(let i=0;i<W*H;i++){ if(M.occ[i]!==0) continue;
+    const c=Math.max(0,dist[i]-0.5)*res;
+    zona[i]= c<Z_DO ? 1 : (c<R ? 2 : 3);
+    gray[i]= zona[i]!==3 ? 1 : 0; }   // chỉ vùng xanh mới chọn được B (ngưỡng R ở trên; trước 31/10 15:50 là 25 cm)
+}
+// Khoảng cách tính từ TÂM ô tới TÂM ô vật cản; trừ nửa ô cho sát thực tế hơn.
+function khoangCachMet(c,r){ return Math.max(0,(dist[r*M.W+c]-0.5))*M.res; }
+
+
+
+/* ===== Điều khiển: demo (giả lập) hoặc thật (fetch) ===== */
+const DEMO = location.protocol==='file:' ? !/[?&]demo=0/.test(location.search) : /[?&]demo=1/.test(location.search);
+let mapOK = true;
+const KB = {ok:'đi bình thường', tranh:'người chặn rồi tránh (12 s)', ket:'hết đường → báo kẹt', loi:'Nav2 báo lỗi (không phải bị chặn)'};
+let kichban='ok';
+const sim={ s:{link:'off',connect_s:0,nav:'idle',drv:'none',wait_s:0,pose:{x:0,y:0,yaw:0},manual:false,photo:null,notified:false},
+  goal:null,start:null,p:0,t:0,scale:5, // 1 s thật = 5 s mô phỏng chờ
+  pts:[],len:[],
+  lapDuong(){ const a=this.start,g=this.goal; this.pts=[a,{x:0.3,y:0.12},{x:1.45,y:0.12},g]; // hành lang dưới rồi lên B (chỉ minh hoạ)
+    this.len=[0]; for(let i=1;i<this.pts.length;i++){const d=Math.hypot(this.pts[i].x-this.pts[i-1].x,this.pts[i].y-this.pts[i-1].y);this.len.push(this.len[i-1]+d);} },
+  viTri(p){ const L=this.len[this.len.length-1]*p; let i=1; while(i<this.len.length-1&&this.len[i]<L)i++;
+    const a=this.pts[i-1],b=this.pts[i],f=(L-this.len[i-1])/Math.max(1e-6,this.len[i]-this.len[i-1]);
+    return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,yaw:Math.atan2(b.y-a.y,b.x-a.x)}; },
+  tick(dt){ const s=this.s;
+    if(s.link==='connecting'){ s.connect_s+=dt; if(s.connect_s>=2.5){ s.link='on'; } }
+    if(s.link==='on'&&s.han_s!=null){ s.han_s-=dt; }
+    if(s.nav!=='going'||s.drv==='blocked') return;
+    this.t+=dt;
+    const dur=8;
+    if(s.drv==='none'){ this.p=Math.min(1,this.p+dt/dur);
+      s.pose=this.viTri(this.p);
+      if(this.p>=1){ s.nav='arrived'; return; }
+      if(kichban==='loi' && this.p>=0.4){ s.nav='aborted'; s.drv='none'; s.notified=true; return; }
+      if((kichban==='tranh'||kichban==='ket') && this.p>=0.4){ s.drv='wait'; s.wait_s=0; this.t=0; }
+    } else if(s.drv==='wait'){
+      s.wait_s+=dt*this.scale;
+      if(kichban==='tranh' && s.wait_s>=12){ s.drv='none'; s.wait_s=0; kichban='ok'; }
+      else if(kichban==='ket' && s.wait_s>=30){ s.drv='back'; this.t=0; }
+    } else if(s.drv==='back'){ if(this.t>2.5){ s.drv='rotate'; this.t=0; } }
+    else if(s.drv==='rotate'){ if(this.t>1.5){ s.drv='search'; this.t=0; } }
+    else if(s.drv==='search'){ if(this.t>1.5){ s.drv='blocked'; s.nav='aborted'; s.notified=true; s.photo=null; } }
+  },
+  async get(dt){ this.tick(dt); return JSON.parse(JSON.stringify(this.s)); },
+  async post(path,body){ const s=this.s;
+    if(path==='connect'){ s.link='connecting'; s.connect_s=0; s.nav='idle'; s.drv='none'; s.pose={x:0,y:0,yaw:0}; s.han_s=480; }
+    if(path==='goal'){ this.start={x:s.pose.x,y:s.pose.y}; this.goal={x:body.x,y:body.y}; this.lapDuong(); this.p=0; s.nav='going'; s.drv='none'; s.wait_s=0; s.notified=false; }
+    if(path==='stop'){ s.nav='idle'; s.drv='none'; s.wait_s=0; }
+    if(path==='retry'){ this.start={x:s.pose.x,y:s.pose.y}; this.lapDuong(); this.p=0; s.nav='going'; s.drv='none'; s.notified=false; kichban='ok'; }
+    if(path==='manual'){ s.manual=true; s.nav='idle'; s.drv='none'; }
+    if(path==='auto'){ s.manual=false; s.nav='idle'; }
+  }};
+const api={
+  async get(dt){ if(DEMO) return sim.get(dt); const r=await fetch('/api/b/status',{cache:'no-store'}); return r.json(); },
+  async post(path,body){ if(DEMO){ await sim.post(path,body); return {ok:true,status:200}; }
+    for(let k=0;k<2;k++){
+      const h={'Content-Type':'application/json'}; let pin=null; try{pin=localStorage.getItem('pin');}catch(e){}
+      if(pin) h['X-Pin']=pin;
+      const r=await fetch('/api/b/'+path,{method:'POST',headers:h,body:JSON.stringify(body||{})});
+      if(r.status===401){ const p=prompt('PIN'); if(!p) return {ok:false,status:401}; try{localStorage.setItem('pin',p);}catch(e){} continue; }
+      return {ok:r.ok,status:r.status};
+    }
+    return {ok:false,status:401}; }
+};
+
+/* ===== Vẽ ===== */
+const cv=document.getElementById('cv'), g=cv.getContext('2d');
+let S={link:'off',nav:'idle',drv:'none',wait_s:0,pose:{x:0,y:0,yaw:0},manual:false,photo:null,notified:false,connect_s:0,han_s:null,chi_tiet:''};
+let B=null, grey=false, ack=false;      // B: điểm đã chọn; grey: lần chạm cuối là vùng xám; ack: đã chạm sau khi 도착
+let lastBlocked=false, lastOk=Date.now();
+
+const ZC=['#444','#e57f7f','#f3d96b','#8fd19e'];
+function vanhThan(m){ // hình chữ nhật thân xe mở rộng m mét, góc bo tròn bán kính m (đơn vị mét, gốc ở tâm xe)
+  const a=XE.duoi-m,b=XE.mui+m,c=-XE.hong-m,d=XE.hong+m,r=Math.max(m,0.001);
+  g.beginPath(); g.moveTo(a+r,c); g.lineTo(b-r,c); g.arcTo(b,c,b,c+r,r); g.lineTo(b,d-r); g.arcTo(b,d,b-r,d,r);
+  g.lineTo(a+r,d); g.arcTo(a,d,a,d-r,r); g.lineTo(a,c+r); g.arcTo(a,c,a+r,c,r); g.closePath(); }
+function veXe(){
+  const [c,r]=m2cell(S.pose.x,S.pose.y), k=PX/M.res;   // pixel mỗi mét
+  g.save(); g.translate((c+.5)*PX,(r+.5)*PX); g.rotate(-S.pose.yaw); g.scale(k,-k);   // trục y bản đồ hướng lên
+  g.lineWidth=2/k; vanhThan(BAND_VANG); g.strokeStyle='#d4a800'; g.stroke();
+  vanhThan(BAND_DO); g.strokeStyle='#c62828'; g.stroke();
+  vanhThan(0); g.fillStyle='rgba(42,125,225,.85)'; g.fill(); g.strokeStyle='#fff'; g.stroke();
+  g.beginPath(); g.moveTo(XE.mui*0.6,0); g.lineTo(XE.mui,0); g.strokeStyle='#fff'; g.lineWidth=3/k; g.stroke();  // mũi xe
+  g.restore(); }
+function ve(){
+  cv.width=M.W*PX; cv.height=M.H*PX;
+  for(let r=0;r<M.H;r++)for(let c=0;c<M.W;c++){
+    const i=r*M.W+c,o=M.occ[i];
+    g.fillStyle=o===1?'#222':o===2?'#444':ZC[zona[i]]; g.fillRect(c*PX,r*PX,PX,PX);
+  }
+  const P=p=>{const [c,r]=m2cell(p.x,p.y);return [(c+.5)*PX,(r+.5)*PX];};
+  if(B){const [bx,by]=P(B);g.beginPath();g.arc(bx,by,7,0,7);g.fillStyle='#e67e22';g.fill();g.lineWidth=2;g.strokeStyle='#fff';g.stroke();}
+  const [xx,yy]=P(S.pose);
+  if(S.nav==='going'){ // mục 8: mũi tên chỉ hướng xe (yaw: 0 = +x của bản đồ; hàng ảnh đi xuống nên đảo dấu y)
+    const L=16; g.beginPath();g.moveTo(xx,yy);g.lineTo(xx+L*Math.cos(S.pose.yaw),yy-L*Math.sin(S.pose.yaw));
+    g.lineWidth=3;g.strokeStyle='#2a7de1';g.stroke(); }
+  veXe();
+}
+
+/* ===== Chữ + nút theo trạng thái (một hàm duy nhất, đọc từ S) ===== */
+function man(){ // trả về tên màn hình
+  if(S.link==='off')return'off'; if(S.link==='connecting')return'connecting'; if(S.link==='fail')return'fail';
+  if(S.manual)return'manual';
+  if(S.drv==='blocked')return'blocked';     // chỉ khi MỌI đường tới B đều bị chặn
+  if(S.nav==='aborted')return'failed';      // Nav2 lỗi vì lý do khác
+  if(S.nav==='going')return'going';
+  if(S.nav==='arrived'&&!ack)return'arrived';
+  return grey?'grey':'wait';
+}
+const DRV={none:'B까지 이동하고 있어요', wait:null, back:'후진 중', rotate:'방향을 바꾸는 중', search:'다른 길을 찾는 중'};
+function btn(id,txt,cls,fn,dis){return `<button id="${id}" class="${cls||''}" ${dis?'disabled':''}>${txt}</button>`;}
+function chu(){
+  const m=man(), $=id=>document.getElementById(id);
+  let tt='',sub='',r1='',r2='',ban='',photo=false;
+  const stop=btn('stop','정지','red');
+  switch(m){
+    case 'off': tt='연결 안 됨'; sub='차량을 A 지점에 놓고 모터 스위치를 끈 뒤 누르세요'; r1=btn('connect','차량 연결','blue'); break;
+    case 'connecting': tt='연결 중'; sub=`차량을 켜는 중이에요 (${Math.floor(S.connect_s)}초, 최대 약 3분)`; r1=btn('connect','연결 중…','blue',0,1); break;
+    case 'fail': tt='연결 실패'; sub='차량을 켜지 못했어요. 차량을 A 지점에 놓고 다시 시도해 주세요'; r1=btn('connect','다시 연결','blue'); break;
+    case 'wait': tt='대기 중'; sub=B?'B를 확인하고 출발을 누르세요':'지도를 터치해 목적지를 고르세요'; r1=btn('go','출발',B?'green':'',0,!B); r2=stop; break;
+    case 'grey': tt='이동 불가'; sub='그곳은 갈 수 없어요. 다른 곳을 눌러 주세요'; r1=btn('go','출발','',0,1); r2=stop; break;
+    case 'going': tt='이동 중';
+      sub = S.drv==='wait' ? `기다리는 중 (${Math.floor(S.wait_s)}초)` : (DRV[S.drv]||DRV.none);
+      r1=btn('go','출발','',0,1); r2=stop; break;
+    case 'arrived': tt='도착'; sub='도착했어요. 새 목적지를 고르세요'; r1=btn('go','출발','',0,1); r2=stop; break;
+    case 'blocked': tt='길이 막혔어요'; sub='두 길이 모두 막혀 있어요. 사람이 비켜 줄 때까지 기다리거나 직접 조종하세요';
+      ban=S.notified?'담당자에게 알렸어요':'담당자에게 알리는 중이에요'; photo=true;
+      r1=btn('retry','다시 시도','blue')+btn('manual','수동 조종','green'); r2=stop; break;
+    case 'failed': tt='이동 실패'; sub='문제가 생겼어요. 다시 시도하거나 직접 조종하세요';
+      ban=S.notified?'담당자에게 알렸어요':'담당자에게 알리는 중이에요';
+      r1=btn('retry','다시 시도','blue')+btn('manual','수동 조종','green'); r2=stop; break;
+    case 'manual': tt='수동 조종'; sub='직접 조종 중이에요';
+      r1=btn('open','조종 화면 열기','green')+btn('auto','자동으로 돌아가기','blue'); r2=stop; break;
+  }
+  $('tt').textContent=tt; $('sub').textContent=sub;
+  const chip=$('chip'); const on=S.link==='on'; chip.textContent=on?'연결됨':(S.link==='connecting'?'연결 중':'연결 끊김'); chip.className=on?'on':(S.link==='connecting'?'':'off');
+  let banCls='';
+  const idleM=(m==='wait'||m==='grey'||m==='arrived');
+  if(!ban && on && idleM && S.han_s!=null && S.han_s<=0){ ban='8분이 지났어요. 오차를 줄이려면 차량을 재시작하세요'; banCls='warn'; }
+  if(!mapOK && !DEMO){ ban='지도를 불러오지 못했어요'; banCls=''; }
+  $('banner').style.display=ban?'block':'none'; $('banner').textContent=ban; $('banner').className=banCls;
+  const r3 = (on && ['wait','grey','arrived','blocked','failed'].includes(m)) ? btn('restart','차량 재시작','small') : '';
+  const ph=$('photo'); ph.style.display=photo?'flex':'none';
+  ph.innerHTML=S.photo?`<img src="${S.photo}" alt="">`:'앞쪽 사진 없음';
+  const key=r1+'|'+r2+'|'+r3; if(key!==window._rk){ $('row1').innerHTML=r1; $('row2').innerHTML=r2; $('row3').innerHTML=r3; window._rk=key;
+    const h=id=>$(id)&&($(id).onclick=()=>aksi(id)); ['connect','go','stop','retry','manual','auto','open','restart'].forEach(h); }
+  cv.className = on?'':'dim';
+  // báo động khi vừa vào màn blocked (mục 10): rung + bíp
+  const canhBao=(m==='blocked'||m==='failed');
+  if(canhBao && !lastBlocked){ baoDong(); }
+  lastBlocked=canhBao;
+}
+function baoDong(){
+  try{ navigator.vibrate&&navigator.vibrate([300,120,300]); }catch(e){}
+  try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(); o.frequency.value=880; o.connect(a.destination); o.start(); o.stop(a.currentTime+0.4);}catch(e){}
+  window._baoDong=(window._baoDong||0)+1;
+}
+const p2=n=>String(n).padStart(2,'0');
+function gioDT(){const d=new Date();return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;}
+async function aksi(id){
+  if(id==='connect'||id==='restart'){
+    if(!confirm('차량이 A 지점에 멈춰 있고 모터 스위치가 꺼져 있나요?')) return;
+    B=null; grey=false; ack=false;
+    const r=await api.post('connect',{time:gioDT()});
+    if(r.status===409) alert('이미 연결 중이에요');
+  }
+  if(id==='go' && B){ ack=false; const r=await api.post('goal',{x:B.x,y:B.y}); if(r.status===501) alert('출발 기능이 아직 연결되지 않았어요'); }
+  if(id==='stop'){ B=null; grey=false; const r=await api.post('stop'); if(r.status===501) alert('정지 기능이 연결되지 않았어요. 모터 스위치를 끄세요'); }
+  if(id==='retry') await api.post('retry');
+  if(id==='manual') await api.post('manual');
+  if(id==='auto'){ await api.post('auto'); B=null; }
+  if(id==='open'){ if(DEMO) alert('(giả lập) mở trang lái tay hiện có, cổng 5000'); else location.href=location.protocol+'//'+location.hostname+':5000/'; }
+  await lam(0);
+}
+function dbg(extra){
+  document.getElementById('dbg').textContent=`[${M.ten}] ${M.W}x${M.H} ô, ${M.res} m/ô, gốc (${M.ox}; ${M.oy})\n`
+   +(S.chi_tiet?`kết nối: ${S.chi_tiet}\n`:'')+(S.han_s!=null?`còn ${Math.round(S.han_s)} s trong 8 phút\n`:'')
+   +`xe: x=${S.pose.x.toFixed(2)} y=${S.pose.y.toFixed(2)} m   B: ${B?`x=${B.x.toFixed(2)} y=${B.y.toFixed(2)}`:'chưa chọn'}\n`+(extra||'');
+}
+
+/* ===== M2 + M3: chạm -> mét -> vùng xám ===== */
+cv.addEventListener('pointerdown',ev=>{
+  const m=man(); if(!mapOK||!(m==='wait'||m==='grey'||m==='arrived')) return;   // chỉ chọn B khi nhàn rỗi
+  const rc=cv.getBoundingClientRect();
+  const c=Math.floor((ev.clientX-rc.left)*cv.width/rc.width/PX), r=Math.floor((ev.clientY-rc.top)*cv.height/rc.height/PX);
+  const [x,y]=cell2m(c,r), o=M.occ[r*M.W+c], d=khoangCachMet(c,r); let kq;
+  ack=true;
+  if(o!==0){grey=true;B=null;kq='vật cản/chưa biết → 이동 불가';}
+  else if(gray[r*M.W+c]){grey=true;B=null;kq=`tâm xe cách vật cản ${(d*100).toFixed(0)} cm: vùng ${zona[r*M.W+c]===1?'ĐỎ (<13, khe <26 cm, xe không lọt)':'VÀNG (13–18,5: đi thẳng được, không quay tại chỗ, không chọn B)'} → 이동 불가`;}
+  else{grey=false;B={x,y};kq=`tâm xe cách vật cản ${(d*100).toFixed(0)} cm: vùng XANH (≥ ${(R*100).toFixed(1)}) → hợp lệ`;}
+  chu();ve();dbg(`chạm: ô(${c},${r}) = (${x.toFixed(3)}; ${y.toFixed(3)}) m\n${kq}`);
+});
+document.getElementById('files').onchange=async e=>{
+  const fs=[...e.target.files],f1=fs.find(f=>/\.(pgm|png)$/i.test(f.name)),f2=fs.find(f=>/\.ya?ml$/i.test(f.name));
+  if(!f1||!f2){dbg('Cần chọn đủ 2 tệp: ảnh bản đồ (.pgm hoặc .png) và .yaml');return;}
+  try{ const img=/\.png$/i.test(f1.name)?await parsePNG(f1):parsePGM(await f1.arrayBuffer());
+    M=mapFromFiles(img,parseYAML(await f2.text())); }catch(err){ dbg('Không đọc được bản đồ: '+err); return; }
+  B=null;grey=false;tinhVungXam();chu();ve();dbg('đã nạp bản đồ thật ('+f1.name+')');
+};
+
+/* ===== Vòng đọc status (mục 6: nếu không đọc được 3 s thì coi là mất kết nối) ===== */
+async function lam(dt){
+  try{ const s=await api.get(dt); S=s; lastOk=Date.now(); }
+  catch(e){ if(Date.now()-lastOk>3000){ S={...S,link:'off'}; } }
+  chu(); ve(); dbg();
+}
+let tPrev=Date.now();
+setInterval(()=>{ const n=Date.now(); const dt=(n-tPrev)/1000; tPrev=n; lam(dt); },500);
+
+/* ===== Bảng giả lập (chỉ khi demo) ===== */
+if(DEMO){
+  const d=document.getElementById('demo');
+  d.innerHTML='GIẢ LẬP — kịch bản cho lần 출발 kế tiếp: '+Object.keys(KB).map(k=>`<button data-k="${k}">${KB[k]}</button>`).join('')
+    +'<br>(Chỉ để xem thử giao diện. Dữ liệu xe là giả.)';
+  d.querySelectorAll('button').forEach(b=>b.onclick=()=>{kichban=b.dataset.k;});
+}
+M=demoMap(); tinhVungXam(); chu(); ve(); dbg();
+document.getElementById('legend').innerHTML=
+  '<span><i style="background:#8fd19e"></i>초록 회전 가능 (18.5 cm 이상)</span><span><i style="background:#f3d96b"></i>노랑 직진만 (13~18.5 cm)</span><span><i style="background:#e57f7f"></i>빨강 진입 불가 (13 cm 미만)</span>'
+  +'<span><i style="border:2px solid #c62828;background:none"></i>차체 둘레 8 cm</span><span><i style="border:2px solid #d4a800;background:none"></i>15 cm</span>';
+if(!DEMO){ mapOK=false;
+  const anh=()=>fetch('/map.pgm').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer().then(parsePGM);})
+    .catch(()=>fetch('/map.png').then(r=>{if(!r.ok)throw 0;return r.blob().then(parsePNG);}));
+  Promise.all([anh(),fetch('/map.yaml').then(r=>{if(!r.ok)throw 0;return r.text();})])
+   .then(([a,b])=>{ M=mapFromFiles(a,parseYAML(b)); mapOK=true; tinhVungXam(); chu(); ve(); dbg('đã nạp bản đồ từ Pi'); })
+   .catch(()=>{ mapOK=false; chu(); dbg('KHÔNG nạp được /map.pgm, /map.yaml'); });
+}
+window._t={get zona(){return zona},get mapOK(){return mapOK},get S(){return S},get B(){return B},man,cell2m,m2cell,get M(){return M},get gray(){return gray},sim,setK:k=>{kichban=k},get baoDong(){return window._baoDong||0}};
+</script>
+</body>
+</html>

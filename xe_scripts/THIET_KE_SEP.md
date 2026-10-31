@@ -1,6 +1,6 @@
-# Thiết kế "sếp" (bộ não điều phối) của xe: bản 1.3, 01/11/2026 rạng sáng, ở nhà
+# Thiết kế "sếp" (bộ não điều phối) của xe: bản 1.4, 01/11/2026 rạng sáng, ở nhà
 
-Thay bản 1.2. **Bản 1.3** ghi 8 câu trả lời tình huống của Thiên (01/11 01:42) thành quyết định #10–#16 ở mục 1b, thêm **bảng quyền ra lệnh** (mục 2b), **độ tin cậy vị trí bằng số** (mục 3, 4), **lớp an toàn chạy độc lập và luật sếp treo** (mục 9) và **bảng đo** (mục 10b). Bỏ ý "đoán người lao tới" (#11). Bản 1.2 chỉ đổi một chỗ: **hai câu hỏi mở ở mục 12 đã được Thiên trả lời (01/11 01:26)**, ghi thành quyết định #8, #9 ở mục 1b và sửa theo ở mục 3, 4, 5, 7. Bản 1.1 đã thêm câu trả lời của Thiên lúc 23:22 (mục 1b), cách sếp suy nghĩ (mục 4) và ba kịch bản (mục 6).
+Thay bản 1.3. **Bản 1.4** sửa thiết kế cho khớp mã thật sau bước 0 (Claude Code rà soát chỉ đọc, 01/11 ≈ 02:00): 5 quyết định #17–#21 (Thiên "đồng ý cả 5" 01/11 02:05) và các chỗ lệch nhỏ (định nghĩa "kẹt", `so_quet_ket` ≈ 3,0 s, đồng hồ chờ, điều kiện của lớp an toàn, sếp đếm lượt thoát). **Bản 1.3** ghi 8 câu trả lời tình huống của Thiên (01/11 01:42) thành quyết định #10–#16 ở mục 1b, thêm **bảng quyền ra lệnh** (mục 2b), **độ tin cậy vị trí bằng số** (mục 3, 4), **lớp an toàn chạy độc lập và luật sếp treo** (mục 9) và **bảng đo** (mục 10b). Bỏ ý "đoán người lao tới" (#11). Bản 1.2 chỉ đổi một chỗ: **hai câu hỏi mở ở mục 12 đã được Thiên trả lời (01/11 01:26)**, ghi thành quyết định #8, #9 ở mục 1b và sửa theo ở mục 3, 4, 5, 7. Bản 1.1 đã thêm câu trả lời của Thiên lúc 23:22 (mục 1b), cách sếp suy nghĩ (mục 4) và ba kịch bản (mục 6).
 Loại: **Core** (Thiên chốt 31/10), phục vụ cổng **G2** (B→A ổn định), **G3** (dừng trước vật, không đâm) và **G5** (chạy ổn định, không cần người can thiệp).
 Trạng thái: **chỉ là thiết kế, chưa có mã, chưa thử trên xe.** Người thiết kế là chat; **người viết, mô phỏng và kiểm mã là Claude Code** (luật phân vai 31/10). Mọi ngưỡng ghi [đề xuất] là con số khởi điểm, chưa đo.
 
@@ -34,6 +34,13 @@ Tiêu chí "ổn định 90% thời gian": **trong 10 chuyến, ít nhất 9 chu
 | 14 | **Sếp treo rồi sống lại: bắt đầu lại từ bước A**, bỏ quyết định cũ, ghi nhật ký thời gian treo. (Thiên "đồng ý" 01/11 01:42) | Mục 9 |
 | 15 | **Sau khi khởi động lại Nav2: kiểm "đi hay không đi" trước** (vị trí khớp, đường hợp lý) rồi mới gửi lại đích. **`SUCCEEDED` mà còn cách đích > 0,15 m: gửi lại 1 lần;** lần sau vẫn lệch ≤ 0,20 m thì coi là tới và hiện "lệch X cm" lên màn hình. (Thiên "kiểm trước", "gửi lại 1 lần" 01/11 01:42) | Mục 5 |
 | 16 | **Vị trí không tin (độ tin cậy thấp) thì cấm mọi động tác thoát và đổi hành lang:** chỉ đứng yên CHỜ và kiểm lại vị trí; vẫn thấp sau 15 s thì DỪNG VÀ BÁO. (Thiên "đồng ý" 01/11 01:42) | Mục 4 |
+| 17 | **Sếp huỷ đích thì kèm một chữ trong tệp `~/sep_lenh` (`CHO` / `DOI` / `DUNG`);** `chuyen.sh` đọc tệp khi đích bị huỷ để biết chờ, đổi tuyến hay dừng. Trước đây `chuyen.sh` coi mọi đích bị huỷ là hỏng và đổi tuyến ngay. (Thiên "đồng ý cả 5" 01/11 02:05) | Mục 2b; sửa `chuyen.sh` (Claude Code, từ bước 2) |
+| 18 | **THẬN TRỌNG không làm xe chậm lại**, chỉ kiểm LiDAR mỗi vòng và sẵn sàng huỷ đích. Giới hạn tốc độ qua Nav2 (`speed_limit`) là Stretch. Lý do: xe đã chạy gần tốc độ tối thiểu ≈ 0,092 m/s [tính], và đó là quyền mới chưa kiểm. (01/11 02:05) | Mục 4 |
+| 19 | **Làm rõ #10 và #16:** khi vị trí không tin, `lai_xe_lidar` **vẫn được** làm động tác chỉ dựa vào LiDAR (dừng, lùi thẳng, đi cung ra xa tường); **cấm** những việc dựa vào bản đồ (chọn hướng theo đích, đổi hành lang). Lý do: LiDAR đo trực tiếp, không cần vị trí đúng. (01/11 02:05) | Mục 4, mục 7 |
+| 20 | **Bỏ ngưỡng dừng 25–30 cm** (chỉ là đề xuất, không bộ phận nào làm). Giữ cách đang có: Nav2 dừng xe ≈ 8 cm từ mũi trước ống (9/9 lần ≥ 6 cm [Thiên đo 29–30/10]) và vùng vàng 15 cm của `lai_xe_lidar`; kiểm 10/10 ≥ 6 cm theo bảng đo. (01/11 02:05) | Mục 4, mục 10b; thay phần "giữ ngưỡng 25–30 cm" của #11 |
+| 21 | **Khởi động lại Nav2 chỉ bằng một đường: `bat_xe.sh`** (thêm chế độ chỉ bật lại Nav2). Không dùng cách khác song song. (01/11 02:05) | Mục 5; Claude Code đọc `bat_xe.sh` ở bước 1 |
+
+**Các chỗ lệch nhỏ sửa ở bản 1.4 (theo báo cáo bước 0):** (a) **một định nghĩa "kẹt"** là của `lai_xe_lidar`: sát vật **và** Nav2 không gửi lệnh tiến hay xoay, trong `so_quet_ket` vòng; (b) vòng của `lai_xe_lidar` chạy **10 lần/giây** nên `so_quet_ket` 30 ≈ **3,0 s** (không phải 2,5 s); (c) **đồng hồ chờ chính là 30 s của sếp** (và của cây hành vi); 40 s của `lai_xe_lidar` chỉ là dự phòng; (d) tuổi `tf`: `lai_xe_lidar` coi tf cũ hơn 1 s là "không dùng bản đồ được" (cho phản xạ), sếp coi tf cũ hơn 5 s là "định vị hỏng" (cho quyết định); hai ngưỡng khác mục đích, giữ cả hai; (e) **sếp đếm 3 lượt thoát**, vì `lai_xe_lidar` tự nó không giới hạn số lượt.
 
 ## 2. Kiến trúc: sếp và cấp dưới
 
@@ -60,11 +67,11 @@ Bánh xe chỉ nghe **một** lệnh tốc độ mỗi lúc, do `twist_mux` ch�
 |---|---|---|---|---|
 | 0 | **Công tắc motor** | phần cứng | bất cứ lúc nào | dừng khẩn, thắng mọi thứ |
 | 1 | Người lái tay (`teleop_web`) | `/cmd_vel_teleop` (100) | khi người bấm | thắng mọi phần mềm |
-| 2 | `lai_xe_lidar` (phản xạ, thoát) | `/cmd_vel_avoid` (60) | **chỉ** khi vùng đỏ, kẹt, hoặc khi sếp giao động tác thoát; ngoài lúc đó im lặng | **Phản xạ đi trước chiến lược (#10)**; vẫn chạy khi sếp treo hoặc chết |
+| 2 | `lai_xe_lidar` (phản xạ, thoát) | `/cmd_vel_avoid` (60) | **chỉ** khi vùng đỏ, kẹt, hoặc khi sếp giao động tác thoát; ngoài lúc đó im lặng | **Phản xạ đi trước chiến lược (#10)**; vẫn chạy khi sếp treo hoặc chết. **Chỉ có hiệu lực khi `phat_lenh=true`** (mặc định đang tắt; bật sau phép thử việc 96). Ngoài ra còn phát tốc độ 0 khi mũi xe cách vật ≤ 15 cm (vùng vàng) để giữ xe đứng chờ |
 | 3 | Nav2 | `/cmd_vel_nav` (20) | khi có đích | |
-| — | **Sếp** | **không phát tốc độ** | ra lệnh gián tiếp: gửi/huỷ đích Nav2, đổi tuyến của `chuyen.sh`, bật cờ thoát cho `lai_xe_lidar`, khởi động lại Nav2 | Sếp không giành bánh xe, nên sếp có lỗi cũng không làm xe chạy bậy |
+| — | **Sếp** | **không phát tốc độ** | ra lệnh gián tiếp: huỷ đích Nav2 **kèm một chữ trong tệp `~/sep_lenh`** (#17), bật cờ thoát cho `lai_xe_lidar`, khởi động lại Nav2 qua `bat_xe.sh` (#21) | Sếp không giành bánh xe, nên sếp có lỗi cũng không làm xe chạy bậy |
 
-Mâu thuẫn được xử lý theo bảng này, không theo "ai nói sau". Sếp muốn xe dừng thì **huỷ đích Nav2**; nếu cần giữ yên tuyệt đối thì yêu cầu `lai_xe_lidar` phát tốc độ 0.
+Mâu thuẫn được xử lý theo bảng này, không theo "ai nói sau". Sếp muốn xe dừng thì **ghi `CHO`, `DOI` hoặc `DUNG` vào `~/sep_lenh` rồi huỷ đích Nav2**; `chuyen.sh` thấy đích bị huỷ thì đọc tệp đó: `CHO` ⇒ chờ rồi gửi lại cùng điểm, `DOI` ⇒ đổi tuyến, `DUNG` ⇒ dừng hẳn và báo (#17). Không có tệp thì `chuyen.sh` làm như cũ (đường lui). Nếu cần giữ yên tuyệt đối thì yêu cầu `lai_xe_lidar` phát tốc độ 0. **Sếp không có cách làm xe chạy chậm lại** (#18).
 
 ## 3. Sếp nhận thông tin gì từ cấp dưới
 
@@ -97,8 +104,8 @@ Mỗi vòng (≈ 12 lần/giây, theo nhịp LiDAR), sếp đi qua năm bước:
 | Tư thế | Khi nào |
 |---|---|
 | ĐI THƯỜNG | vị trí tin cậy, đường phía trước thoáng |
-| THẬN TRỌNG | sắp vào chỗ hẹp (hành lang 50–56 cm, góc K4); hoặc độ tin cậy vị trí 0,50–0,70: đi chậm nhất, kiểm LiDAR mỗi vòng |
-| CHỜ | vật lạ phía trước trong 25–30 cm [ước]: dừng, đứng im chờ **30 s**; nếu khe **đang rộng dần** thì chờ thêm tối đa 10 s (#12); **vị trí không tin thì chỉ được CHỜ (#16)** |
+| THẬN TRỌNG | sắp vào chỗ hẹp (hành lang 50–56 cm, góc K4); hoặc độ tin cậy vị trí 0,50–0,70: **kiểm LiDAR mỗi vòng, sẵn sàng huỷ đích; không làm chậm xe (#18)** |
+| CHỜ | vật lạ phía trước đã làm xe dừng (Nav2 dừng ≈ 8 cm từ mũi; vùng vàng 15 cm của `lai_xe_lidar`) (#20): đứng im chờ **30 s**; nếu khe **đang rộng dần** thì chờ thêm tối đa 10 s (#12); **vị trí không tin thì chỉ được CHỜ (#16), trừ động tác chỉ dựa vào LiDAR (#19)** |
 | ĐỔI HÀNH LANG | chỗ hẹp sắp tới dưới 26 cm; hoặc **chờ đủ 30 s (+ tối đa 10 s nếu khe đang rộng dần) mà vật vẫn chắn giữa đường (#9, #12)**; **cấm khi vị trí không tin (#16)** |
 | THOÁT | xe kẹt (mục 7); **cấm khi vị trí không tin (#16)** |
 | DỪNG VÀ BÁO | thông tin mâu thuẫn không giải được; Nav2 chết lần thứ 3 trong chuyến (#8); vật chắn tại B sau 2 × 30 s (#9); vị trí không tin quá 15 s (#16); hết đường |
@@ -119,7 +126,7 @@ Khi mâu thuẫn hoặc kỳ vọng không khớp, sếp hỏi: *thông tin nào
 |---|---|---|---|
 | Điểm đầu `/plan` cách xe > 0,30 m (30/10: ≈ 1,1 m) | bộ lập đường nhận sai vị trí xe | gọi dịch vụ lập đường với `start` đúng (30/10 làm tay: 79 chấm thay vì 6) | không đi; khởi động lại phần lập đường; ghi nhật ký |
 | `tf` cũ ≥ 5 s | định vị hoặc đường truyền `tf` | đọc tuổi `tf`; kiểm `/scan` còn đến không | dừng; chờ `tf` mới; hết hạn mức thì phục hồi |
-| Có lệnh tiến ≥ 2,5 s mà vị trí và khoảng cách LiDAR không đổi | bánh bị chặn (kẹt thật) hoặc odom sai | khoảng cách LiDAR không đổi ⇒ kẹt thật; LiDAR đổi mà vị trí không đổi ⇒ vị trí sai | kẹt thật ⇒ THOÁT; vị trí sai ⇒ dừng và kiểm định vị |
+| `lai_xe_lidar` báo kẹt (sát vật **và** Nav2 không gửi lệnh trong 30 vòng ≈ 3,0 s; định nghĩa duy nhất); hoặc có lệnh tiến mà vị trí không đổi | bánh bị chặn (kẹt thật) hoặc odom sai | khoảng cách LiDAR không đổi ⇒ kẹt thật; LiDAR đổi mà vị trí không đổi ⇒ vị trí sai | kẹt thật ⇒ THOÁT (sếp đếm lượt); vị trí sai ⇒ dừng và kiểm định vị |
 | Nav2 báo `SUCCEEDED` mà còn cách đích > 0,15 m, hoặc chỉ sau 0,05 s | trạng thái Nav2 giả | so vị trí `tf` với đích | **gửi lại đích 1 lần (#15)**; lần sau vẫn lệch ≤ 0,20 m thì coi là tới và hiện "lệch X cm"; lệch > 0,20 m hoặc `SUCCEEDED` sau 0,05 s ⇒ khởi động lại cả chồng Nav2 (bài học 268), tính vào giới hạn 2 lần |
 | Vị trí nhảy lớn giữa chuyến | SLAM sửa hoặc trượt bánh | so với góc con quay và lệnh | dừng, đối chiếu, đi tiếp hoặc báo |
 | Nav2 mất nhịp tim (`CRITICAL FAILURE`) | Nav2 hoặc mạng ROS | đọc nhật ký; kiểm tiến trình còn sống | dừng xe; **khởi động lại Nav2, tối đa 2 lần mỗi chuyến (#8)**; mỗi lần ghi nhật ký và hiện lên màn hình; **lên lại thì kiểm "đi hay không đi" trước khi gửi lại đích (#15)**; lần thứ 3 ⇒ DỪNG VÀ BÁO |
@@ -153,7 +160,7 @@ Xe ở (1,45; 0,13), đường Nav2 vạch qua hành lang dưới rộng 56 cm. 
 | 1. Hiểu kẹt kiểu gì | dừng; xác định bị chặn phía trước, sau, hông hay góc | LiDAR theo vùng quanh thân (`lai_xe_lidar`: F, B, H) |
 | 2. Chọn hướng thoát | hướng thoáng nhất **và** gần đường tới đích nhất; tránh ngõ cụt B′ | bản đồ, `/plan`, LiDAR |
 | 3. Một động tác nhỏ | xoay (chỉ khi mọi điểm LiDAR cách tâm xe > 0,1855 m), lùi thẳng hoặc đi cung ra xa tường; kiểm LiDAR sau **mỗi lần quét** | bảng thoát mục 4 của `THIET_KE_LAI_XE_LIDAR.md` |
-| 4. Hết hạn mức thì đổi cách | tối đa **3 lượt** [Thiên chốt], mỗi lượt ≤ 10 s [đề xuất]; chưa ra thì đổi hành lang | `chuyen.sh` (`TRY`) |
+| 4. Hết hạn mức thì đổi cách | tối đa **3 lượt** [Thiên chốt], **sếp đếm** (vì `lai_xe_lidar` tự nó không giới hạn số lượt), mỗi lượt ≤ 10 s; chưa ra thì đổi hành lang (cấm khi vị trí không tin, #19) | sếp; `chuyen.sh` (`TRY`) |
 | 5. Hết đường | dừng tại chỗ, chụp ảnh phía trước, báo người phụ trách, hiện nút lái tay | `teleop_web`; **chưa có mã** |
 
 Bị chặn phía trước bởi vật lạ (không phải kẹt): CHỜ 30 s ⇒ vẫn chắn thì **ĐỔI HÀNH LANG ngay** (#9). Vật chắn đúng tại B: chờ 2 × 30 s ⇒ DỪNG VÀ BÁO.
@@ -176,7 +183,7 @@ Hai giới hạn thật: **xoay tại chỗ cần ≥ 45,6 cm** [tính], sát tr
 5. **Mỗi lần đổi một thứ**, thử x/10 rồi mới đổi thứ kế tiếp.
 6. **Không im lặng:** mất `/scan` hoặc `tf` thì dừng xe và ghi nhật ký, không đoán. Mỗi lần khởi động lại Nav2 đều hiện lên màn hình.
 7. Thêm sếp **sau** phép thử G (việc 93): sếp là thêm một node ROS, nên không đưa vào khi Nav2 còn tự tắt chưa rõ vì sao.
-8. **Lớp an toàn chạy độc lập:** vùng đỏ của `lai_xe_lidar` chặn xe đi về phía vật **dù sếp đang treo hoặc đã chết**. `lai_xe_lidar` không cần sếp để làm phản xạ.
+8. **Lớp an toàn chạy độc lập:** vùng đỏ của `lai_xe_lidar` chặn xe đi về phía vật **dù sếp đang treo hoặc đã chết**. `lai_xe_lidar` không cần sếp để làm phản xạ. **Điều kiện:** `phat_lenh=true` (mặc định đang tắt, tức chỉ nhìn). Trước khi bật, lớp an toàn duy nhất là Nav2 và công tắc motor.
 9. **Sếp tự canh mình:** mỗi vòng ghi giờ; một vòng chậm hơn 1 s [đề xuất] thì ghi "sếp treo X s". Khi sống lại, **bỏ quyết định cũ, bắt đầu lại từ bước A (#14)**. Trong lúc sếp treo, sếp không giữ bánh xe (mục 2b) nên xe chỉ chịu lệnh của Nav2 và phản xạ.
 
 ## 10. Kế hoạch từng bước (mỗi bước thử được, có đường lui)
@@ -186,7 +193,7 @@ Hai giới hạn thật: **xoay tại chỗ cần ≥ 45,6 cm** [tính], sát tr
 | 0 | Claude Code rà soát `lai_xe_lidar.py`, `chuyen.sh` và các tệp liên quan (chỉ đọc); chạy mô phỏng `mo_phong_he_thong.py` | báo cáo bảng; mô phỏng chạy | không đổi gì |
 | 1 | Sếp **chỉ nhìn**: thu thập, tổng hợp, ghi nhật ký "sẽ làm gì" và truy vết, trong lúc `chuyen.sh` chạy như cũ | nhật ký khớp thực tế (ví dụ báo "không đi" đúng chuyến `0 poses`; báo mâu thuẫn đúng chỗ) | tắt sếp |
 | 2 | Bật quyết định "đi hay không đi" | trong 10 chuyến, không còn chuyến nào bắt đầu với đường sai | `ros2 param set` tắt |
-| 3 | Thêm chọn hành lang (gồm đổi ngay sau 30 s chờ), kiểm giữa chuyến và khởi động lại Nav2 tối đa 2 lần | ≥ 9/10 chuyến B→A tới đích; Nav2 tự tắt thì xe dừng, khởi động lại và đi tiếp | tắt từng quyết định |
+| 3 | Thêm chọn hành lang (gồm đổi ngay sau 30 s chờ), kiểm giữa chuyến và khởi động lại Nav2 tối đa 2 lần qua `bat_xe.sh` (#21); `chuyen.sh` đọc `~/sep_lenh` (#17) | ≥ 9/10 chuyến B→A tới đích; Nav2 tự tắt thì xe dừng, khởi động lại và đi tiếp | tắt từng quyết định |
 | 4 | Thêm cứu xe (nhánh THOÁT) dùng phần thoát của `lai_xe_lidar` | ca kẹt hông/góc dựng sẵn: thoát ≥ 9/10, không chạm | tắt, quay về bước 3 |
 
 Thứ tự ở trường: `so_voi_pi.sh` → phép thử G → bước 1. Chưa có ngày chính xác cho buổi xe tiếp theo.
@@ -197,11 +204,11 @@ Mỗi ngưỡng chỉ được dùng để ra lệnh (bước 2 trở đi) khi �
 
 | Ngưỡng | Đang đặt | Cách đo | Đạt khi | Đặt lại thành |
 |---|---|---|---|---|
-| Ngưỡng dừng trước vật lạ (ràng buộc cứng ≥ 6 cm) | 25–30 cm [ước] | ống Ø 18 cm đặt giữa hành lang, xe chạy tới 10 lần; thước đo mũi xe → ống sau khi dừng hẳn | **10/10 lần ≥ 6 cm** | ngưỡng nhỏ nhất vẫn cho 10/10 ≥ 6 cm, cộng dư 5 cm |
+| Khoảng dừng trước vật lạ (ràng buộc cứng ≥ 6 cm) | Nav2 ≈ 8 cm từ mũi (9/9 ≥ 6 cm [Thiên đo]); vùng vàng `lai_xe_lidar` 15 cm (#20) | ống Ø 18 cm đặt giữa hành lang, xe chạy tới 10 lần; thước đo mũi xe → ống sau khi dừng hẳn | **10/10 lần ≥ 6 cm** | không đạt 10/10 thì mới tính thêm lớp dừng sớm (khi đó quyết lại) |
 | Độ tin cậy vị trí (0,70 / 0,50) | [đề xuất] | ghi độ tin cậy mỗi lần quét trong 10 vòng bình thường | 0 lần xuống dưới 0,50 khi xe đúng chỗ | 0,70 → (thấp nhất đo được − 0,10) |
 | Nhảy vị trí giữa chuyến (0,10 m / 5°) | [đề xuất] | ghi mỗi lần SLAM sửa vị trí trong 10 vòng | 0 báo nhầm | 2 × nhảy lớn nhất khi bình thường |
 | `LECH_MAX` (điểm đầu đường lệch xe) | 0,30 m [ước] | cột `lech_kiem_m` của `~/ket_qua_chuyen.csv` qua 10 chuyến | 0 báo nhầm | 2–3 × lệch lớn nhất khi bình thường |
-| `so_quet_ket` (xác nhận kẹt) | 30 lần quét [đề xuất] | 10 vòng bình thường + 10 ca kẹt dựng sẵn | 0 báo nhầm, bắt ≥ 9/10 ca kẹt | số nhỏ nhất đạt cả hai |
+| `so_quet_ket` (xác nhận kẹt) | 30 vòng ≈ 3,0 s ở 10 lần/giây [đề xuất] | 10 vòng bình thường + 10 ca kẹt dựng sẵn | 0 báo nhầm, bắt ≥ 9/10 ca kẹt | số nhỏ nhất đạt cả hai |
 | Khe tối thiểu 26 cm | [Thiên chốt] | ống giữa hành lang (khe 16–19 cm) và ống sát tường (khe 32–38 cm), mỗi kiểu 5 lần | xe chọn đúng (đổi hành lang / chui qua) ≥ 9/10 | giữ 26 nếu đạt |
 | Khởi động lại Nav2 | tối đa 2 lần | đếm số lần Nav2 lên lại được và thời gian lên, trong mọi lần tự tắt | lên lại ≥ 9/10, mỗi lần ≤ 60 s | giữ 2 lần nếu đạt |
 | Sếp treo (1 s) | [đề xuất] | ghi độ dài vòng lặp của sếp trong 10 vòng | vòng dài nhất < 0,5 s | 2 × vòng dài nhất |
@@ -211,6 +218,7 @@ Mỗi ngưỡng chỉ được dùng để ra lệnh (bước 2 trở đi) khi �
 
 - Còn 2 ngày tới 3/11 và 9 ngày tới 10/11; sếp là thay đổi lớn nên chia bước, bước nào không đạt thì **dừng ở bước trước**.
 - Mọi ngưỡng ở mục 4 và 7 là [đề xuất] hoặc [ước], chưa đo trên xe (n = 0).
+- `mo_phong_he_thong.py` chưa có bảng `tt`, chưa mô phỏng huỷ đích, Nav2 chết hay SLAM nhảy: chưa thử được tính năng nào của sếp bằng mô phỏng (cần bổ sung trước bước 2).
 - `lai_xe_lidar.py` mới thử trong mô phỏng lý tưởng (không trượt bánh, không duty tối thiểu, không trễ). Xe thật có thể thoát chậm hơn.
 - Định vị lệch ≥ 10 cm làm phân biệt tường và vật lạ coi tường là vật lạ: chỉ chậm thêm 30 s, không nguy hiểm.
 - Nav2 tự tắt chưa rõ nguyên nhân: khởi động lại (#8) chữa triệu chứng, chưa chữa gốc. Nhật ký mỗi lần khởi động lại là dữ liệu cho phép thử G.
@@ -220,7 +228,7 @@ Mỗi ngưỡng chỉ được dùng để ra lệnh (bước 2 trở đi) khi �
 
 ## 12. Câu hỏi mở cho Thiên
 
-Không còn câu hỏi mở về thiết kế. Hai câu của bản 1.1 đã trả lời (01/11 01:26): **khởi động lại Nav2 tối đa 2 lần mỗi chuyến** (#8); **chờ 30 s vật vẫn chắn thì đổi hành lang ngay** (#9). Tám câu tình huống của bản 1.2 đã trả lời (01/11 01:42): #10–#16.
+Không còn câu hỏi mở về thiết kế. Hai câu của bản 1.1 đã trả lời (01/11 01:26): **khởi động lại Nav2 tối đa 2 lần mỗi chuyến** (#8); **chờ 30 s vật vẫn chắn thì đổi hành lang ngay** (#9). Tám câu tình huống của bản 1.2 đã trả lời (01/11 01:42): #10–#16. Năm chỗ chưa khớp mã ở bước 0 đã chốt (01/11 02:05): #17–#21.
 Việc còn lại: đặt tệp này vào `xe_scripts/` trong kho (để Claude Code và thầy cùng đọc).
 
 ## Việc của Claude Code (không phải chat)

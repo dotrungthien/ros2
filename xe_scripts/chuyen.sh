@@ -4,7 +4,7 @@
 # v4 khac v3 o DUNG mot cho: BANG TUYEN TIEP TUYEN (Thien chot 31/10; hinh va tinh toan: THIET_KE_LAI_XE_LIDAR.md muc 9).
 #   Moi diem co huong = huong di DEN diem do, moi cho re <= ~36 do (them diem trung gian), huong cuoi o A khong cham.
 #   Muc dich: bo cac lan xoay tai cho lon o cho hep (bang cu bat xe xoay 102, 78, 175 do khi ve A).
-#   Chon bang bang bien BANG: BANG=cu (bang v3 tro ve truoc, de so sanh) | BANG=tt (tiep tuyen, MAC DINH). Khong can sua tep.
+#   Chon bang bang bien BANG: BANG=cu (bang v3 tro ve truoc, de so sanh) | BANG=tt (tiep tuyen, MAC DINH) | BANG=xs (tinh_tuyen.py tu costmap, 01/11). Khong can sua tep.
 #   Cot 2 cua ~/ket_qua_chuyen.csv thanh "ve_A_cu" / "ve_A_tt": lenh dem x/n o Phan 2 tu tach hai bang.
 #
 # --- noi dung v3 (giu nguyen) ---
@@ -17,7 +17,7 @@
 #   bash ~/chuyen.sh di_B          A -> B (B = x 1.60, y 0.82)
 #   bash ~/chuyen.sh ve_A          B -> A
 #   bash ~/chuyen.sh ve_A 2        nhu tren nhung thu tuyen 2 truoc
-# Bien moi truong (tuy chon): BANG (tt | cu, mac dinh tt), TRY (so lan thu moi diem, mac dinh 1: cho ~30 giay roi doi tuyen, theo chinh sach 31/10), CHO (giay dung yen giua hai lan, 5),
+# Bien moi truong (tuy chon): BANG (tt | cu | xs, mac dinh tt), TRY (so lan thu moi diem, mac dinh 1: cho ~30 giay roi doi tuyen, theo chinh sach 31/10), CHO (giay dung yen giua hai lan, 5),
 #   TO (han chot moi lan gui, 130 giay), LECH_MAX (m, 0.30), BO_QUA_KIEM=1 (bo buoc kiem vi tri),
 #   FP_STOP (0 = chi ghi, 1 = dung xe khi costmap lech), TUOI_MAX (giay, 5).
 #   Luu y thoi gian cho: moi lan gui, cay hanh vi tu chiu den het so lan thu (15 lan ~ 60 giay; 8 lan ~ 30 giay) roi moi bao hong; voi TRY=2 xe co the
@@ -40,7 +40,7 @@
 HUONG="$1"
 TUYEN_DAU="${2:-1}"
 BANG="${BANG:-tt}"
-case "$BANG" in tt|cu) ;; *) echo "SAI BANG: '$BANG'. Dung BANG=tt hoac BANG=cu"; exit 2 ;; esac
+case "$BANG" in tt|cu|xs) ;; *) echo "SAI BANG: '$BANG'. Dung BANG=tt, BANG=cu hoac BANG=xs"; exit 2 ;; esac
 NHAN="${HUONG}_${BANG}"   # nhan ghi vao cot 2 cua CSV
 TRY="${TRY:-1}"
 CHO="${CHO:-5}"
@@ -82,6 +82,11 @@ lay_tuyen() { # $1 = huong, $2 = tuyen -> dat mang WP
     tt:ve_A:2) WP=("1.30 0.75 -0.9934 0.1144" "0.45 0.76 1.0 0.0059" "0.15 0.60 -0.9701 0.2425" "0.00 0.30 -0.8507 0.5257" "0.00 0.00 -0.7071 0.7071") ;;
     tt:di_B:1) WP=("1.60 0.82 0.0 1.0") ;;   # khong doi: A->B da 11/11 (29/10); huong cuoi y = 0 do nhu cu
     tt:di_B:2) WP=("0.00 0.30 0.7071 0.7071" "0.15 0.60 0.5257 0.8507" "0.45 0.76 0.2425 0.9701" "1.30 0.75 -0.0059 1.0" "1.60 0.82 0.0 1.0") ;;
+    # BANG XS (01/11): tinh_tuyen.py tu costmap_v3_020, gia 1+60/d^3, 6 diem
+    xs:di_B:1) WP=("0.33 0.11 0.0000 1.0000" "0.70 0.11 -0.0885 0.9961" "1.05 0.06 0.0000 1.0000" "1.37 0.17 0.3827 0.9239" "1.56 0.46 0.6418 0.7669" "1.60 0.82 0.0000 1.0000") ;;
+    xs:di_B:2) WP=("0.06 0.34 0.5787 0.8156" "0.26 0.61 0.3867 0.9222" "0.56 0.76 0.0000 1.0000" "0.92 0.76 0.0000 1.0000" "1.28 0.76 0.0000 1.0000" "1.60 0.82 0.0000 1.0000") ;;
+    xs:ve_A:1) WP=("1.56 0.46 -0.7669 0.6418" "1.37 0.17 -0.9239 0.3827" "1.05 0.06 1.0000 0.0000" "0.68 0.06 1.0000 0.0000" "0.33 0.11 0.9964 0.0846" "0.00 0.00 -0.9257 0.3783") ;;
+    xs:ve_A:2) WP=("1.28 0.76 1.0000 0.0000" "0.92 0.76 1.0000 0.0000" "0.56 0.76 1.0000 0.0000" "0.26 0.61 -0.9222 0.3867" "0.06 0.34 -0.8156 0.5787" "0.00 0.00 -0.7979 0.6028") ;;
   esac
 }
 

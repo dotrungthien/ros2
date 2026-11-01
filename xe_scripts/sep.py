@@ -12,12 +12,15 @@ Thien chot 01/11 (duyet ke hoach buoc 1):
   DEN_NOI / HET_DUONG ket thuc; them SAI_VI_TRI vi chuyen.sh cung thoat o do); do tin cay tren moi diem <= 3 m;
   nhay = do doi cua map->odom; trang thai lai_xe_lidar doc tu /rosout; /scan cu > 0,5 s thi ghi MAT_SCAN;
   "0 poses": ghi ca /plan rong va ABORTED < 2 s.
+Viec 100 (01/11 toi): bo nghe /bond (~100 tin/s) cho nhe; Nav2 song/chet suy tu /rosout + trang thai goal.
+  Tu thay ket: co dich VA tam xe dich < dich_dung trong t_dung giay VA diem LiDAR gan than xe <= sat_vat
+  => vat la truoc: CHO; khong: KET_SAT_VAT (phia, cm); khong co vat gan: DUNG_YEN_KHONG_RO.
+  Cu 10 s ghi mot dong VONG (vong cham nhat va phan cham nhat). Moi dong nhat ky co them x, y, goc_do.
 
 CAN KIEM TREN PI (chua kiem; chi suy tu ma trong kho va tai lieu):
-  1. /bond co duoc phat khong; truong id co dung ten node Nav2 khong; ben lifecycle_manager co phat nhip tim rieng
-     (instance_id khac) khong. Neu khong co /bond thi nav2_song chi dua vao dong CRITICAL FAILURE trong /rosout.
-  2. Cau chu that cua lifecycle_manager_navigation khi Nav2 tu tat (sep do "CRITICAL FAILURE") va khi len lai
-     ("Managed nodes are active", bat_xe.sh cung do cau nay).
+  1. (bo tu viec 100: khong con nghe /bond.)
+  2. Cau chu that cua lifecycle_manager_navigation khi Nav2 tu tat (sep do "CRITICAL FAILURE" hoac "IS DOWN") va
+     khi len lai ("Managed nodes are active", bat_xe.sh cung do cau nay).
   3. Ten logger cua lai_xe_lidar trong /rosout la "lai_xe_lidar" (test_sep.py kiem cau log trong ma, khong kiem tren Pi).
   4. QoS cua /rosout, /plan, /map, /navigate_to_pose/_action/status tren Pi: sai thi sep khong nhan, nhat ky se thieu.
   5. Planner co phat /plan rong khi "0 poses" khong, hay khong phat gi (khi do chi con dau hieu ABORTED < 2 s).
@@ -48,8 +51,6 @@ CUA_SO_KET = 2.0                 # s, cua so so sanh LiDAR va vi tri khi nghi ke
 LIDAR_DOI, POSE_DOI = 0.02, 0.02 # m, duoi so nay la "khong doi" [de xuat]
 SUC_LECH, SUC_LECH_MAX, SUC_NHANH = 0.15, 0.20, 0.05   # m, m, s (#15, muc 5 dong 4)
 NHAY_M, NHAY_DEG, NHAY_DT = 0.10, 5.0, 1.0             # nhay vi tri giua chuyen (muc 4) [de xuat]
-BOND_TIMEOUT = 4.0               # s, khong nhan nhip tim lau hon so nay = mat nhip [de xuat, chua kiem tren Pi]
-BOND_QUEN = 30.0                 # s, nhip tim cu hon so nay thi bo (node da tat han hoac da bat lai)
 NAV2_LAN_MAX = 2                 # lan khoi dong lai Nav2 moi chuyen (#8)
 LUOT_THOAT_MAX = 3               # luot thoat moi chuyen (muc 7)
 KHE_TANG, KHE_CUA_SO = 0.02, 3.0 # m, s: khe phia truoc rong them it nhat bay nhieu trong cua so (#12) [de xuat]
@@ -60,8 +61,14 @@ B_XY, R_B = (1.60, 0.82), 0.20   # B (chuyen.sh) va ban kinh coi la "dich tai B"
 TREO = 1.0                       # s, mot vong cham hon so nay = sep treo (muc 9.9) [de xuat]
 ABORT_NHANH = 2.0                # s, ABORTED som hon so nay = nghi "0 poses"
 L1_KET = ('KET_HINH_HOC', 'XOAY_BI_CHAN_QUA_LAU')     # ly do thoat cua lai_xe_lidar = no bao ket
+P_MAC_DINH = dict(               # tham so ROS (viec 100) [de xuat]
+    t_dung=10.0,                 # s, co dich ma tam xe dung yen lau tu so nay
+    dich_dung=0.03,              # m, "dung yen" = tam xe dich duoi so nay trong t_dung
+    sat_vat=0.10,                # m, diem LiDAR cach hinh chu nhat than xe tu so nay tro xuong = sat vat
+)
+CUA_SO_VONG = 10.0               # s, cu bay nhieu giay ghi mot dong VONG
 
-COT_NHAT_KY = 'gio_mono,gio,loai,dau_hieu,nguon_nghi,phep_kiem,ket_qua,se_lam'
+COT_NHAT_KY = 'gio_mono,gio,loai,dau_hieu,nguon_nghi,phep_kiem,ket_qua,se_lam,x,y,goc_do'
 COT_CSV = ('gio', 'huong', 'tuyen', 'diem', 'lan', 'ket_qua', 'giay', 'lech_kiem_m', 'lech_costmap_m', 'tuoi_costmap_s')
 
 _L1 = L.NguoiLai()               # chi dung diem_chan_truoc (khong giu trang thai)
@@ -158,16 +165,15 @@ def nhay(mo_truoc, mo_sau, dt, p_odom=(0.0, 0.0)):
     return d_m, d_deg, dt < NHAY_DT and (d_m >= NHAY_M or d_deg >= NHAY_DEG)
 
 
-def nav2_song(bond_tuoi, critical):
-    """bond_tuoi: {khoa: giay tu nhip tim cuoi}. Tra (SONG | MAT_NHIP | KHONG_BIET, ghi chu)."""
+def nav2_song(critical, co_tin):
+    """Nav2 song khong, chi tu /rosout va trang thai goal (viec 100: bo /bond). critical: da thay CRITICAL FAILURE /
+    IS DOWN ma chua thay "Managed nodes are active"; co_tin: da nhan trang thai goal hoac "Managed nodes are active".
+    Tra (SONG | MAT_NHIP | KHONG_BIET, ghi chu)."""
     if critical:
         return 'MAT_NHIP', 'CRITICAL_FAILURE'
-    if not bond_tuoi:
-        return 'KHONG_BIET', ''
-    cu = sorted(k for k, a in bond_tuoi.items() if a > BOND_TIMEOUT)
-    if cu:
-        return 'MAT_NHIP', ' '.join(cu)
-    return 'SONG', ''
+    if co_tin:
+        return 'SONG', ''
+    return 'KHONG_BIET', ''
 
 
 def vat_truoc(pts, pose, grid, xa=XA_TRUOC):
@@ -180,6 +186,35 @@ def vat_truoc(pts, pose, grid, xa=XA_TRUOC):
     if k is None:
         return None
     return 'DIA_HINH' if k else 'VAT_LA'
+
+
+def sat_than_xe(pts):
+    """Diem LiDAR gan hinh chu nhat than xe nhat: (khoang cach m, phia TRUOC | SAU | TRAI | PHAI); (INF, '') neu khong co diem.
+    Phia theo canh gan nhat cua than xe (goc than xe: canh nao lech nhieu hon)."""
+    if not pts:
+        return INF, ''
+    x, y = min(pts, key=lambda q: L.khoang_cach_mep(q[0], q[1]))
+    dx = max(L.X_DUOI - x, 0.0, x - L.X_MUI)
+    dy = max(-L.Y_HONG - y, 0.0, y - L.Y_HONG)
+    if dx >= dy:
+        return math.hypot(dx, dy), 'TRUOC' if x > 0 else 'SAU'
+    return math.hypot(dx, dy), 'TRAI' if y > 0 else 'PHAI'
+
+
+def huong_thoang(pts):
+    """Phia (TRUOC | SAU | TRAI | PHAI) co quang thoang (dai rong bang than xe) dai nhat."""
+    return max((('TRUOC', 0.0), ('SAU', math.pi), ('TRAI', math.pi / 2), ('PHAI', -math.pi / 2)),
+               key=lambda h: L.thoang(pts, h[1]))[0]
+
+
+def dung_yen(ls_xe, now, t_dung, dich_dung):
+    """ls_xe: [(t, x, y)] tam xe theo thoi gian. Tra (dung_yen, dich lon nhat m): dung yen khi du lieu phu it nhat
+    t_dung giay va moi diem trong do cach vi tri moi nhat duoi dich_dung."""
+    if not ls_xe or now - ls_xe[0][0] < t_dung:
+        return False, None
+    _, x1, y1 = ls_xe[-1]
+    d = max(math.hypot(x - x1, y - y1) for _, x, y in ls_xe)
+    return d < dich_dung, d
 
 
 def khe_rong_dan(ls_ff):
@@ -239,6 +274,10 @@ def chon_tu_the(bt):
         return 'CHO', 'NAV2_MAT_NHIP lan %d: khoi dong lai qua bat_xe.sh' % n
     if g('plan_lech'):
         return 'KHONG_DI', 'PLAN_SAI'
+    if g('kep') == 'KET_SAT_VAT':                    # chi dua vao LiDAR (#19): khong can vi tri TIN
+        return 'THOAT', g('kep_ly', 'KET_SAT_VAT')
+    if g('kep') == 'DUNG_YEN_KHONG_RO':
+        return 'CHO', 'DUNG_YEN_KHONG_RO'
     tin = mt == 'TIN'
     if ket == 'VI_TRI_SAI':
         return 'CHO', 'VI_TRI_SAI: kiem dinh vi'
@@ -285,7 +324,7 @@ def doc_rosout(name, msg):
     """Mot dong /rosout -> ('NAV2_CRITICAL', cau) | ('NAV2_ACTIVE', '') | ('L1', trang_thai, ly_do) | None.
     Cau log cua lai_xe_lidar: '%s -> %s (%s)%s | %s' (doi trang thai) va '... trang_thai=%s' (dinh ky)."""
     if 'lifecycle_manager' in name:
-        if 'CRITICAL FAILURE' in msg:
+        if 'CRITICAL FAILURE' in msg or 'IS DOWN' in msg:
             return ('NAV2_CRITICAL', msg[:120])
         if 'Managed nodes are active' in msg:
             return ('NAV2_ACTIVE', '')
@@ -308,10 +347,28 @@ def doc_csv(dong):
     return dict(zip(COT_CSV, o))
 
 
-def dong_nhat_ky(gio_mono, gio, loai, dau_hieu, nguon='', phep_kiem='', ket_qua='', se_lam=''):
-    """Mot dong nhat ky theo COT_NHAT_KY (dau phay trong noi dung doi thanh ';')."""
+def dong_nhat_ky(gio_mono, gio, loai, dau_hieu, nguon='', phep_kiem='', ket_qua='', se_lam='', pose=None):
+    """Mot dong nhat ky theo COT_NHAT_KY (dau phay trong noi dung doi thanh ';'); pose (x, y, yaw) cua xe neu co."""
     o = ['%.2f' % gio_mono, gio, loai, dau_hieu, nguon, phep_kiem, ket_qua, se_lam]
+    o += ['', '', ''] if pose is None else ['%.2f' % pose[0], '%.2f' % pose[1], '%d' % round(math.degrees(pose[2]))]
     return ','.join(str(v).replace(',', ';') for v in o)
+
+
+def chuan_bi_nhat_ky(p):
+    """Tep nhat ky p da co ma dong tieu de khac COT_NHAT_KY: doi ten thanh <ten>_cu1.csv (cu2, cu3... neu da co;
+    khong dung gio he thong). Tra ten moi, hoac None neu khong doi."""
+    if not os.path.exists(p):
+        return None
+    with open(p) as f:
+        if f.readline().rstrip('\r\n') == COT_NHAT_KY:
+            return None
+    goc, duoi = os.path.splitext(p)
+    k = 1
+    while os.path.exists('%s_cu%d%s' % (goc, k, duoi)):
+        k += 1
+    moi = '%s_cu%d%s' % (goc, k, duoi)
+    os.rename(p, moi)
+    return moi
 
 
 def _r(v, n=2):
@@ -321,10 +378,16 @@ def _r(v, n=2):
 class Sep:
     """Bo nho cua sep (khong ROS). vong(now, v) nhan thong tin moi nhat, tra (trang_thai, cac dong nhat ky).
     v: pts, scan_tuoi, pose, tf_tuoi, mo (map->odom), grid, plans [[(x, y)]], goals [[(id, status)]], ket,
-    rosout [(name, msg)], csv [dong], bond {khoa: tuoi}, gio (chuoi gio de nguoi doc)."""
+    rosout [(name, msg)], csv [dong], do {phan: ms} (node do), gio (chuoi gio de nguoi doc)."""
 
-    def __init__(self):
+    def __init__(self, **kw):
+        self.p = dict(P_MAC_DINH)
+        self.p.update(kw)
         self.t_vong = None
+        self.t_cua_so = None         # do vong (viec 100): dau cua so, vong cham nhat, tong, so vong
+        self.v_max = (0.0, {})
+        self.v_tong, self.v_n = 0.0, 0
+        self.nav2_co_tin = False
         # su that (giu khi sep treo)
         self.chuyen = None
         self.diem_txt = ''
@@ -351,15 +414,24 @@ class Sep:
         self.ls_ket = deque()
         self.ls_ff = deque()
         self.ls_mo = deque()
+        self.ls_xe = deque()
         self.co = {}
         self.tu_the = None
 
     def vong(self, now, v):
         gio = v.get('gio', '')
         log = []
+        pose = v.get('pose')
+        do = dict(v.get('do') or {})     # ms tung phan; node dua vao scan, tf, csv
+        moc_t = [time.perf_counter()]
 
         def ghi(loai, dau_hieu, nguon='', kiem='', kq='', se=''):
-            log.append(dong_nhat_ky(now, gio, loai, dau_hieu, nguon, kiem, kq, se))
+            log.append(dong_nhat_ky(now, gio, loai, dau_hieu, nguon, kiem, kq, se, pose))
+
+        def moc(ten):
+            t = time.perf_counter()
+            do[ten] = do.get(ten, 0.0) + (t - moc_t[0]) * 1000
+            moc_t[0] = t
 
         d = kiem_treo(self.t_vong, now)
         self.t_vong = now
@@ -372,11 +444,11 @@ class Sep:
             self._csv(doc_csv(dong), ghi)
         for name, msg in v.get('rosout', ()):
             self._rosout(doc_rosout(name, msg), ghi)
-        pose = v.get('pose')
         for plan in v.get('plans', ()):
             self._plan(plan, pose, ghi)
         for ds in v.get('goals', ()):
             self._goals(ds, now, pose, ghi)
+        moc('su_kien')
 
         # ---- B. tong hop ----
         pts, st = v.get('pts'), v.get('scan_tuoi')
@@ -396,6 +468,7 @@ class Sep:
             self.t_thap_tu = None
         mt = muc_tin(tc, self.t_thap_tu, now)
         self._co('KHONG_TIN', mt in ('KHONG_TIN', 'BAO'), ghi, 'dinh vi', 'tin cay %s tren %d diem' % (_r(tc), n))
+        moc('tin_cay')
 
         mo = v.get('mo')
         nh, nh_txt = False, ''
@@ -409,6 +482,7 @@ class Sep:
             dm, dd, nh = nhay(mo0, mo, now - t0, (dx * c + dy * s, -dx * s + dy * c))
             nh_txt = '%.2f m %.1f do trong %.1f s' % (dm, dd, now - t0)
         self._co('NHAY_VI_TRI', nh, ghi, 'SLAM sua hoac truot banh', nh_txt)
+        moc('nhay')
 
         ket, ff = None, None
         if not mat_scan:
@@ -426,6 +500,7 @@ class Sep:
                 self.ls_ff.popleft()
         self._co('KET_THAT', ket == 'KET_THAT', ghi, 'banh bi chan', 'LiDAR khong doi trong %ds' % CUA_SO_KET)
         self._co('VI_TRI_SAI', ket == 'VI_TRI_SAI', ghi, 'odom hoac dinh vi', 'LiDAR doi; vi tri khong doi')
+        moc('ket')
 
         vat = None if mat_scan else vat_truoc(pts, pose_ok, grid)
         if vat == 'VAT_LA':
@@ -436,8 +511,36 @@ class Sep:
         t_cho = 0.0 if self.t_vat is None else now - self.t_vat
         self._co('VAT_LA_TRUOC', vat == 'VAT_LA', ghi, 'vat la (nguoi; hop)', 'ban do: o trong')
         khe = khe_rong_dan(self.ls_ff)
+        moc('vat')
 
-        n2, n2_txt = nav2_song(v.get('bond') or {}, self.nav2_crit)
+        # tu thay ket (viec 100): co dich VA tam xe dung yen t_dung giay; roi xem vat gan than xe
+        p = self.p
+        kep, kep_ly, se_kep = None, '', ''
+        if self.goal_active and pose_ok is not None:
+            self.ls_xe.append((now, pose_ok[0], pose_ok[1]))
+            while len(self.ls_xe) > 1 and now - self.ls_xe[1][0] >= p['t_dung']:
+                self.ls_xe.popleft()
+        else:
+            self.ls_xe.clear()
+        dy, dich = dung_yen(self.ls_xe, now, p['t_dung'], p['dich_dung'])
+        d_sat, phia = INF, ''
+        if dy and not mat_scan and vat != 'VAT_LA':              # vat la truoc mat: nhanh CHO cua chon_tu_the
+            d_sat, phia = sat_than_xe(pts)                       # chi tinh khi da dung yen (cho nhe)
+            if d_sat <= p['sat_vat']:
+                kep = 'KET_SAT_VAT'
+                if not self.co.get('KET_SAT_VAT'):
+                    self.luot_thoat += 1
+                kep_ly = 'KET_SAT_VAT %s %.1f cm' % (phia, d_sat * 100)
+                se_kep = 'THOAT luot %d/%d, huong thoang nhat %s' % (self.luot_thoat, LUOT_THOAT_MAX, huong_thoang(pts))
+            else:
+                kep = 'DUNG_YEN_KHONG_RO'
+        dung_txt = 'co dich; tam xe dich %s cm trong %ds' % ('-' if dich is None else '%.1f' % (dich * 100), p['t_dung'])
+        self._co('KET_SAT_VAT', kep == 'KET_SAT_VAT', ghi, 'than xe sat vat', '%s; %s' % (kep_ly, dung_txt), se_kep)
+        self._co('DUNG_YEN_KHONG_RO', kep == 'DUNG_YEN_KHONG_RO', ghi, 'chua ro (Nav2 dung?)',
+                 '%s; vat gan nhat %s cm' % (dung_txt, '-' if d_sat >= INF else '%.1f' % (d_sat * 100)))
+        moc('dung_yen')
+
+        n2, n2_txt = nav2_song(self.nav2_crit, self.nav2_co_tin)
         if n2 == 'MAT_NHIP' and not self.co.get('NAV2_MAT_NHIP'):
             self.nav2_lan += 1
         self._co('NAV2_MAT_NHIP', n2 == 'MAT_NHIP', ghi, 'Nav2 hoac mang ROS', '%s; lan %d trong chuyen' % (n2_txt, self.nav2_lan))
@@ -448,24 +551,39 @@ class Sep:
         tt, ly = chon_tu_the(dict(
             mat_scan=mat_scan, l1=self.l1, tf_cu=tfc, muc_tin=mt, tin_cay=tc, ket=ket, nhay=nh, nav2=n2,
             nav2_lan=self.nav2_lan, plan_lech=self.plan_sai, luot_thoat=self.luot_thoat, vat_truoc=vat,
-            t_cho=t_cho, khe_rong=khe, tai_B=tai_b, goal=self.goal_active))
+            t_cho=t_cho, khe_rong=khe, tai_B=tai_b, goal=self.goal_active, kep=kep, kep_ly=kep_ly))
         if tt != self.tu_the:
             ghi('TU_THE', tt, kq=ly, se='SE_LAM=%s (chi nhin)' % tt)
             self.tu_the = tt
+        moc('chon')
 
         nx = None if mat_scan else nhin_xa(self.plan_cuoi, pose_ok, pts)
+        moc('nhin_xa')
+        tong = sum(do.values())
+        if self.t_cua_so is None:
+            self.t_cua_so = now
+        self.v_tong += tong
+        self.v_n += 1
+        if tong > self.v_max[0]:
+            self.v_max = (tong, do)
+        if now - self.t_cua_so >= CUA_SO_VONG:
+            m, dm = self.v_max
+            cham = max(dm, key=dm.get) if dm else '-'
+            ghi('VONG', 'max_ms=%.1f phan_cham=%s' % (m, cham),
+                kiem='%s %.1f ms; tb_ms=%.1f; %d vong' % (cham, dm.get(cham, 0.0), self.v_tong / self.v_n, self.v_n))
+            self.t_cua_so, self.v_max, self.v_tong, self.v_n = now, (0.0, {}), 0.0, 0
         trang_thai = dict(
             ra_lenh=False, tu_the=tt, ly_do=ly, tin_cay=_r(tc), muc_tin=mt,
             xe=None if pose is None else [round(pose[0], 2), round(pose[1], 2), round(math.degrees(pose[2]))],
             tf_tuoi=_r(v.get('tf_tuoi'), 1), lech_plan=_r(self.lech_plan), dich=self.dich, nav2_dich=self.goal_active,
             nav2_song=n2, nav2_lan=self.nav2_lan, l1=self.l1, luot_thoat=self.luot_thoat, ket=ket, nhay=nh,
-            vat_truoc=vat, t_cho=round(t_cho), nhin_xa=_r(nx), chuyen=self.diem_txt)
+            vat_truoc=vat, t_cho=round(t_cho), nhin_xa=_r(nx), kep=kep, chuyen=self.diem_txt)
         return trang_thai, log
 
-    def _co(self, ten, bat, ghi, nguon='', kiem=''):
+    def _co(self, ten, bat, ghi, nguon='', kiem='', se=''):
         """Ghi mot dong khi dau hieu bat len va khi het (khong ghi lap moi vong)."""
         if bat and not self.co.get(ten):
-            ghi('TRUY_VET', ten, nguon, kiem, 'BAT')
+            ghi('TRUY_VET', ten, nguon, kiem, 'BAT', se)
         elif not bat and self.co.get(ten):
             ghi('TRUY_VET', ten, kq='HET')
         self.co[ten] = bat
@@ -491,6 +609,7 @@ class Sep:
             self.nav2_crit = True
             ghi('ROSOUT', 'NAV2_CRITICAL', 'lifecycle_manager', e[1])
         elif e[0] == 'NAV2_ACTIVE':
+            self.nav2_co_tin = True
             if self.nav2_crit:
                 ghi('ROSOUT', 'NAV2_LEN_LAI', 'lifecycle_manager')
             self.nav2_crit = False
@@ -524,6 +643,7 @@ class Sep:
         self.plan_sai = vuot
 
     def _goals(self, ds, now, pose, ghi):
+        self.nav2_co_tin = True                 # bt_navigator con phat trang thai
         self.goal_active = any(s in (1, 2) for _, s in ds)
         for gid, s in ds:
             if gid in self.xong:
@@ -578,10 +698,6 @@ try:
     import tf2_ros
 except ImportError:      # may khong co ROS: van import duoc phan ham thuan de thu
     rclpy = None
-try:
-    from bond.msg import Status as BondStatus
-except ImportError:
-    BondStatus = None
 
 if rclpy is not None:
     class SepNode(Node):
@@ -590,15 +706,19 @@ if rclpy is not None:
             self.declare_parameter('nhat_ky', os.path.expanduser('~/sep_nhat_ky.csv'))
             self.declare_parameter('csv_chuyen', os.path.expanduser('~/ket_qua_chuyen.csv'))
             self.declare_parameter('lidar_angle_offset_deg', 0.0)
+            for k, v in P_MAC_DINH.items():
+                self.declare_parameter(k, v)
             self.sep = Sep()
             self.scan, self.scan_t = None, None
             self.grid = None
             self.plans, self.goals, self.rosout = [], [], []
             self.ket, self.ket_t = False, None
-            self.bond = {}
             self.csv_pos = None
             self.tt_truoc, self.t_pub = None, -INF
             p = self.get_parameter('nhat_ky').value
+            cu = chuan_bi_nhat_ky(p)
+            if cu:
+                self.get_logger().info('nhat ky cu khac tieu de: doi ten thanh %s' % cu)
             moi = not os.path.exists(p)
             self.f_log = open(p, 'a')
             if moi:
@@ -612,10 +732,6 @@ if rclpy is not None:
             self.create_subscription(GoalStatusArray, '/navigate_to_pose/_action/status', self._on_status, st_qos)
             self.create_subscription(Bool, '/ket', self._on_ket, 10)
             self.create_subscription(Log, '/rosout', self._on_rosout, QoSProfile(depth=100, reliability=ReliabilityPolicy.RELIABLE))
-            if BondStatus is not None:
-                self.create_subscription(BondStatus, '/bond', self._on_bond, 10)
-            else:
-                self.get_logger().warning('khong co bond.msg: nhip tim Nav2 chi dua vao /rosout')
             self.tf_buf = tf2_ros.Buffer()
             self.tf_listener = tf2_ros.TransformListener(self.tf_buf, self)
             self.create_timer(0.1, self._tick)
@@ -640,13 +756,6 @@ if rclpy is not None:
         def _on_rosout(self, msg):
             if msg.name == 'lai_xe_lidar' or 'lifecycle_manager' in msg.name:
                 self.rosout.append((msg.name, msg.msg))
-
-        def _on_bond(self, msg):
-            k = '%s#%s' % (msg.id, msg.instance_id[:8])
-            if msg.active:
-                self.bond[k] = time.monotonic()
-            else:
-                self.bond.pop(k, None)
 
         def _tf(self, cha, con):
             """((x, y, yaw), tuoi giay) cua con trong cha, hoac (None, None)."""
@@ -685,18 +794,25 @@ if rclpy is not None:
 
         def _tick(self):
             now = time.monotonic()
+            do = {}
+            t0 = time.perf_counter()
             pts = st = None
             if self.scan is not None:
                 st = now - self.scan_t
                 pts = L.scan_to_xy(self.scan, math.radians(self.get_parameter('lidar_angle_offset_deg').value))
+            t1 = time.perf_counter()
             pose, tf_tuoi = self._tf('map', 'base_footprint')
             mo, _ = self._tf('map', 'odom')
-            for k in [k for k, t in self.bond.items() if now - t > BOND_QUEN]:
-                del self.bond[k]
+            t2 = time.perf_counter()
+            csv = self._csv_moi()
+            t3 = time.perf_counter()
+            do.update(scan=(t1 - t0) * 1000, tf=(t2 - t1) * 1000, csv=(t3 - t2) * 1000)
+            for k in P_MAC_DINH:
+                self.sep.p[k] = self.get_parameter(k).value
             v = dict(pts=pts, scan_tuoi=st, pose=pose, tf_tuoi=tf_tuoi, mo=mo, grid=self.grid,
-                     plans=self.plans, goals=self.goals, rosout=self.rosout, csv=self._csv_moi(),
+                     plans=self.plans, goals=self.goals, rosout=self.rosout, csv=csv,
                      ket=self.ket and self.ket_t is not None and now - self.ket_t < 1.0,
-                     bond={k: now - t for k, t in self.bond.items()}, gio=time.strftime('%Y-%m-%d %H:%M:%S'))
+                     do=do, gio=time.strftime('%Y-%m-%d %H:%M:%S'))
             self.plans, self.goals, self.rosout = [], [], []
             tt, log = self.sep.vong(now, v)
             tt['vong_ms'] = round((time.monotonic() - now) * 1000)

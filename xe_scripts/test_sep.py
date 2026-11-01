@@ -108,10 +108,10 @@ def test_05_nhay_vi_tri():
 
 def test_06_nav2_mat_nhip_va_dem_theo_chuyen():
     assert S.doc_rosout('lifecycle_manager_navigation', CRIT)[0] == 'NAV2_CRITICAL'
-    assert S.nav2_song({}, True)[0] == 'MAT_NHIP'
-    assert S.nav2_song({'controller_server#ab': 5.0, 'bt_navigator#cd': 0.3}, False) == ('MAT_NHIP', 'controller_server#ab')
-    assert S.nav2_song({'bt_navigator#cd': 0.3}, False)[0] == 'SONG'
-    assert S.nav2_song({}, False)[0] == 'KHONG_BIET'
+    assert S.doc_rosout('lifecycle_manager_navigation', 'SERVER controller_server IS DOWN')[0] == 'NAV2_CRITICAL'
+    assert S.nav2_song(True, True)[0] == 'MAT_NHIP'
+    assert S.nav2_song(False, True)[0] == 'SONG'
+    assert S.nav2_song(False, False)[0] == 'KHONG_BIET'
     c = Chay(vao())
     c(csv=['2026-11-03 10:00:00,ve_A_tt,1,1,0,KIEM_DAT,0,0.02,-,-'])
     assert c.s.chuyen == 've_A_tt'
@@ -223,3 +223,97 @@ def test_15_cau_log_lai_xe_lidar_van_con():
     assert c.s.luot_thoat == 1 and c.s.l1_ket and tt['tu_the'] == 'CHO' and co(log, 'BAT_DAU_THOAT')
     c(rosout=[('lai_xe_lidar', doi % ('THOAT_CUNG', 'XONG', '', '', 'x'))])
     assert not c.s.l1_ket
+
+
+def dung_n_giay(c, giay, **kw):
+    """Goi c() trong `giay` giay (0,1 s moi lan); tra (trang thai cuoi, moi dong nhat ky)."""
+    moi = []
+    for _ in range(int(round(giay / 0.1))):
+        tt, log = c(**kw)
+        moi += log
+    return tt, moi
+
+
+def test_16_ket_sat_K4_phia_truoc():
+    xe = (0.60, 0.02, -math.pi / 2)                                    # mui huong -y, cach canh tren K4 5,5 cm (01/11)
+    d, phia = S.sat_than_xe(quet(xe))
+    assert phia == 'TRUOC' and abs(d - 0.055) < 0.01
+    c = Chay(vao(pose=xe))
+    _, log = c(goals=[[(b'g', 2)]])
+    tt, moi = dung_n_giay(c, 15)
+    log += moi
+    dong = [d for d in log if ',KET_SAT_VAT,' in d and ',BAT,' in d]
+    assert len(dong) == 1 and 'TRUOC' in dong[0] and 'THOAT luot 1/3' in dong[0]
+    assert float(dong[0].split(',')[0]) >= 10.0                       # chua du 10 s thi chua bao
+    assert dong[0].split(',')[-3:] == ['0.60', '0.02', '-90']          # cot x, y, goc_do
+    assert tt['tu_the'] == 'THOAT' and tt['kep'] == 'KET_SAT_VAT' and not co(log, 'DUNG_YEN_KHONG_RO')
+
+
+def test_17_ong_la_truoc_8cm_chi_cho():
+    xe = (0.40, 0.09, 0.0)                                            # mui o x = 0,545
+    c = Chay(vao(pose=xe, them=[(0.625, 0.80, 0.0, 0.18)]))           # ong khong co trong ban do, cach mui 8 cm
+    c(goals=[[(b'g', 2)]])
+    tt, log = dung_n_giay(c, 15)
+    assert tt['vat_truoc'] == 'VAT_LA' and tt['tu_the'] == 'CHO'
+    assert not co(log, 'KET_SAT_VAT') and not co(log, 'DUNG_YEN_KHONG_RO')
+
+
+def test_18_dung_yen_khong_vat_gan():
+    c = Chay(vao())                                                   # o A, vat gan nhat xa hon 10 cm
+    c(goals=[[(b'g', 2)]])
+    tt, log = dung_n_giay(c, 15)
+    assert co(log, 'DUNG_YEN_KHONG_RO') and tt['tu_the'] == 'CHO' and not co(log, 'KET_SAT_VAT')
+    _, log = dung_n_giay(Chay(vao()), 15)                             # khong co dich: dung yen la binh thuong
+    assert not co(log, 'DUNG_YEN_KHONG_RO')
+
+
+def test_19_dang_di_trong_khe_hong_17cm_khong_bao():
+    c = Chay(vao())
+    c(goals=[[(b'g', 2)]])
+    log = []
+    for k in range(120):                                              # 12 s, tien 0,033 m/s doc khe duoi
+        xe = (0.45 + 0.0033 * k, 0.07, 0.0)
+        pts = quet(xe)
+        if k == 0:
+            d, phia = S.sat_than_xe(pts)
+            assert phia == 'PHAI' and 0.16 < d < 0.18                 # hong phai cach K4 17 cm
+        _, l = c(pose=xe, pts=pts)
+        log += l
+    for chu in ('KET_SAT_VAT', 'DUNG_YEN_KHONG_RO', 'VAT_LA_TRUOC'):
+        assert not co(log, chu)
+
+
+def test_20_nhat_ky_cu_khac_tieu_de_thi_doi_ten():
+    import shutil
+    import tempfile
+    d = tempfile.mkdtemp()
+    try:
+        p = os.path.join(d, 'sep_nhat_ky.csv')
+        assert S.chuan_bi_nhat_ky(p) is None                          # chua co tep
+        cu = 'gio_mono,gio,loai,dau_hieu,nguon_nghi,phep_kiem,ket_qua,se_lam\n1.00,t,TU_THE,CHO,,,,\n'
+        open(p, 'w').write(cu)
+        assert S.chuan_bi_nhat_ky(p) == os.path.join(d, 'sep_nhat_ky_cu1.csv') and not os.path.exists(p)
+        open(p, 'w').write(cu)
+        assert S.chuan_bi_nhat_ky(p) == os.path.join(d, 'sep_nhat_ky_cu2.csv')   # cu1 da co thi thanh cu2
+        assert open(os.path.join(d, 'sep_nhat_ky_cu1.csv')).read() == cu
+        open(p, 'w').write(S.COT_NHAT_KY + '\n')
+        assert S.chuan_bi_nhat_ky(p) is None and os.path.exists(p)    # dung tieu de moi: giu nguyen
+    finally:
+        shutil.rmtree(d)
+
+
+if __name__ == '__main__':
+    import sys
+    import traceback
+    ca = sorted((k, f) for k, f in globals().items() if k.startswith('test_') and callable(f))
+    dat = 0
+    for k, f in ca:
+        try:
+            f()
+            dat += 1
+            print('PASS ', k)
+        except Exception:
+            print('FAIL ', k)
+            traceback.print_exc()
+    print('TONG: %d/%d dat' % (dat, len(ca)))
+    sys.exit(0 if dat == len(ca) else 1)

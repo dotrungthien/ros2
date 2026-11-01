@@ -44,37 +44,90 @@ liet_ke() {
   pgrep -af "[r]os2 launch my_bot"
 }
 
+# viec 101: tien trinh ROS ngoai NODES (chay tay, lenh ros2, daemon); phai tat het truoc khi don /dev/shm
+# chuong trinh chay tay: chi khop tien trinh python3 co dung ten tep (khong khop vo "bash -c" co chu do, bai hoc 303)
+TAY='^([^ ]*/)?python3[^ ]*( [^ ]+)*[ /]([s]ep|[l]ai_xe_lidar|[t]heo_doi)\.py( |$)'
+ROS_KHAC="[_]ros2_daemon|[r]os2 (bag|topic|action|param|run|service|node|launch)|$TAY"
+
+# nhu con_chay, them cac chuong trinh chay tay (chi dung trong "tat"; phan bat van dung con_chay)
+con_chay_tat() {
+  con_chay || pgrep -f "$TAY" > /dev/null
+}
+
+# in pid, so giay da song, ten cua moi tien trinh ROS con song
+ps_ros() {
+  local P
+  P=$(pgrep -f "$NODES|$ROS_KHAC" | paste -sd, -)
+  [ -n "$P" ] && ps -o pid,etimes,comm -p "$P"
+}
+
+# viec 101: moc thoi gian tung buoc cua "tat" ($1 = so buoc), kem tien trinh ROS con song
+moc() {
+  echo "T+$((SECONDS - T_TAT)) buoc $1"
+  ps_ros
+}
+
 # ---------- tat ----------
 if [ "$1" = "tat" ]; then
-  echo "== Tat ghi vi tri, Nav2, launch chinh =="
-  pkill -INT -f "[t]heo_doi.py"
+  T_TAT=$SECONDS
+  echo "== Tat ghi vi tri, sep, lai_xe_lidar, Nav2, launch chinh =="
+  moc 1
+  pkill -INT -f "$TAY"
   pkill -INT -f "[r]os2 launch my_bot navigation_my_bot"
   sleep 3
+  moc 2
   pkill -INT -f "[r]os2 launch my_bot mapping_my_bot"
   i=0
-  while [ "$i" -lt 20 ] && con_chay; do
+  while [ "$i" -lt 20 ] && con_chay_tat; do
     sleep 1
     i=$((i + 1))
   done
-  if con_chay; then
+  if con_chay_tat; then
+    moc 3
     echo "== Sau 20 giay con tien trinh sot, gui lenh tat manh =="
     pkill -f "[r]os2 launch my_bot"
     pkill -f "$NODES"
+    pkill -f "$TAY"
     sleep 3
   fi
-  if con_chay; then
+  if con_chay_tat; then
     # v3: slam_toolbox hay sot sau Ctrl+C (kill -9 moi tat duoc, giai doan 60.4)
+    moc 4
     echo "== Van con tien trinh sot, gui tin hieu KILL (-9) =="
     pkill -KILL -f "$NODES"
     pkill -KILL -f "[r]os2 launch my_bot"
+    pkill -KILL -f "$TAY"
     sleep 2
   fi
-  if con_chay; then
+  moc 5
+  if con_chay_tat; then
     echo "CON_CHAY: van con cac tien trinh sau:"
     liet_ke
+    pgrep -af "$TAY"
     echo "Chay lai: bash ~/bat_xe.sh tat   (van con thi tat Pi roi bat lai)"
     exit 1
   fi
+  # ---------- don /dev/shm (viec 101): chi khi khong con tien trinh ROS nao ----------
+  [ -f ~/ros2_ws/install/setup.bash ] && source ~/ros2_ws/install/setup.bash
+  timeout 10 ros2 daemon stop > /dev/null 2>&1     # daemon giu tep shm; dung no truoc
+  sleep 1
+  moc 6
+  SONG=$(pgrep -af "$NODES|$ROS_KHAC")
+  DUNG=""
+  if command -v fuser > /dev/null; then
+    DUNG=$(fuser /dev/shm/fastrtps_* /dev/shm/sem.fastrtps_* 2>/dev/null)   # PID con mo hoac mmap tep shm
+  else
+    echo "KHONG_CO_FUSER: bo lop kiem tep dang mo, chi dua vao danh sach ten"
+  fi
+  N=$(ls /dev/shm | grep -c 'fastrtps_')
+  if [ -n "$SONG" ] || [ -n "$DUNG" ]; then
+    echo "CON_ROS_SONG: khong don /dev/shm ($N tep). Con:"
+    [ -n "$SONG" ] && echo "$SONG"
+    [ -n "$DUNG" ] && ps -o pid=,comm= -p "$(echo $DUNG | tr ' ' ',')"
+    exit 1
+  fi
+  rm -f /dev/shm/fastrtps_* /dev/shm/sem.fastrtps_*
+  echo "DA_DON $N tep /dev/shm"
   echo "KIEM_XONG: da tat sach."
   exit 0
 fi

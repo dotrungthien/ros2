@@ -20,6 +20,8 @@
 # Bien moi truong (tuy chon): BANG (tt | cu | xs, mac dinh tt), TRY (so lan thu moi diem, mac dinh 1: cho ~30 giay roi doi tuyen, theo chinh sach 31/10), CHO (giay dung yen giua hai lan, 5),
 #   TO (han chot moi lan gui, 130 giay), LECH_MAX (m, 0.30), BO_QUA_KIEM=1 (bo buoc kiem vi tri),
 #   FP_STOP (0 = chi ghi, 1 = dung xe khi costmap lech), TUOI_MAX (giay, 5).
+#   Muc B cua sep: SEP_LENH (tep lenh cua sep, ~/sep_lenh), SEP_TUOI_MAX (giay, 3), SEP_CHO_S (giay cho khi sep bao CHO, 10).
+#   Khong co tep lenh hoac tep cu hon SEP_TUOI_MAX (sep tat, ra_lenh=false, sep chet) -> chay y nhu cu.
 #   Luu y thoi gian cho: moi lan gui, cay hanh vi tu chiu den het so lan thu (15 lan ~ 60 giay; 8 lan ~ 30 giay) roi moi bao hong; voi TRY=2 xe co the
 #   cho ~2 phut o mot diem truoc khi doi tuyen. Muon dung 60 giay: TRY=1 bash ~/chuyen.sh ve_A
 #
@@ -28,8 +30,10 @@
 #   1. Moi tuyen la mot day diem. Gui lan luot tung diem bang /navigate_to_pose.
 #   2. Diem hong -> DUNG YEN CHO giay -> thu lai (toi da TRY lan). Van hong -> bo tuyen, thu tuyen kia tu cho xe dang dung.
 #   3. Ca hai tuyen hong -> DUNG, in "HET_DUONG" (ma 1).
+#   4. Muc B: truoc moi lan gui va sau moi KHONG_DAT hoi sep: CHO -> dung yen SEP_CHO_S giay roi gui lai cung diem
+#      (khong tinh TRY, toi da 2 lan moi diem; qua thi chay nhu cu); DUNG -> ghi DUNG_SEP, dung (ma 4).
 #   Moi buoc ghi mot dong vao ~/ket_qua_chuyen.csv de dem x/n.
-# Ma thoat: 0 den noi; 1 het duong; 2 sai doi so; 3 Nav2 thay sai vi tri xe (khong gui them lenh nao).
+# Ma thoat: 0 den noi; 1 het duong; 2 sai doi so; 3 Nav2 thay sai vi tri xe (khong gui them lenh nao); 4 sep bao DUNG.
 # Dung khan: TAT CONG TAC MOTOR (Ctrl+C chua chac huy muc tieu dang chay trong Nav2).
 #
 # Toa do (map, goc A = tam xe o vach A; doc tu ban do map_xuong_v2, sai so ~ +-5 cm):
@@ -48,6 +52,9 @@ TO="${TO:-130}"
 LECH_MAX="${LECH_MAX:-0.30}"
 FP_STOP="${FP_STOP:-0}"
 TUOI_MAX="${TUOI_MAX:-5}"
+SEP_LENH="${SEP_LENH:-$HOME/sep_lenh}"
+SEP_TUOI_MAX="${SEP_TUOI_MAX:-3}"
+SEP_CHO_S="${SEP_CHO_S:-10}"
 CSV="$HOME/ket_qua_chuyen.csv"
 
 [ -f ~/ros2_ws/install/setup.bash ] && source ~/ros2_ws/install/setup.bash
@@ -162,6 +169,41 @@ gui() { # $1 x, $2 y, $3 z, $4 w, $5 ten tep log
   grep -q 'status: SUCCEEDED' "$5"
 }
 
+# muc B: doc ~/sep_lenh ("<giay /proc/uptime> DI|CHO|DUNG <ly do>"), dat SEP va SEP_LY.
+# SEP rong (chay y nhu cu) khi khong co tep hoac tep cu hon SEP_TUOI_MAX giay.
+doc_sep() {
+  SEP=""; SEP_LY=""
+  [ -f "$SEP_LENH" ] || return 0
+  local T C L U
+  read -r T C L < "$SEP_LENH" || return 0
+  read -r U _ < /proc/uptime
+  awk -v u="$U" -v t="$T" -v m="$SEP_TUOI_MAX" 'BEGIN{d = u - t; exit (t + 0 > 0 && d >= -1 && d <= m) ? 0 : 1}' || return 0
+  SEP="$C"; SEP_LY="$L"
+}
+
+# muc B: lam theo sep. DUNG -> ghi DUNG_SEP, thoat ma 4. CHO -> dung yen SEP_CHO_S giay (toi da 2 lan moi diem,
+# khong tinh TRY) roi tra 0 de gui lai cung diem. Con lai (DI, khong co tep, da cho 2 lan) tra 1: chay nhu cu.
+theo_sep() {
+  doc_sep
+  case "$SEP" in
+    DUNG)
+      echo "DUNG_SEP: sep bao dung ($SEP_LY). Xe dung yen, khong gui them lenh."
+      ghi "$NHAN,$R,$IDX,$LAN,DUNG_SEP,0,$LECH,$LECHFP,$TUOI"
+      exit 4 ;;
+    CHO)
+      if [ "$CHO_SEP" -ge 2 ]; then
+        echo "   sep van bao CHO ($SEP_LY) nhung da cho 2 lan o diem nay: chay nhu cu."
+        return 1
+      fi
+      CHO_SEP=$((CHO_SEP + 1))
+      echo "   sep bao CHO ($SEP_LY): dung yen $SEP_CHO_S giay roi gui lai cung diem (lan cho $CHO_SEP/2)."
+      ghi "$NHAN,$R,$IDX,$LAN,CHO_SEP,$SEP_CHO_S,$LECH,$LECHFP,$TUOI"
+      sleep "$SEP_CHO_S"
+      return 0 ;;
+  esac
+  return 1
+}
+
 # ---------- chay ----------
 TT0=$(date +%s)
 R=0; IDX=0
@@ -182,16 +224,26 @@ for R in $THU_TU; do
     ghi "$NHAN,$R,$IDX,0,KIEM_DAT,0,$LECH,$LECHFP,$TUOI"
     LAN=0
     XONG=0
+    CHO_SEP=0
     while [ "$LAN" -lt "$TRY" ]; do
+      while theo_sep; do :; done          # muc B: hoi sep truoc khi gui
       LAN=$((LAN + 1))
       T0=$(date +%s)
       echo "-- tuyen $R, diem $IDX/${#WP[@]} ($1; $2), lan $LAN/$TRY, $(date +%T)"
-      if gui "$1" "$2" "$3" "$4" "$HOME/chuyen_${NHAN}_t${R}_d${IDX}_l${LAN}.txt"; then
+      TEP="$HOME/chuyen_${NHAN}_t${R}_d${IDX}_l${LAN}"
+      [ "$CHO_SEP" -gt 0 ] && TEP="${TEP}_s${CHO_SEP}"
+      if gui "$1" "$2" "$3" "$4" "$TEP.txt"; then
         ghi "$NHAN,$R,$IDX,$LAN,SUCCEEDED,$(( $(date +%s) - T0 )),$LECH,$LECHFP,$TUOI"
         XONG=1
         break
       fi
       ghi "$NHAN,$R,$IDX,$LAN,KHONG_DAT,$(( $(date +%s) - T0 )),$LECH,$LECHFP,$TUOI"
+      doc_sep
+      [ -n "$SEP" ] && sleep 0.5          # sep dang ra lenh: cho no kip thay ABORTED (vong 0,1 s) roi moi hoi
+      if theo_sep; then                   # muc B: sep bao CHO -> gui lai cung diem, khong tinh TRY
+        LAN=$((LAN - 1))
+        continue
+      fi
       if [ "$LAN" -lt "$TRY" ]; then
         echo "   khong den duoc. DUNG YEN $CHO giay roi thu lai."
         sleep "$CHO"

@@ -203,7 +203,7 @@ def test_13_sep_treo_bat_dau_lai():
 
 def test_14_sep_khong_co_ma_ra_lenh():
     src = open(os.path.join(DAY, 'sep.py')).read()
-    assert not re.search(r'Twist|sep_lenh|subprocess|os\.system|ACCESS', src)
+    assert not re.search(r'Twist|subprocess|os\.system|ACCESS', src)   # muc B: duoc ghi ~/sep_lenh (khi ra_lenh)
     pubs = re.findall(r'create_publisher\(([^,]+),', src)
     assert pubs == ['String']
     assert 'ActionClient' not in src and 'create_client' not in src
@@ -298,6 +298,59 @@ def test_20_nhat_ky_cu_khac_tieu_de_thi_doi_ten():
         assert open(os.path.join(d, 'sep_nhat_ky_cu1.csv')).read() == cu
         open(p, 'w').write(S.COT_NHAT_KY + '\n')
         assert S.chuan_bi_nhat_ky(p) is None and os.path.exists(p)    # dung tieu de moi: giu nguyen
+    finally:
+        shutil.rmtree(d)
+
+
+def test_21_di_hay_khong():
+    assert S.di_hay_khong(dict(muc_tin='TIN')) == ('DI', '')
+    assert S.di_hay_khong(dict(muc_tin='NGHI', tin_cay=0.65))[0] == 'DI'          # muc NGHI khong chan
+    assert S.di_hay_khong(dict(muc_tin='BAO'))[0] == 'DUNG'
+    assert S.di_hay_khong(dict(muc_tin='TIN', nav2='MAT_NHIP'))[0] == 'DUNG'
+    for k in ('mat_scan', 'tf_cu', 'nhay'):
+        assert S.di_hay_khong({'muc_tin': 'TIN', k: True})[0] == 'CHO'
+    assert S.di_hay_khong(dict(muc_tin='KHONG_TIN'))[0] == 'CHO'
+    assert S.di_hay_khong(dict(muc_tin='TIN', plan_xau='ABORT_NHANH', plan_xau_s=4.0))[0] == 'CHO'
+    assert S.di_hay_khong(dict(muc_tin='TIN', plan_xau='ABORT_NHANH', plan_xau_s=11.0))[0] == 'DI'
+
+
+def test_22_ca_1506_abort_nhanh_thi_cho_10s():
+    c = Chay(vao())
+    c(goals=[[(b'g1', 2)]])
+    tt, log = c(goals=[[(b'g1', 6)]])                                  # ABORTED sau 0,1 s (nhu 01/11 15:06)
+    assert co(log, 'ABORT_NHANH') and tt['di'] == 'CHO' and 'ABORT_NHANH' in tt['di_ly']
+    assert co(log, ',LENH,CHO,')
+    tt, _ = dung_n_giay(c, 9.5)
+    assert tt['di'] == 'CHO'
+    tt, log = dung_n_giay(c, 1.0)
+    assert tt['di'] == 'DI' and co(log, ',LENH,DI,')
+
+
+def test_23_tin_cay_065_van_di():
+    c = Chay(vao(pose=(0.15, 0.0, 0.0), pts=quet(A)))                 # sep tuong lech 15 cm: tin cay ~0,63
+    tt, _ = dung_n_giay(c, 20)
+    assert tt['muc_tin'] == 'NGHI' and 0.50 <= tt['tin_cay'] < 0.70 and tt['di'] == 'DI'
+
+
+def test_24_khong_tin_16s_thi_dung():
+    c = Chay(vao(pose=(0.15, 0.15, 0.0), pts=quet(A)))                # sep tuong lech 21 cm: tin cay < 0,50
+    tt, _ = dung_n_giay(c, 4)
+    assert tt['di'] == 'DI'                                            # duoi 5 s: van la NGHI
+    tt, _ = dung_n_giay(c, 6)
+    assert tt['di'] == 'CHO' and tt['di_ly'] == 'KHONG_TIN'
+    tt, _ = dung_n_giay(c, 6)
+    assert tt['di'] == 'DUNG' and tt['di_ly'].startswith('KHONG_TIN_QUA')
+
+
+def test_25_ghi_lenh_doi_ten_nguyen_tep():
+    import shutil
+    import tempfile
+    d = tempfile.mkdtemp()
+    try:
+        p = os.path.join(d, 'sep_lenh')
+        S.ghi_lenh(p, 1234.5, 'CHO', 'ABORT_NHANH 3s truoc')
+        assert open(p).read() == '1234.50 CHO ABORT_NHANH 3s truoc\n'
+        assert os.listdir(d) == ['sep_lenh']                           # khong con tep tam
     finally:
         shutil.rmtree(d)
 

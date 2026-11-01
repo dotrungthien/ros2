@@ -16,6 +16,8 @@ Viec 100 (01/11 toi): bo nghe /bond (~100 tin/s) cho nhe; Nav2 song/chet suy tu 
   Tu thay ket: co dich VA tam xe dich < dich_dung trong t_dung giay VA diem LiDAR gan than xe <= sat_vat
   => vat la truoc: CHO; khong: KET_SAT_VAT (phia, cm); khong co vat gan: DUNG_YEN_KHONG_RO.
   Cu 10 s ghi mot dong VONG (vong cham nhat va phan cham nhat). Moi dong nhat ky co them x, y, goc_do.
+Muc B (01/11 dem): tham so ra_lenh (mac dinh false). true: moi vong ghi ~/sep_lenh "<giay CLOCK_BOOTTIME> DI|CHO|DUNG
+  <ly do>" (CLOCK_BOOTTIME = so dau cua /proc/uptime ma chuyen.sh dung de tinh tuoi tep). false hoac sep tat: xoa tep.
 
 CAN KIEM TREN PI (chua kiem; chi suy tu ma trong kho va tai lieu):
   1. (bo tu viec 100: khong con nghe /bond.)
@@ -57,6 +59,7 @@ KHE_TANG, KHE_CUA_SO = 0.02, 3.0 # m, s: khe phia truoc rong them it nhat bay nh
 NHIN_XA = 0.6                    # m dau cua /plan dat len LiDAR (muc 4 buoc D) [de xuat]
 XA_TRUOC = 0.15                  # m tu mep mui: vat trong dai nay la "vat phia truoc" (vung vang cua lai_xe_lidar, #20)
 T_CHO, T_CHO_THEM, T_CHO_B = 30.0, 10.0, 60.0          # s (#9, #12; vat tai B: 2 x 30 s)
+T_PLAN_XAU = 10.0                # s, muc B: ABORT_NHANH / PLAN_RONG / PLAN_LECH vua xay ra trong chung nay giay => CHO
 B_XY, R_B = (1.60, 0.82), 0.20   # B (chuyen.sh) va ban kinh coi la "dich tai B"
 TREO = 1.0                       # s, mot vong cham hon so nay = sep treo (muc 9.9) [de xuat]
 ABORT_NHANH = 2.0                # s, ABORTED som hon so nay = nghi "0 poses"
@@ -308,6 +311,38 @@ def chon_tu_the(bt):
     return 'DI_THUONG', ''
 
 
+def di_hay_khong(bt):
+    """Muc B: neu gui diem ngay bay gio thi nen DI, CHO hay DUNG? Tra (chu, ly do). Chi xet dieu kien truoc khi gui
+    (khong xet tu the, vi giua hai diem tu the luon la CHO KHONG_CO_DICH). Muc NGHI (0,50-0,70) KHONG chan.
+    DUNG: khong tin qua 15 s (BAO) hoac Nav2 mat nhip. CHO: mat /scan, tf cu, nhay chua kiem xong, khong tin (5-15 s),
+    ABORT_NHANH / PLAN_RONG / PLAN_LECH trong T_PLAN_XAU giay vua qua."""
+    g = bt.get
+    if g('muc_tin') == 'BAO':
+        return 'DUNG', 'KHONG_TIN_QUA_%ds' % T_BAO
+    if g('nav2') == 'MAT_NHIP':
+        return 'DUNG', 'NAV2_MAT_NHIP'
+    if g('mat_scan'):
+        return 'CHO', 'MAT_SCAN'
+    if g('tf_cu'):
+        return 'CHO', 'TF_CU'
+    if g('nhay'):
+        return 'CHO', 'NHAY_VI_TRI'
+    if g('muc_tin') == 'KHONG_TIN':
+        return 'CHO', 'KHONG_TIN'
+    t = g('plan_xau_s')
+    if t is not None and t <= T_PLAN_XAU:
+        return 'CHO', '%s %.0fs truoc' % (g('plan_xau') or 'PLAN_XAU', t)
+    return 'DI', ''
+
+
+def ghi_lenh(path, t, chu, ly=''):
+    """Ghi "<t> <chu> <ly do>" vao path: ghi tep tam roi doi ten, de chuyen.sh khong doc phai tep ghi do."""
+    tam = path + '.tam'
+    with open(tam, 'w') as f:
+        f.write('%.2f %s %s\n' % (t, chu, ly))
+    os.replace(tam, path)
+
+
 def kiem_treo(t_truoc, now, nguong=TREO):
     """So giay giua hai vong neu cham hon nguong (sep treo), nguoc lai None."""
     if t_truoc is None:
@@ -388,6 +423,8 @@ class Sep:
         self.v_max = (0.0, {})
         self.v_tong, self.v_n = 0.0, 0
         self.nav2_co_tin = False
+        self.t_plan_xau, self.plan_xau = None, ''   # muc B: lan cuoi co ABORT_NHANH / PLAN_RONG / PLAN_LECH
+        self.di = None
         # su that (giu khi sep treo)
         self.chuyen = None
         self.diem_txt = ''
@@ -445,7 +482,7 @@ class Sep:
         for name, msg in v.get('rosout', ()):
             self._rosout(doc_rosout(name, msg), ghi)
         for plan in v.get('plans', ()):
-            self._plan(plan, pose, ghi)
+            self._plan(plan, pose, ghi, now)
         for ds in v.get('goals', ()):
             self._goals(ds, now, pose, ghi)
         moc('su_kien')
@@ -555,6 +592,13 @@ class Sep:
         if tt != self.tu_the:
             ghi('TU_THE', tt, kq=ly, se='SE_LAM=%s (chi nhin)' % tt)
             self.tu_the = tt
+        # muc B: "di hay khong di" (node ghi ~/sep_lenh khi ra_lenh = true)
+        di, di_ly = di_hay_khong(dict(
+            mat_scan=mat_scan, tf_cu=tfc, nhay=nh, muc_tin=mt, nav2=n2, plan_xau=self.plan_xau,
+            plan_xau_s=None if self.t_plan_xau is None else now - self.t_plan_xau))
+        if di != self.di:
+            ghi('LENH', di, kq=di_ly, se='%s (%s)' % (di, 'ra lenh' if v.get('ra_lenh') else 'chi nhin'))
+            self.di = di
         moc('chon')
 
         nx = None if mat_scan else nhin_xa(self.plan_cuoi, pose_ok, pts)
@@ -573,7 +617,7 @@ class Sep:
                 kiem='%s %.1f ms; tb_ms=%.1f; %d vong' % (cham, dm.get(cham, 0.0), self.v_tong / self.v_n, self.v_n))
             self.t_cua_so, self.v_max, self.v_tong, self.v_n = now, (0.0, {}), 0.0, 0
         trang_thai = dict(
-            ra_lenh=False, tu_the=tt, ly_do=ly, tin_cay=_r(tc), muc_tin=mt,
+            ra_lenh=bool(v.get('ra_lenh')), di=di, di_ly=di_ly, tu_the=tt, ly_do=ly, tin_cay=_r(tc), muc_tin=mt,
             xe=None if pose is None else [round(pose[0], 2), round(pose[1], 2), round(math.degrees(pose[2]))],
             tf_tuoi=_r(v.get('tf_tuoi'), 1), lech_plan=_r(self.lech_plan), dich=self.dich, nav2_dich=self.goal_active,
             nav2_song=n2, nav2_lan=self.nav2_lan, l1=self.l1, luot_thoat=self.luot_thoat, ket=ket, nhay=nh,
@@ -598,7 +642,7 @@ class Sep:
             self.chuyen = r['huong']
             self.nav2_lan = self.luot_thoat = 0
             ghi('CHUYEN', 'BAT_DAU', kiem=r['huong'], se='dem lai: Nav2 0/%d; thoat 0/%d' % (NAV2_LAN_MAX, LUOT_THOAT_MAX))
-        elif kq in ('DEN_NOI', 'HET_DUONG', 'SAI_VI_TRI') and self.chuyen is not None:
+        elif kq in ('DEN_NOI', 'HET_DUONG', 'SAI_VI_TRI', 'DUNG_SEP') and self.chuyen is not None:
             ghi('CHUYEN', 'KET_THUC', kiem=self.chuyen, kq=kq)
             self.chuyen = None
 
@@ -625,9 +669,10 @@ class Sep:
                 self.l1_ket = False
             self.l1 = ten
 
-    def _plan(self, plan, pose, ghi):
+    def _plan(self, plan, pose, ghi, now):
         if not plan:
             ghi('TRUY_VET', 'PLAN_RONG', 'bo lap duong', '0 poses', 'BAT', 'KHONG_DI')
+            self.t_plan_xau, self.plan_xau = now, 'PLAN_RONG'
             self.plan_sai = True
             self.lech_plan = None
             return
@@ -635,6 +680,8 @@ class Sep:
         self.dich = plan[-1]
         d, vuot = lech_dau_plan(plan[0], pose)
         self.lech_plan = d
+        if vuot:
+            self.t_plan_xau, self.plan_xau = now, 'PLAN_LECH'
         if vuot and not self.plan_sai:
             ghi('TRUY_VET', 'PLAN_LECH', 'bo lap duong nhan sai vi tri xe',
                 'dau plan (%.2f;%.2f) xe (%.2f;%.2f) lech %.2f m' % (plan[0][0], plan[0][1], pose[0], pose[1], d), 'BAT', 'KHONG_DI')
@@ -663,6 +710,7 @@ class Sep:
                 ghi('NAV2', 'ABORTED', kiem='sau %.1f s' % t_chay)
                 if t_chay < ABORT_NHANH:
                     ghi('TRUY_VET', 'ABORT_NHANH', 'bo lap duong (0 poses?)', 'ABORTED sau %.2f s' % t_chay, 'BAT', 'KHONG_DI')
+                    self.t_plan_xau, self.plan_xau = now, 'ABORT_NHANH'
             else:
                 ghi('NAV2', 'CANCELED', kiem='sau %.1f s' % t_chay)
         self.status_dau = False
@@ -706,6 +754,8 @@ if rclpy is not None:
             self.declare_parameter('nhat_ky', os.path.expanduser('~/sep_nhat_ky.csv'))
             self.declare_parameter('csv_chuyen', os.path.expanduser('~/ket_qua_chuyen.csv'))
             self.declare_parameter('lidar_angle_offset_deg', 0.0)
+            self.declare_parameter('ra_lenh', False)          # muc B: true = ghi ~/sep_lenh cho chuyen.sh doc
+            self.declare_parameter('tep_lenh', os.path.expanduser('~/sep_lenh'))
             for k, v in P_MAC_DINH.items():
                 self.declare_parameter(k, v)
             self.sep = Sep()
@@ -809,12 +859,18 @@ if rclpy is not None:
             do.update(scan=(t1 - t0) * 1000, tf=(t2 - t1) * 1000, csv=(t3 - t2) * 1000)
             for k in P_MAC_DINH:
                 self.sep.p[k] = self.get_parameter(k).value
+            ra_lenh = self.get_parameter('ra_lenh').value
             v = dict(pts=pts, scan_tuoi=st, pose=pose, tf_tuoi=tf_tuoi, mo=mo, grid=self.grid,
                      plans=self.plans, goals=self.goals, rosout=self.rosout, csv=csv,
                      ket=self.ket and self.ket_t is not None and now - self.ket_t < 1.0,
-                     do=do, gio=time.strftime('%Y-%m-%d %H:%M:%S'))
+                     do=do, gio=time.strftime('%Y-%m-%d %H:%M:%S'), ra_lenh=ra_lenh)
             self.plans, self.goals, self.rosout = [], [], []
             tt, log = self.sep.vong(now, v)
+            tep = self.get_parameter('tep_lenh').value
+            if ra_lenh:
+                ghi_lenh(tep, time.clock_gettime(time.CLOCK_BOOTTIME), tt['di'], tt['di_ly'])
+            else:
+                self.xoa_lenh()
             tt['vong_ms'] = round((time.monotonic() - now) * 1000)
             for d in log:
                 self.f_log.write(d + '\n')
@@ -825,6 +881,13 @@ if rclpy is not None:
                 self.pub.publish(String(data=json.dumps(tt)))
                 self.tt_truoc, self.t_pub = tt['tu_the'], now
 
+        def xoa_lenh(self):
+            """Xoa ~/sep_lenh (ra_lenh = false hoac sep tat): chuyen.sh khong thay tep thi chay y nhu cu."""
+            try:
+                os.remove(self.get_parameter('tep_lenh').value)
+            except OSError:
+                pass
+
     def main():
         rclpy.init()
         node = SepNode()
@@ -833,6 +896,7 @@ if rclpy is not None:
         except KeyboardInterrupt:
             pass
         finally:
+            node.xoa_lenh()
             node.f_log.close()
             node.destroy_node()
             if rclpy.ok():

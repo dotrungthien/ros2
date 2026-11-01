@@ -73,12 +73,16 @@ if [ "$1" = "tat" ]; then
   echo "== Tat ghi vi tri, sep, lai_xe_lidar, Nav2, launch chinh =="
   moc 1
   pkill -INT -f "$TAY"
-  pkill -INT -f "[r]os2 launch my_bot navigation_my_bot"
-  sleep 3
+  # 02/11 (gia lap): ros2 launch bat nen tu script bo qua INT, nen gui INT thang cho cac node (node tu bat INT);
+  # het node thi moi TERM cho launch con sot
+  pkill -INT -f "$NODES"
   moc 2
-  pkill -INT -f "[r]os2 launch my_bot mapping_my_bot"
   i=0
   while [ "$i" -lt 20 ] && con_chay_tat; do
+    if ! pgrep -f "$NODES" > /dev/null; then
+      pkill -TERM -f "[r]os2 launch my_bot navigation_my_bot"
+      pkill -TERM -f "[r]os2 launch my_bot mapping_my_bot"
+    fi
     sleep 1
     i=$((i + 1))
   done

@@ -43,3 +43,27 @@ Cả ba tệp nguồn đều ghi chưa chạy trên Pi thật (`cai_cau_noi.sh`:
 | Gói đã đóng cuối buổi | `~/dulieu_31_10.tgz` | Tạo bằng `tar` ở cuối buổi thử. |
 | Workspace ROS 2 | `~/ros2_ws/install/setup.bash` | Cần `source` trước khi chạy `ros2`. |
 | Launch Nav2 | gói `my_bot`, `navigation_my_bot.launch.py` | Nằm trong workspace trên; đường dẫn tệp cụ thể chưa rõ. |
+
+## Đối chiếu luật G (01/11, đọc mã; CHƯA chạy trên Pi)
+
+Luật G: bên ghi và bên đọc phải dùng cùng tên/đường dẫn. Cột "khớp?" chỉ nói về tên trong mã, không nói tệp có thật trên Pi (việc đó là `so_voi_pi.sh`). **Chưa giả lập cả hệ thống (công cụ chỉ đọc).**
+
+| Bên ghi | Bên đọc | Tên/đường dẫn phải khớp | Khớp? |
+|---|---|---|---|
+| `cai_cau_noi.sh` chép | systemd `ExecStart`, `cau_noi_xe.py` (trang `HERE/chon_b.html`) | `~/cau_noi/cau_noi_xe.py`, `~/cau_noi/chon_b.html` (đổi tên từ `chon_b_v4.html`) | khớp |
+| `cai_cau_noi.sh` ghi `cau_noi.env` | `EnvironmentFile` → `cau_noi_xe.py` → `bat_xe.sh` (con thừa kế biến môi trường) | `NAV_PARAMS=/home/$ME/nav2_params_cho.yaml` = `~/nav2_params_cho.yaml` | khớp nếu người dùng là `project1`; việc thừa kế biến chưa thử |
+| `nav2_params_cho.yaml` | `bt_navigator`; `bat_xe.sh` đọc `MONG_BT` bằng `sed` | `/home/project1/bt_cho.xml` = `~/bt_cho.xml` | khớp (đường tuyệt đối, như trên) |
+| `bat_xe.sh` (`SLAM` mặc định) | `mapping_my_bot.launch.py` → `slam_toolbox` | `/home/project1/slam_dinh_vi_xuong.yaml` = `~/slam_dinh_vi_xuong.yaml` | khớp; bản kho ở `du_lieu_0111/`, đã vào `so_voi_pi.sh` |
+| `slam_dinh_vi_xuong.yaml` (`map_file_name`) | `slam_toolbox`, `mode: localization` | `/home/project1/map_xuong_v3_pg` → `~/map_xuong_v3_pg.posegraph` + `.data` | khớp tên; không cần `.pgm`; đã vào `so_voi_pi.sh` |
+| `cau_noi_xe.py` (`CAU_NOI_MAP`) | trang chọn B; `cai_cau_noi.sh` bước [2] | `~/map_xuong_v2.*` | khớp nội bộ, nhưng **LỆCH với SLAM dùng `map_xuong_v3_pg`**: trang vẽ v2, định vị theo v3. Chưa quyết (xem `HUONG_DAN_CAU_NOI.md` mục 5) |
+| `bat_xe.sh` (`LOG2`) | `cau_noi_xe.py` (`nav_log`, tìm `CRITICAL FAILURE`) | `~/log_bat_xe_nav.txt` | khớp |
+| `cau_noi_xe.py` (`log`) | chính nó (`doc_cuoi`) | `~/log_cau_noi.txt` | khớp |
+| `bat_xe.sh` gọi | `kiem_xe.sh` | `~/kiem_xe.sh` | khớp |
+| `chuyen.sh` ghi CSV | `sep.py` (`csv_chuyen`) | `~/ket_qua_chuyen.csv`; 10 cột `gio…tuoi_costmap_s` giống `COT_CSV` | khớp tên và cột |
+| `sep.py` ghi (`ra_lenh`, mặc định false) | `chuyen.sh` (`SEP_LENH`) | `~/sep_lenh`; đồng hồ `CLOCK_BOOTTIME` = số đầu `/proc/uptime` | khớp tên; cùng đồng hồ là lời `sep.py` ghi, chưa thử |
+| `sep.py` ghi `~/sep_nhat_ky.csv` | chưa có bên đọc trong kho (`du_lieu_0111/sep_nhat_ky.csv` là bản chép về) | `~/sep_nhat_ky.csv` | không áp dụng |
+| `sep.py` | `import lai_xe_lidar` cùng thư mục | `~/sep.py` và `~/lai_xe_lidar.py` | khớp; cả hai đã vào `so_voi_pi.sh` |
+| `tinh_tuyen.py` | chính nó đọc `<thư mục tệp>/du_lieu_0111/costmap_v3_020.yaml` | chép riêng lên `~/tinh_tuyen.py` thì **thiếu `du_lieu_0111/`** | công cụ chạy ở máy; để `tuychon` trong `so_voi_pi.sh` |
+| `ghi_bag.sh` | hướng dẫn cuối buổi (`tar ~/bag_*`) | `$HOME/bag_*` | khớp |
+| `NODES` (`bat_xe.sh`, 19 tên) | `CHINH` (`cau_noi_xe.py`, 12 tên) | cùng danh sách tên tiến trình | **LỆCH có chủ ý**: 7 tên thêm 31/10 chỉ có ở `NODES`; `CHINH` chưa đổi theo lệnh Thiên |
+| **Tệp mới đã vào danh sách `so_voi_pi.sh` chưa?** | `sep.py`, `tinh_tuyen.py`, `slam_dinh_vi_xuong.yaml`, `map_xuong_v3_pg.posegraph/.data` | có. Còn ngoài danh sách: `costmap_v3_020.*`, `sep_nhat_ky.csv` (dữ liệu máy, thuộc `du_lieu_*/`). Từ nay `so_voi_pi.sh` tự nhắc `CHUA_CO_TRONG_DANH_SACH` | đã vào; tự nhắc trên kho: 0 dòng |

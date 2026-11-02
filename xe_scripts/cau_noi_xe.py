@@ -7,6 +7,8 @@ Viec no lam (chi 3 viec):
   2) Nut "차량 연결": goi `bash ~/bat_xe.sh tat` roi `bash ~/bat_xe.sh [gio]`, thay cho viec mo terminal.
   3) Bao trang thai ket noi that: doc danh sach tien trinh tren Pi, khong doan.
 Viec KHONG lam (chua viet): gui muc tieu, dung xe, vi tri xe (M4/M5). Cac duong do tra 501.
+Buoc 4 (03/11, them, duong cu khong doi): trang GET /nut + /api/nut/{trang_thai,bat,di_B,ve_A,dung,tat}: bat muc B,
+  chay ~/chuyen.sh BANG=day, dung chuyen (SIGINT gui_duong.py). Moi luc mot viec (409). Dung khan = cong tac motor.
 
 Trang thai ket noi (link):
   off         khong co tien trinh nao cua he thong
@@ -49,7 +51,7 @@ CHINH = os.environ.get("CAU_NOI_CHINH", "").split() or ["gyro_mpu6050", "odom_tu
 GIO_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 
 LOCK = threading.Lock()
-JOB = {"running": False, "t_start": 0.0, "ket_qua": None, "chi_tiet": "", "t0": None, "proc": None}
+JOB = {"running": False, "t_start": 0.0, "ket_qua": None, "chi_tiet": "", "t0": None, "proc": None, "ma": None, "dong": ""}
 _CACHE = [0.0, set()]
 _NAVC = [None, False]
 
@@ -110,10 +112,11 @@ def doc_cuoi(path, n=6):
         return []
 
 
-def chay_job(gio):
-    """Chay trong luong rieng: tat sach roi bat. Ghi ket qua vao JOB."""
+def chay_job(gio, max_s=None, env=None):
+    """Chay trong luong rieng: tat sach roi bat. Ghi ket qua vao JOB. /nut: max_s 600, env them SEP_RA_* (muc B)."""
     log = CFG["log"]
-    kq, chi = "fail", ""
+    max_s = max_s or CFG["job_max_s"]
+    kq, chi, rc = "fail", "", None
     try:
         with open(log, "w") as lf:
             lf.write("== cau_noi_xe %s: tat truoc ==\n" % datetime.now().strftime("%H:%M:%S"))
@@ -124,15 +127,15 @@ def chay_job(gio):
             lf.flush()
             args = ["bash", CFG["bat_xe"]] + ([gio] if gio else [])
             p = subprocess.Popen(args, stdout=lf, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-                                 start_new_session=True)
+                                 start_new_session=True, env=env)
             with LOCK:
                 JOB["proc"] = p
-            t_ket_thuc = time.monotonic() + CFG["job_max_s"]
+            t_ket_thuc = time.monotonic() + max_s
             vi_tri_doc = 0
             while p.poll() is None:
                 if time.monotonic() > t_ket_thuc:
                     os.killpg(p.pid, signal.SIGKILL)
-                    chi = "qua %d giay, da dung" % CFG["job_max_s"]
+                    chi = "qua %d giay, da dung" % max_s
                     break
                 time.sleep(0.5)
                 # bat_xe.sh in dong nay khi con quay lay so 0
@@ -153,20 +156,242 @@ def chay_job(gio):
                 chi = "bat_xe.sh ra ma %s" % rc
     except Exception as e:  # noqa: BLE001
         chi = "loi: %s" % e
+    dong = dong_khop(log, DONG_BAT)
     with LOCK:
         JOB["running"] = False
         JOB["ket_qua"] = kq
         JOB["chi_tiet"] = chi
         JOB["proc"] = None
+        JOB["ma"] = rc
+        JOB["dong"] = dong
 
 
-def bat_dau_job(gio):
+def bat_dau_job(gio, max_s=None, env=None):
     with LOCK:
-        if JOB["running"]:
+        if JOB["running"] or CHUYEN["chay"] or TAT["chay"]:   # /nut: moi luc mot viec (dang co chuyen thi khong tat/bat)
             return False
-        JOB.update(running=True, t_start=time.monotonic(), ket_qua=None, chi_tiet="", t0=None)
-    threading.Thread(target=chay_job, args=(gio,), daemon=True).start()
+        JOB.update(running=True, t_start=time.monotonic(), ket_qua=None, chi_tiet="", t0=None, ma=None, dong="")
+    threading.Thread(target=chay_job, args=(gio, max_s, env), daemon=True).start()
     return True
+
+
+# ---------- Buoc 4 (03/11): trang /nut. Bat du doi (muc B), Di B / Ve A (chuyen.sh BANG=day), Dung chuyen ----------
+# Dung khan van la cong tac motor. NAV_PARAMS: systemd nap cau_noi.env vao moi truong (EnvironmentFile); bat_xe.sh
+# tu doc ~/cau_noi/cau_noi.env neu thieu. CHUA CHAY TREN PI.
+CHUYEN = {"chay": False, "huong": "", "t_start": 0.0, "ma": None, "ket_qua": "", "dong": "", "pgid": None}
+DUNG = {"ket_qua": "", "ms": None, "gio": ""}
+TAT = {"chay": False, "t_start": 0.0, "ma": None, "dong": ""}
+MA_CHUYEN = {0: "DEN_NOI", 1: "HET_DUONG", 3: "SAI_VI_TRI", 4: "DUNG_SEP", 130: "NGAT"}   # "Ma thoat" dau chuyen.sh
+DONG_CHUYEN = re.compile(r"^(DEN_NOI|HET_DUONG|DUNG_SEP|DUNG: SAI_VI_TRI|HUY_DICH_KHI_NGAT|LOI|SAI )")
+DONG_BAT = re.compile(r"^(SAN SANG|CHUA SAN SANG|QUA 8 PHUT|DA BAT|LOI)")
+DONG_TAT = re.compile(r"^(DA_DON|CON_ROS_SONG|CON_CHAY)")   # bat_xe.sh tat: 0 = DA_DON n tep; 1 = CON_CHAY / CON_ROS_SONG
+ENV_MUC_B = {"SEP_RA_LENH": "true", "SEP_RA_THOAT": "true", "PHU_LAI_PHAT_LENH": "true"}
+CFG.update(chuyen=HOME + "/chuyen.sh", log_chuyen=HOME + "/log_nut_chuyen.txt", log_tat=HOME + "/log_nut_tat.txt",
+           sep_nhat_ky=HOME + "/sep_nhat_ky.csv", bat_max_s=600, dung_cho_s=3.0)
+
+
+def dong_khop(path, mau):
+    """Dong cuoi khop mau; khong co thi dong cuoi khac rong."""
+    ds = doc_cuoi(path, 400)
+    return next((l for l in reversed(ds) if mau.match(l)), next((l for l in reversed(ds) if l.strip()), ""))
+
+
+def song(pid):
+    """Tien trinh con song va khong phai zombie."""
+    try:
+        with open("/proc/%d/stat" % pid) as f:
+            return f.read().rsplit(")", 1)[1].split()[0] != "Z"
+    except (OSError, IndexError):
+        return False
+
+
+def pid_gui_duong():
+    """PID cac `python3 ... gui_duong.py ...` (mau bai 303: argv[0] la python3, mot doi so dung ten gui_duong.py;
+    `bash -c "... gui_duong.py"` khong khop)."""
+    ds = []
+    for d in os.listdir("/proc"):
+        if not d.isdigit() or int(d) == os.getpid():
+            continue
+        try:
+            with open("/proc/%s/cmdline" % d, "rb") as f:
+                argv = f.read().split(b"\0")
+        except OSError:
+            continue
+        if os.path.basename(argv[0]).startswith(b"python3") and b"gui_duong.py" in [os.path.basename(a) for a in argv[1:]]:
+            ds.append(int(d))
+    return ds
+
+
+def bat_dau_tat():
+    with LOCK:
+        if JOB["running"] or CHUYEN["chay"] or TAT["chay"]:
+            return False
+        TAT.update(chay=True, t_start=time.monotonic(), ma=None, dong="")
+    threading.Thread(target=chay_tat, daemon=True).start()
+    return True
+
+
+def chay_tat():
+    """bash ~/bat_xe.sh tat (CAU_NOI_BAT_XE), han 120 s nhu buoc tat cua chay_job."""
+    rc = None
+    try:
+        with open(CFG["log_tat"], "w") as lf:
+            lf.write("== cau_noi_xe %s: tat ==\n" % datetime.now().strftime("%H:%M:%S"))
+            lf.flush()
+            rc = subprocess.run(["bash", CFG["bat_xe"], "tat"], stdout=lf, stderr=subprocess.STDOUT,
+                                stdin=subprocess.DEVNULL, timeout=120).returncode
+    except subprocess.TimeoutExpired:
+        with open(CFG["log_tat"], "a") as lf:
+            lf.write("LOI: tat qua 120 giay\n")
+    except Exception as e:  # noqa: BLE001
+        with open(CFG["log_tat"], "a") as lf:
+            lf.write("LOI: %s\n" % e)
+    dong = dong_khop(CFG["log_tat"], DONG_TAT)
+    with LOCK:
+        TAT.update(chay=False, ma=rc, dong=dong)
+
+
+def bat_dau_chuyen(huong):
+    with LOCK:
+        if JOB["running"] or CHUYEN["chay"] or TAT["chay"]:
+            return False
+        lf = open(CFG["log_chuyen"], "w")
+        lf.write("== cau_noi_xe %s: %s (BANG=day) ==\n" % (datetime.now().strftime("%H:%M:%S"), huong))
+        lf.flush()
+        p = subprocess.Popen(["bash", CFG["chuyen"], huong], stdout=lf, stderr=subprocess.STDOUT,
+                             stdin=subprocess.DEVNULL, start_new_session=True, cwd=HOME,
+                             env=dict(os.environ, BO_QUA_KIEM="1", BANG="day"))
+        CHUYEN.update(chay=True, huong=huong, t_start=time.monotonic(), ma=None, ket_qua="", dong="", pgid=p.pid)
+    threading.Thread(target=cho_chuyen, args=(p, lf), daemon=True).start()
+    return True
+
+
+def cho_chuyen(p, lf):
+    rc = p.wait()
+    lf.close()
+    dong = dong_khop(CFG["log_chuyen"], DONG_CHUYEN)
+    with LOCK:
+        CHUYEN.update(chay=False, ma=rc, ket_qua=MA_CHUYEN.get(rc, "LOI"), dong=dong, pgid=None)
+
+
+def dung_chuyen():
+    """SIGINT cho gui_duong.py va nhom chuyen (moi tien trinh mot lan: INT thu hai roi vao luc gui_duong dang huy dich);
+    sau dung_cho_s giay con song thi SIGKILL: dich Nav2 co the CHUA huy -> tat motor."""
+    t0 = time.monotonic()
+    with LOCK:
+        pg = CHUYEN["pgid"]
+    pids = pid_gui_duong()
+
+    def gui_tin(sig):
+        for x in pids:
+            try:
+                if pg is None or os.getpgid(x) != pg:
+                    os.kill(x, sig)
+            except ProcessLookupError:
+                pass
+        if pg is not None:
+            try:
+                os.killpg(pg, sig)
+            except ProcessLookupError:
+                pass
+
+    def con_song():
+        with LOCK:
+            c = pg is not None and CHUYEN["chay"] and CHUYEN["pgid"] == pg
+        return c or any(song(x) for x in pids)
+
+    if pg is None and not pids:
+        kq = {"ket_qua": "KHONG_CO_CHUYEN", "ms": None}
+    else:
+        gui_tin(signal.SIGINT)
+        while con_song() and time.monotonic() - t0 < CFG["dung_cho_s"]:
+            time.sleep(0.05)
+        if con_song():
+            gui_tin(signal.SIGKILL)
+            kq = {"ket_qua": "KHONG CHAC - TAT MOTOR", "ms": None}
+        else:
+            kq = {"ket_qua": "DA_DUNG", "ms": int((time.monotonic() - t0) * 1000)}
+    kq["pid"] = pids
+    with LOCK:
+        DUNG.update(ket_qua=kq["ket_qua"], ms=kq["ms"], gio=datetime.now().strftime("%H:%M:%S"))
+    return kq
+
+
+def doc_sep():
+    """TU_THE va LENH cuoi trong ~/sep_nhat_ky.csv (chi doc 256 kB cuoi). Cot: gio_mono,gio,loai,dau_hieu,...,ket_qua."""
+    out = {"tu_the": "", "lenh": ""}
+    try:
+        with open(CFG["sep_nhat_ky"], "rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - 262144))
+            ds = f.read().decode("utf-8", "ignore").splitlines()
+    except OSError:
+        return out
+    for l in ds:
+        c = l.split(",")
+        if len(c) >= 7 and c[2] in ("TU_THE", "LENH"):
+            out["tu_the" if c[2] == "TU_THE" else "lenh"] = "%s (%s; %s)" % (c[3], c[1][11:], c[6])
+    return out
+
+
+def trang_thai_nut():
+    now = time.monotonic()
+    with LOCK:
+        j, c, d, t = dict(JOB), dict(CHUYEN), dict(DUNG), dict(TAT)
+    viec = "bat" if j["running"] else ("chuyen" if c["chay"] else ("tat" if t["chay"] else "rong"))
+    return {
+        "viec": viec,
+        "tat": {"chay": t["chay"], "giay": round(now - t["t_start"], 1) if t["chay"] else None,
+                "ma": t["ma"], "dong": t["dong"]},
+        "bat": {"chay": j["running"], "giay": round(now - j["t_start"], 1) if j["running"] else None,
+                "ma": j.get("ma"), "dong": dong_khop(CFG["log"], DONG_BAT) if j["running"] else j.get("dong", "")},
+        "chuyen": {"chay": c["chay"], "huong": c["huong"], "giay": round(now - c["t_start"], 1) if c["chay"] else None,
+                   "ma": c["ma"], "ket_qua": c["ket_qua"],
+                   "dong": dong_khop(CFG["log_chuyen"], DONG_CHUYEN) if c["chay"] else c["dong"]},
+        "dung": d,
+        "sep": doc_sep(),
+    }
+
+
+TRANG_NUT = """<!doctype html><html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Nut xe</title>
+<style>body{font-family:sans-serif;margin:16px;max-width:520px}button{font-size:20px;width:100%;padding:14px;margin:6px 0}
+#dung{background:#c00;color:#fff}.o{border:1px solid #888;padding:8px;margin:8px 0;white-space:pre-wrap;font-family:monospace;font-size:14px}
+.canh{background:#fe0;padding:8px;font-weight:bold}</style></head><body>
+<div class="canh">Dừng khẩn = công tắc motor. Nút "Dừng chuyến" chỉ huỷ đích Nav2.</div>
+<button id="bat">Bật đủ đội (mức B)</button>
+<button id="di">Đi B</button><button id="ve">Về A</button>
+<button id="dung">Dừng chuyến</button>
+<button id="tat">Tắt xe</button>
+<div class="o" id="tt">Đang hỏi trạng thái...</div>
+<div class="o" id="tl"></div>
+<script>
+var pin=sessionStorage.getItem('pin')||'';
+function gui(lenh,hoi){
+  if(hoi&&!confirm(hoi))return;
+  fetch('/api/nut/'+lenh,{method:'POST',headers:{'X-Pin':pin}}).then(function(r){
+    if(r.status==401){pin=prompt('PIN')||'';sessionStorage.setItem('pin',pin);return gui(lenh);}
+    return r.json().then(function(j){document.getElementById('tl').textContent=lenh+': HTTP '+r.status+'\\n'+JSON.stringify(j,null,1);});
+  }).catch(function(e){document.getElementById('tl').textContent=lenh+': loi mang '+e;});
+}
+document.getElementById('bat').onclick=function(){gui('bat','Tắt rồi bật lại cả hệ thống (mức B)? Xe ở vạch A, motor OFF.');};
+document.getElementById('di').onclick=function(){gui('di_B','Đi B? Motor ON, tay sát công tắc.');};
+document.getElementById('ve').onclick=function(){gui('ve_A','Về A? Motor ON, tay sát công tắc.');};
+document.getElementById('dung').onclick=function(){gui('dung');};
+document.getElementById('tat').onclick=function(){gui('tat','Tắt cả hệ thống ROS trên xe?');};
+function hoi(){
+  fetch('/api/nut/trang_thai').then(function(r){return r.json();}).then(function(s){
+    var b=s.bat,c=s.chuyen,k=s.tat,t='Việc: '+({rong:'rảnh',bat:'đang bật',chuyen:'đang chạy chuyến',tat:'đang tắt'}[s.viec])+'\\n';
+    t+='Tắt: '+(k.chay?('đang chạy '+k.giay+' s'):('mã '+(k.ma===null?'-':k.ma)))+'\\n  '+(k.dong||'')+'\\n';
+    t+='Bật: '+(b.chay?('đang chạy '+b.giay+' s'):('mã '+(b.ma===null?'-':b.ma)))+'\\n  '+(b.dong||'')+'\\n';
+    t+='Chuyến '+(c.huong||'')+': '+(c.chay?('đang chạy '+c.giay+' s'):((c.ket_qua||'-')+' mã '+(c.ma===null?'-':c.ma)))+'\\n  '+(c.dong||'')+'\\n';
+    t+='Dừng: '+(s.dung.ket_qua||'-')+(s.dung.ms!==null?(' '+s.dung.ms+' ms'):'')+(s.dung.gio?(' lúc '+s.dung.gio):'')+'\\n';
+    t+='Sếp: TU_THE '+(s.sep.tu_the||'-')+'\\n     LENH '+(s.sep.lenh||'-');
+    document.getElementById('tt').textContent=t;
+  }).catch(function(){document.getElementById('tt').textContent='Mất kết nối với Pi';});
+}
+hoi();setInterval(hoi,1000);
+</script></body></html>"""
 
 
 def trang_thai():
@@ -263,11 +488,17 @@ class H(BaseHTTPRequestHandler):
             self._tep(CFG["ban_do"] + ".png", "image/png")
         elif p == "/map.yaml":
             self._tep(CFG["ban_do"] + ".yaml", "text/plain; charset=utf-8")
+        elif p == "/nut":
+            self._gui(200, TRANG_NUT, "text/html; charset=utf-8")
+        elif p == "/api/nut/trang_thai":
+            self._gui(200, trang_thai_nut())
         else:
             self._gui(404, {"loi": "khong co duong nay"})
 
     def do_POST(self):
         p = self.path.split("?")[0]
+        if p.startswith("/api/nut/"):
+            return self._nut(p[len("/api/nut/"):])
         if not p.startswith("/api/b/"):
             return self._gui(404, {"loi": "khong co duong nay"})
         if not pin_dung(self.headers.get("X-Pin")):
@@ -283,6 +514,21 @@ class H(BaseHTTPRequestHandler):
             return self._gui(202 if ok else 409, {"da_bat_dau": ok})
         # goal / stop / retry / manual / auto: chua viet (M4, M5)
         return self._gui(501, {"loi": "chua lam", "lenh": cmd})
+
+    def _nut(self, cmd):
+        if not pin_dung(self.headers.get("X-Pin")):
+            return self._gui(401, {"loi": "can PIN"})
+        if cmd == "dung":
+            return self._gui(200, dung_chuyen())
+        if cmd == "bat":
+            ok = bat_dau_job(None, CFG["bat_max_s"], dict(os.environ, **ENV_MUC_B))
+        elif cmd in ("di_B", "ve_A"):
+            ok = bat_dau_chuyen(cmd)
+        elif cmd == "tat":
+            ok = bat_dau_tat()
+        else:
+            return self._gui(404, {"loi": "khong co duong nay"})
+        return self._gui(202 if ok else 409, {"da_bat_dau": ok, "viec": trang_thai_nut()["viec"]})
 
 
 def kiem():

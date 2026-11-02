@@ -185,6 +185,8 @@ class NguoiLai:
         self.n_f = 0
         self.n_ket = 0
         self.ly_do = ''
+        self.ra = None           # viec 109c-c2: pha RA dang chay (dict) hoac None
+        self.ra_xong = ''        # cau 'RA XONG <ly do> <cm> cm' cho nut ghi log mot lan
 
     def phan_tich(self, pts):
         """Tra (tt, red). tt: ff, fb = quang duong thoang di thang tien/lui (dai rong bang than xe), dl, dr = khoang cach
@@ -239,6 +241,8 @@ class NguoiLai:
         p = self.p
         tt, red = self.phan_tich(pts)
         self.n_do = self.n_do + 1 if red else 0
+        if self.state == 'RA':
+            return self._ra(pts, now, goal_active)
         if self.state == 'THOAT':
             return self._thoat(pts, tt, now)
         dung_yen = nav_cmd is None or (abs(nav_cmd[0]) < 0.02 and abs(nav_cmd[1]) < 0.05)
@@ -291,6 +295,48 @@ class NguoiLai:
         if cho < p['t_cho']:
             return 0.0, 0.0, 'CHO_%d' % int(cho)
         return self._bat_dau({'F'}, now, 'CHAN_TRUOC_QUA_%ds' % int(p['t_cho']), pts, tt)
+
+    def ra_bat_dau(self, pts, now, goal_active):
+        """Viec 109c-c2: sep giao pha RA (di thang ve phia thoang hon cho du cho xoay). Tra (bat_dau, cau_log).
+        Khong di khi: dang tu thoat / nghi, khong co dich, hai dau deu chan (thoang <= vung do), hoac da du cho xoay."""
+        if self.state != 'BINH_THUONG':
+            return False, 'RA BO QUA: dang %s' % self.state
+        if not goal_active:
+            return False, 'RA BO QUA: khong co dich'
+        ff, fb = thoang(pts, 0.0), thoang(pts, math.pi)
+        if all(math.hypot(x, y) > R_XOAY for x, y in pts):
+            return False, 'RA XONG DU_CHO_XOAY 0 cm'
+        if max(ff, fb) <= self.p['do']:
+            return False, 'RA KHONG DI: hai dau deu chan (thoang truoc %.2f m, sau %.2f m)' % (ff, fb)
+        huong = 1 if ff >= fb else -1
+        self.state = 'RA'
+        self.ra = dict(t0=now, t_truoc=now, huong=huong, di=0.0, ff0=ff, fb0=fb)
+        return True, 'RA BAT DAU %s (thoang truoc %.2f m, sau %.2f m)' % ('TIEN' if huong > 0 else 'LUI', ff, fb)
+
+    def _ra(self, pts, now, goal_active):
+        """Pha RA: di thang +-v_esc. Dung khi (theo thu tu): co diem vao do o phia dang di; moi diem cach tam > R_XOAY;
+        da di 30 cm; qua 10 s; mat dich. Quang duong = max(uoc luong theo toc do lenh, do bang LiDAR) de dung som, khong dung muon."""
+        r, p = self.ra, self.p
+        r['di'] += abs(p['v_esc']) * min(max(now - r['t_truoc'], 0.0), 0.2)
+        r['t_truoc'] = now
+        ff, fb = thoang(pts, 0.0), thoang(pts, math.pi)
+        lidar = max(0.0, (ff - r['ff0']) if r['huong'] < 0 else (fb - r['fb0']))     # lui: phia truoc xa them; tien: phia sau xa them
+        di = max(r['di'], lidar)
+        do_phia = thoang_dem(pts, 0.0 if r['huong'] > 0 else math.pi, p['do'])[1] >= 1
+        if do_phia:
+            ly = 'DO_PHIA_DI'
+        elif all(math.hypot(x, y) > R_XOAY for x, y in pts):
+            ly = 'DU_CHO_XOAY'
+        elif di >= 0.30:
+            ly = 'DA_DI_30CM'
+        elif now - r['t0'] > 10.0:
+            ly = 'QUA_10S'
+        elif not goal_active:
+            ly = 'MAT_DICH'
+        else:
+            return r['huong'] * abs(p['v_esc']), 0.0, 'RA_TIEN' if r['huong'] > 0 else 'RA_LUI'
+        self.ra, self.ra_xong = None, 'RA XONG %s %d cm' % (ly, round(di * 100))
+        return self._ket_thuc(now, 'RA_XONG', p['t_nghi_sau_xong'])
 
     def _bat_dau(self, red, now, ly_do, pts, tt):
         self.state = 'THOAT'
@@ -459,8 +505,9 @@ if rclpy is not None:
             yaw = math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
             return (tf.transform.translation.x, tf.transform.translation.y, yaw)
 
-        def _doc_thoat(self, pts):
-            """c1: doc ~/sep_thoat, moi ma moi in mot cau 'SE LAM ...'. Ham nay KHONG phat toc do, bat ke co bat phat lenh hay khong."""
+        def _doc_thoat(self, pts, now, phat):
+            """c1: doc ~/sep_thoat, moi ma moi in mot cau 'SE LAM ...'. Ham nay KHONG phat toc do (toc do chi phat o _tick,
+            cung dieu kien phat). c2: chi khi phat lenh bat thi giao pha RA cho bo nao (ra_bat_dau); khong bat thi nhu c1."""
             try:
                 with open(self.get_parameter('tep_thoat').value, 'r') as f:
                     dong = f.readline()
@@ -471,6 +518,9 @@ if rclpy is not None:
                 return
             self.ma_thoat_cu = t['ma']
             self.get_logger().info(cau_se_lam(t, pts, goc_toi_diem(self._pose_ban_do(), t['p'])))
+            if phat:
+                _, cau = self.brain.ra_bat_dau(pts, now, self.goal_active)
+                self.get_logger().info(cau)
 
         def _on_nav(self, msg):
             self.nav_cmd, self.nav_time = (msg.linear.x, msg.angular.z), time.monotonic()
@@ -492,12 +542,15 @@ if rclpy is not None:
                         self.pub.publish(Twist())
                 return
             pts = scan_to_xy(self.scan, math.radians(self.get_parameter('lidar_angle_offset_deg').value))
-            self._doc_thoat(pts)
+            self._doc_thoat(pts, now, phat)
             phan_loai = None
             if self.get_parameter('dung_ban_do').value:
                 phan_loai = lambda diem: la_dia_hinh(diem, self._pose_ban_do(), self.grid)   # chi tinh khi can
             nav = self.nav_cmd if now - self.nav_time < 0.5 else None
             v, w, ten = self.brain.step(pts, now, self.goal_active, phan_loai, nav)
+            if self.brain.ra_xong:
+                self.get_logger().info(self.brain.ra_xong)
+                self.brain.ra_xong = ''
             if v is not None and phat:
                 t = Twist()
                 t.linear.x, t.angular.z = float(v), float(w)

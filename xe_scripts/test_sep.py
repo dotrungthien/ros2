@@ -468,6 +468,17 @@ def test_32_luat_G_sep_thoat_giua_sep_va_lai_xe_lidar():
 
 
 
+def test_33_luat_G_cau_log_RA_cua_lai_xe_lidar():
+    doi = '%s -> %s (%s)%s | %s'                                      # khuon cau doi trang thai that cua lai_xe_lidar
+    assert S.doc_rosout('lai_xe_lidar', doi % ('-', 'RA_LUI', '', '', 'TRUOC=0.02')) == ('L1', 'RA_LUI', '')
+    for cau in ('RA BAT DAU LUI (thoang truoc 0.02 m, sau 1.00 m)', 'RA XONG DU_CHO_XOAY 4 cm', 'RA KHONG DI: hai dau deu chan (thoang truoc 0.02 m, sau 0.02 m)'):
+        assert S.doc_rosout('lai_xe_lidar', cau) is None              # cau RA XONG / KHONG DI: sep khong bat (chi ghi log cua lai_xe_lidar)
+    c = Chay(vao())
+    for tt_moi in ('RA_LUI', 'RA_XONG'):
+        c(rosout=[('lai_xe_lidar', doi % ('-', tt_moi, '', '', 'x'))])
+    assert c.s.luot_thoat == 0 and c.s.l1 == 'RA_XONG'                # ten RA_* khong bat dau bang THOAT: khong cong luot
+
+
 if __name__ == '__main__':
     import sys
     import traceback

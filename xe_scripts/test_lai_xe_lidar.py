@@ -3,6 +3,8 @@
 Mo phong: the gioi la cac hinh chu nhat, LiDAR 410 tia 360 do (giong that), xe vi sai ly tuong (khong tre, khong sai lech).
 KHONG chung minh chay tot tren xe that: chi kiem logic va khong cham vat trong mo phong."""
 import math
+import os
+import re
 import sys
 from types import SimpleNamespace
 
@@ -266,6 +268,68 @@ check('c1 cau SE LAM khong giong cau may trang thai', '->' not in _c1 and 'trang
 _src = open(L.__file__ if L.__file__.endswith('.py') else L.__file__[:-1]).read()
 _khoi = _src[_src.index('def _doc_thoat'):_src.index('def _on_nav')]
 check('c1 _doc_thoat khong phat toc do (khong publish / Twist / self.pub / phat_lenh)', not any(k in _khoi for k in ('publish', 'Twist', 'self.pub', 'phat_lenh')))
+
+# --- viec 109c-c2: pha RA (di thang ve phia thoang hon cho du cho xoay) ---
+def ra_chay(world, pose, giay=12.0, doi_the_gioi=None, goal_active=True):
+    """Bo nao + xe ly tuong, 0,1 s/vong. Tra dict: bat_dau, cau, ten (cac ten), xong (cau RA XONG), pose, cham, v (cac van toc)."""
+    b = L.NguoiLai()
+    pts = L.scan_to_xy(make_scan(world, pose))
+    ok, cau = b.ra_bat_dau(pts, 0.0, goal_active)
+    r = dict(bat_dau=ok, cau=cau, ten=[], xong='', v=[], cham=False)
+    t = 0.0
+    while ok and t < giay:
+        t += 0.1
+        if doi_the_gioi and t >= doi_the_gioi[0]:
+            world = doi_the_gioi[1]
+        v, w, ten = b.step(L.scan_to_xy(make_scan(world, pose)), t, goal_active)
+        r['ten'].append(ten)
+        if v is None:
+            break
+        r['v'].append((v, w))
+        pose = (pose[0] + v * math.cos(pose[2]) * 0.1, pose[1] + v * math.sin(pose[2]) * 0.1, pose[2] + w * 0.1)
+        r['cham'] = r['cham'] or collides(world, pose)
+    r['xong'], r['pose'], r['state'] = b.ra_xong, pose, b.state
+    return r
+
+
+_TRUOC_2CM = hanh_lang([(0.165, 0.40, -0.10, 0.10)])       # vat cach mui 2 cm (mui o x = 0,145), phia sau thoang
+_r1 = ra_chay(_TRUOC_2CM, (0.0, 0.0, 0.0))
+check('c2 vat sat mui 2 cm: LUI toi khi du cho xoay, khong cham', _r1['bat_dau'] and set(_r1['ten'][:-1]) == {'RA_LUI'} and _r1['xong'].startswith('RA XONG DU_CHO_XOAY')
+      and all(v < 0 and w == 0 for v, w in _r1['v']) and _r1['pose'][0] < 0 and not _r1['cham'], '%s %s' % (_r1['cau'], _r1['xong']))
+_k4 = ra_chay(hanh_lang([(0.20, 0.40, -0.10, 0.10)]), (0.0, 0.0, 0.0))
+check('c2 vat cach mui 5,5 cm (K4 01/11): da du cho xoay (cach tam 20 cm > 18,56), khong di', not _k4['bat_dau'] and _k4['cau'] == 'RA XONG DU_CHO_XOAY 0 cm', _k4['cau'])
+_hep = [(-1.0, 2.0, 0.13, 0.60), (-1.0, 2.0, -0.60, -0.13), (0.165, 0.40, -0.10, 0.10)]       # hanh lang hep: tuong ben hong 5 cm, khong bao gio du cho xoay
+_r2 = ra_chay(_hep, (0.0, 0.0, 0.0))
+check('c2 hanh lang hep: lui dung 30 cm roi thoi, khong cham', _r2['xong'].startswith('RA XONG DA_DI_30CM') and 30 <= int(_r2['xong'].split()[3]) <= 33 and len(_r2['v']) <= 33 and not _r2['cham'], _r2['xong'])
+_hai = hanh_lang([(0.165, 0.40, -0.10, 0.10), (-0.40, -0.125, -0.10, 0.10)])                  # truoc 2 cm, sau 2 cm
+_r3 = ra_chay(_hai, (0.0, 0.0, 0.0))
+check('c2 hai dau deu chan: khong di, co log', not _r3['bat_dau'] and _r3['cau'].startswith('RA KHONG DI: hai dau deu chan') and not _r3['v'], _r3['cau'])
+_r4 = ra_chay(_hep, (0.0, 0.0, 0.0), doi_the_gioi=(0.5, [(-1.0, 2.0, 0.13, 0.60), (-1.0, 2.0, -0.60, -0.13), (0.165, 0.40, -0.10, 0.10), (-0.50, -0.20, -0.10, 0.10)]))
+check('c2 do phia dang di: dung ngay, ngung phat', _r4['xong'].startswith('RA XONG DO_PHIA_DI') and _r4['ten'][-1] == 'RA_XONG' and len(_r4['v']) <= 5 and not _r4['cham'], _r4['xong'])
+_b5 = L.NguoiLai()
+_b5.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, True)
+_b5.step(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 10.5, True)
+check('c2 qua 10 s: dung', _b5.ra_xong.startswith('RA XONG QUA_10S'), _b5.ra_xong)
+_b6 = L.NguoiLai()
+check('c2 khong co dich / dang tu thoat: khong bat dau', _b6.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, False) == (False, 'RA BO QUA: khong co dich')
+      and (setattr(_b6, 'state', 'THOAT') or _b6.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, True)) == (False, 'RA BO QUA: dang THOAT'))
+_r7 = ra_chay(_hep, (0.0, 0.0, 0.0), goal_active=True)
+_b7 = L.NguoiLai()
+_b7.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, True)
+_b7.step(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.1, False)
+check('c2 mat dich giua chung: dung', _b7.ra_xong.startswith('RA XONG MAT_DICH'), _b7.ra_xong)
+_src2 = _src
+_khoi2 = _src2[_src2.index('def _doc_thoat'):_src2.index('def _on_nav')]
+check('c2 chi giao pha RA khi phat_lenh bat; khong phat toc do trong _doc_thoat', 'if phat:' in _khoi2 and _khoi2.index('if phat:') < _khoi2.index('self.brain.ra_bat_dau')
+      and not any(k in _khoi2 for k in ('publish', 'Twist', 'self.pub')))
+_tick = _src2[_src2.index('def _tick'):_src2.index('def main')]
+check('c2 toc do chi phat o _tick khi phat_lenh', "if v is not None and phat:" in _tick and _tick.count('self.pub.publish(t)') == 1)
+# luat G: /cmd_vel_avoid, uu tien 60, timeout 0,2 s cua twist_mux; nut phat 10 lan/giay
+_mux = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dev_ws', 'src', 'my_bot', 'config', 'twist_mux.yaml')).read()
+_av = re.search(r'avoid:\s*\n\s*topic: (\S+)\s*\n\s*timeout: ([0-9.]+)\s*\n\s*priority: (\d+)', _mux)
+check('luat G: lai_xe_lidar phat /cmd_vel_avoid, twist_mux uu tien 60 > Nav2 20, timeout 0,2 s > chu ky phat 0,1 s',
+      _av is not None and _av.group(1) == '/cmd_vel_avoid' and int(_av.group(3)) == 60 and float(_av.group(2)) == 0.2
+      and "declare_parameter('cmd_topic', '/cmd_vel_avoid')" in _src and 'self.create_timer(0.1, self._tick)' in _src, str(_av.groups() if _av else None))
 
 fails = [n for n, ok in results if not ok]
 print('\nTONG: %d/%d dat' % (len(results) - len(fails), len(results)))

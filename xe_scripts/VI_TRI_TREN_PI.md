@@ -96,3 +96,17 @@ c1 chỉ có phần "nói": sếp ghi `~/sep_thoat`, phụ lái đọc và **in*
 | `sep.py` `/sep/trang_thai`, khoá mới `thoat` (dict hoặc null) và `ra_thoat` | chưa có bên đọc trong kho | khoá `thoat`, `ra_thoat` | không có bên đọc |
 | `chuyen.sh` ghi `KIEM_DAT` | `sep.py` `_csv` đặt lại `het_luot` | `KIEM_DAT` | khớp (cũ). **Rủi ro:** `chuyen.sh` ghi `KIEM_DAT` rồi hỏi sếp ngay; nếu `DUNG` của chuyến trước còn trong `~/sep_lenh` thì có thể đọc trúng trước khi sếp kịp đặt lại (cửa sổ ≈ 0,1 s) |
 | Tệp đổi đã vào `so_voi_pi.sh` chưa? | `sep.py`, `lai_xe_lidar.py` đã có; không tệp mới | `bash xe_scripts/so_voi_pi.sh --nhac` | đã vào; tự nhắc: 0 dòng |
+
+## Đối chiếu luật G — việc 109c, commit c2 (02/11; đọc mã + `test_lai_xe_lidar.py` 47/47 + `test_sep.py` 33/33; CHƯA chạy trên xe)
+
+c2 = phụ lái **ra tay** pha RA (đi thẳng về phía thoáng) khi `phat_lenh=true` và có `~/sep_thoat` mới; chưa xoay (c3). **Chưa giả lập cả hệ thống (PC trường thiếu `install`); nút ROS chưa chạy ở đâu**, chỉ `NguoiLai` + xe lý tưởng trong `test_lai_xe_lidar.py` (không trễ, không lệch).
+
+| Bên ghi | Bên đọc | Tên/khuôn phải khớp | Khớp? |
+|---|---|---|---|
+| `lai_xe_lidar.py` phát `Twist` ở `_tick` (10 lần/s, `create_timer(0.1)`, chỉ khi `phat_lenh`) | `twist_mux` (`twist_mux.yaml`, mục `avoid`) | topic `/cmd_vel_avoid`; ưu tiên 60 > Nav2 20 (`/cmd_vel_nav`); `timeout 0.2` s > chu kỳ phát 0,1 s | khớp: kiểm bằng đọc `twist_mux.yaml` và mã (ca "luat G"). Hết RA thì ngừng phát, 0,2 s sau `twist_mux` trả bánh cho Nav2 |
+| `sep.py` `ghi_lenh(~/sep_thoat…)` (c1) | `lai_xe_lidar.py` `doc_sep_thoat` → `ra_bat_dau` | khuôn `<giây BOOTTIME> THOAT <xP\|-> <yP\|-> <lượt> <mã>`; tuổi ≤ 3 s; mã mới | khớp (c1, `test_32`); c2 chỉ dùng thêm: có tệp mới ⇒ bắt đầu RA, `P` chưa dùng (c3) |
+| `lai_xe_lidar.py` log `RA BAT DAU …`, `RA XONG <lý do> <cm> cm`, `RA KHONG DI: …` | người đọc log; `sep.py` `doc_rosout` | lý do: `DU_CHO_XOAY`, `DA_DI_30CM`, `QUA_10S`, `DO_PHIA_DI`, `MAT_DICH`; chữ `RA XONG` | sếp **không** bắt ba câu này (`test_33`); không bên nào khác đọc |
+| `lai_xe_lidar.py` câu đổi trạng thái `… -> RA_LUI \| RA_TIEN \| RA_XONG (…)` | `sep.py` `doc_rosout` (`l1`) | tên không bắt đầu bằng `THOAT` hay `CHAN_` | khớp: `test_33` kiểm sếp bắt được thành `l1` mà **không cộng lượt** `luot_thoat`; `chon_tu_the` không coi `RA_*` là phản xạ (chưa biết có nên: việc sau) |
+| Tệp đổi đã vào `so_voi_pi.sh` chưa? | `lai_xe_lidar.py` đã có; không tệp mới | `bash xe_scripts/so_voi_pi.sh --nhac` | đã vào; tự nhắc 0 dòng |
+
+Điều rút ra từ ca thử (cần Thiên biết): vật cách mũi **5,5 cm** (K4 đo 01/11) thì mọi điểm LiDAR đã cách tâm 20 cm > 18,56 cm (`R_XOAY`), nên RA **không đi** (`RA XONG DU_CHO_XOAY 0 cm`); RA chỉ đi khi vật gần hơn ≈ 4,1 cm trước mũi, hoặc hông/sau chật hơn. Hết RA là xoay được ngay (c3).

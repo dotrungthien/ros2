@@ -265,7 +265,8 @@ echo "== B2b: bat sep (ra_lenh=$SEP_RA_LENH ra_thoat=$SEP_RA_THOAT) va phu lai (
 [ -f ~/log_sep.txt ] && mv -f ~/log_sep.txt ~/log_sep.txt.cu
 [ -f ~/log_phu_lai.txt ] && mv -f ~/log_phu_lai.txt ~/log_phu_lai.txt.cu
 setsid nohup python3 ~/sep.py --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" > ~/log_sep.txt 2>&1 < /dev/null &
-setsid nohup python3 ~/lai_xe_lidar.py --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" > ~/log_phu_lai.txt 2>&1 < /dev/null &
+# 18:09: sep_ra_thoat = SEP_RA_THOAT (mot nguon): sep giao thoat thi phu lai khong tu THOAT_CUNG ma CHO_SEP
+setsid nohup python3 ~/lai_xe_lidar.py --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" -p sep_ra_thoat:="$SEP_RA_THOAT" > ~/log_phu_lai.txt 2>&1 < /dev/null &
 sleep 5
 
 # in tung dong THIEU cho phu tro khong con song; tra 0 neu du ca hai

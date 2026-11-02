@@ -59,6 +59,8 @@ DEFAULT = dict(
     xoay_p_w_cham=0.6,       # rad/s, c3: toc do xoay khi con < 45 do (san toc do quay chet cua dong co)
     xoay_p_t_max=10.0,       # s, c3: xoay qua lau thi dung
     tu_thoat_max=3,          # 02/11 17:33: so lan tu THOAT (phan xa) toi da moi dich; het thi dung yen (CHO_SEP) cho sep giao RA
+    sep_ra_thoat=False,      # 02/11 18:09: true khi sep ra_thoat=true (bat_xe.sh dat cung SEP_RA_THOAT): ket hinh hoc va xoay bi chan
+                             #   qua lau KHONG tu THOAT (tat THOAT_CUNG cu) ma vao CHO_SEP kem ly do de sep giao ~/sep_thoat ngay
 )
 
 
@@ -439,6 +441,9 @@ class NguoiLai:
         return self._ket_thuc(now, 'XOAY_XONG', p['t_nghi_sau_xong'])
 
     def _bat_dau(self, red, now, ly_do, pts, tt):
+        if self.p.get('sep_ra_thoat') and ly_do in ('KET_HINH_HOC', 'XOAY_BI_CHAN_QUA_LAU'):
+            self.state, self.ly_do = 'CHO_SEP', ly_do      # 18:09: nhuong sep (sep bat cau doi trang thai qua /rosout)
+            return 0.0, 0.0, 'CHO_SEP'
         if self.n_tu_thoat >= p_int(self.p['tu_thoat_max']):
             self.state, self.ly_do = 'CHO_SEP', 'HET_%d_LUOT_TU_THOAT (%s)' % (p_int(self.p['tu_thoat_max']), ly_do)
             return 0.0, 0.0, 'CHO_SEP'
@@ -505,19 +510,21 @@ class NguoiLai:
 # ---------- viec 109c-c1: doc ~/sep_thoat, CHI IN "SE LAM", khong phat toc do ----------
 
 def doc_sep_thoat(dong, t_now, tuoi_max=3.0):
-    """Mot dong ~/sep_thoat '<giay BOOTTIME> THOAT <xP|-> <yP|-> <luot> <ma>' (sep.py ly_thoat ghi) -> dict(luot, ma, p) neu hop le
-    va tuoi <= tuoi_max s (t_now cung CLOCK_BOOTTIME), nguoc lai None. p = (x, y) tren ban do hoac None (sep khong co P tin)."""
+    """Mot dong ~/sep_thoat '<giay BOOTTIME> THOAT <xP|-> <yP|-> <luot> <ma> [yaw_doan]' (sep.py ly_thoat ghi) -> dict(luot, ma, p)
+    (them yaw neu co cot 7) neu hop le va tuoi <= tuoi_max s (t_now cung CLOCK_BOOTTIME), nguoc lai None.
+    p = (x, y) tren ban do hoac None (sep khong co P tin); yaw = huong (rad, ban do) cua doan duong toi P (18:09, BANG=day)."""
     o = (dong or '').split()
-    if len(o) != 6 or o[1] != 'THOAT':
+    if len(o) not in (6, 7) or o[1] != 'THOAT':
         return None
     try:
         t, luot, ma = float(o[0]), int(o[4]), int(o[5])
         p = None if '-' in (o[2], o[3]) else (float(o[2]), float(o[3]))
+        yaw = None if len(o) == 6 or o[6] == '-' else float(o[6])
     except ValueError:
         return None
     if not -1.0 <= t_now - t <= tuoi_max:
         return None
-    return dict(luot=luot, ma=ma, p=p)
+    return dict(luot=luot, ma=ma, p=p) if len(o) == 6 else dict(luot=luot, ma=ma, p=p, yaw=yaw)
 
 
 def goc_toi_diem(pose, p):
@@ -525,6 +532,15 @@ def goc_toi_diem(pose, p):
     if pose is None or p is None:
         return None
     return wrap(math.atan2(p[1] - pose[1], p[0] - pose[0]) - pose[2])
+
+
+def goc_xoay_ve(pose, p, yaw_doan=None):
+    """18:09: huong XOAY (rad, khung than xe): co yaw_doan thi theo huong doan duong toi P; khong thi huong tu xe toi P."""
+    if pose is None:
+        return None
+    if yaw_doan is not None:
+        return wrap(yaw_doan - pose[2])
+    return goc_toi_diem(pose, p)
 
 
 def cau_se_lam(t, pts, goc_p, toi_thieu=0.05):
@@ -569,6 +585,7 @@ if rclpy is not None:
             self.goal_kenh = {'nav': False, 'fp': False}      # co dich theo tung kenh trang thai
             self.ma_thoat_cu = None
             self.thoat_p = None                              # c3: P cua lan ~/sep_thoat moi nhat
+            self.thoat_yaw = None                            # 18:09: huong doan duong toi P (neu sep ghi)
             self.yaw_odom, self.yaw_odom_t = None, 0.0
             self.create_subscription(Odometry, '/odom', self._on_odom, 10)
             for k, v in DEFAULT.items():
@@ -627,8 +644,8 @@ if rclpy is not None:
             if t is None or t['ma'] == self.ma_thoat_cu:
                 return
             self.ma_thoat_cu = t['ma']
-            self.thoat_p = t['p']
-            self.get_logger().info(cau_se_lam(t, pts, goc_toi_diem(self._pose_ban_do(), t['p'])))
+            self.thoat_p, self.thoat_yaw = t['p'], t.get('yaw')
+            self.get_logger().info(cau_se_lam(t, pts, goc_xoay_ve(self._pose_ban_do(), t['p'], t.get('yaw')) if t['p'] is not None else None))
             if phat:
                 _, cau = self.brain.ra_bat_dau(pts, now, self.goal_active)
                 self.get_logger().info(cau)
@@ -670,7 +687,7 @@ if rclpy is not None:
             yaw = self.yaw_odom if self.yaw_odom is not None and now - self.yaw_odom_t < 0.5 else None
             goc_p = None
             if self.brain.xoay_cho or self.brain.state == 'XOAY':     # c3: huong toi P chi can luc bat dau xoay (tf cu > tf_tuoi_toi_da => None)
-                goc_p = goc_toi_diem(self._pose_ban_do(), self.thoat_p)
+                goc_p = goc_xoay_ve(self._pose_ban_do(), self.thoat_p, self.thoat_yaw) if self.thoat_p is not None else None
             v, w, ten = self.brain.step(pts, now, self.goal_active, phan_loai, nav, yaw, goc_p)
             for k in ('ra_xong', 'xoay_xong'):
                 if getattr(self.brain, k):
@@ -683,7 +700,7 @@ if rclpy is not None:
             z = do_vung(pts)
             if ten != self.last_name:
                 self.get_logger().info('%s -> %s (%s)%s | %s' % (
-                    self.last_name or '-', ten, self.brain.ly_do if self.brain.state == 'THOAT' else '',
+                    self.last_name or '-', ten, self.brain.ly_do if self.brain.state in ('THOAT', 'CHO_SEP') else '',
                     '' if phat or v is None else '  [chi nhin: SE gui v=%.2f w=%.2f]' % (v, w), mo_ta_vung(z)))
                 self.last_name = ten
             hz = self.get_parameter('log_hz').value

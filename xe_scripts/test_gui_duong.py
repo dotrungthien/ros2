@@ -56,6 +56,12 @@ class IOGia:
     def phu_lai_ban(self):
         return self.ban_phu(self.t)
 
+    def so_lan_phu_lai_xong(self):
+        return sum(1 for t in getattr(self, 'xong_luc', ()) if t <= self.t)
+
+    def da_xu_ly_thoat(self):
+        self.da_xl = getattr(self, 'da_xl', 0) + 1
+
     def phat_duong(self, d):
         self.duong.append(list(d))
 
@@ -320,6 +326,63 @@ def test_17_khuc_re_52_do_xe_toi_thieu_0092():
         kq[ten] = (max(lech(p) for p in gan), min(T.cach_do(BAN, *p) for p in gan), math.hypot(tr[-1][0] - 1.6, tr[-1][1] - 0.82))
     assert kq['cu'][0] > 0.10 and kq['cu'][1] < 0.10                  # cach cu: cua rong, sat o do (giong 17:57)
     assert kq['moi'][0] < 0.08 and kq['moi'][1] > 0.12 and kq['moi'][2] < 0.06, kq   # cach moi: lech nho, con cho, van toi B
+
+
+def test_18_tinh_lai_sau_khi_phu_lai_xoay_xong():
+    io = IOGia([('SUCCEEDED', 60, Bp), ('SUCCEEDED', 20, (1.58, 0.81, 0.0))])
+    io.xong_luc = [10.0]                                              # phu lai XOAY xong luc 10 s (dich dau con dang chay)
+    assert G.chay(io, 'di_B', 1, CFG) == 0
+    assert CUA(io.rows) == ['KIEM_DAT', 'TINH_LAI', 'SUCCEEDED', 'DEN_NOI'] and io.rows[2][3] == '1'   # khong mat mot lan
+    assert io.da_huy >= 1 and io.gui_ds[1][0] < 12.0                  # huy duong cu, gui lai ngay (khong cho 30 s)
+    io = IOGia([('SUCCEEDED', 60, Bp)] * 5)
+    io.xong_luc = [5.0, 6.0, 7.0, 8.0]                                # tinh lai toi da LUOT lan moi tuyen
+    G.chay(io, 'di_B', 1, CFG)
+    assert CUA(io.rows).count('TINH_LAI') == CFG['luot']
+
+
+def test_19_chuoi_chan_xoay_sep_thoat_ra_xoay_gui_lai():
+    import lai_xe_lidar as L
+    import mo_phong_he_thong as M
+    import sep as S
+    pose = [0.60, -0.005, -math.pi / 2]                               # mui cach K4 3 cm (nhu xe 17:57 sau khi kep)
+    quet = lambda: L.scan_to_xy(M.make_scan(M.XUONG, tuple(pose)))
+    b = L.NguoiLai(sep_ra_thoat=True)
+    ten = []
+    for k in range(40):                                               # RPP muon xoay tai cho ve doan moi nhung bi chan
+        ten.append(b.step(quet(), 0.1 * (k + 1), True, None, (0.0, 1.0))[2])
+    assert 'CHAN_XOAY' in ten and b.state == 'CHO_SEP' and b.ly_do == 'XOAY_BI_CHAN_QUA_LAU' and 'THOAT_CUNG' not in ten
+    doi = '%s -> %s (%s)%s | %s'                                      # khuon cau doi trang thai cua nut lai_xe_lidar
+    day = [(x, y) for x, y, _ in T.lam_day_doan([(0.60, -0.005), (1.26, 0.06), (1.56, 0.41)])]
+    sep = S.Sep()
+    v0 = dict(pts=quet(), scan_tuoi=0.05, pose=tuple(pose), tf_tuoi=0.1, mo=(0.0, 0.0, 0.0), grid=M.GRID, ket=False, gio='t', ra_thoat=True)
+    t = 0.0
+    for k in range(15):                                               # 1,5 s: co dich /follow_path, /duong_day; vi tri TIN
+        t += 0.1
+        tt, _ = sep.vong(t, dict(v0, goals_fp=[[(b'f', 2)]] if k == 0 else [], duong_day=[day]))
+    tt, log = sep.vong(t + 0.1, dict(v0, rosout=[('lai_xe_lidar', doi % ('CHAN_XOAY', 'CHO_SEP', b.ly_do, '', 'x'))], duong_day=[day]))
+    th = tt['thoat']
+    yaw_doan = math.atan2(0.065, 0.66)
+    assert th and th['luot'] == 1 and th['p'] == (1.26, 0.06) and abs(th['yaw'] - yaw_doan) < 0.01, th   # giao NGAY, khong doi 10 s
+    assert sep.luot_thoat == 0 and any(',L1_CHO_SEP,' in d for d in log)   # chua dem luot: phu lai chua lam gi
+    td = L.doc_sep_thoat('%.2f THOAT %s' % (100.0, S.ly_thoat(th)), 100.5)
+    ok, cau = b.ra_bat_dau(quet(), 4.1, True)
+    assert ok and cau.startswith('NHUONG CHO_SEP: RA BAT DAU LUI'), cau
+    t, cham = 4.1, False
+    for _ in range(300):
+        t += 0.1
+        v, w, n = b.step(quet(), t, True, None, None, pose[2] + 0.3, L.goc_xoay_ve(tuple(pose), td['p'], td['yaw']))
+        ten.append(n)
+        if v is not None:
+            pose = [pose[0] + v * math.cos(pose[2]) * 0.1, pose[1] + v * math.sin(pose[2]) * 0.1, pose[2] + w * 0.1]
+            cham = cham or M.cham(M.XUONG, tuple(pose))
+        if n == 'XOAY_XONG':
+            break
+    assert 'RA_LUI' in ten and 'XOAY_P' in ten and ten[-1] == 'XOAY_XONG' and not cham, ten[-5:]
+    assert b.xoay_xong.startswith('XOAY XONG DEN_HUONG') and abs(_wrap(pose[2] - yaw_doan)) < math.radians(26), (b.xoay_xong, math.degrees(pose[2]))
+    for n in ('RA_LUI', 'RA_XONG', 'XOAY_P', 'XOAY_XONG'):            # sep dem luot khi RA/XOAY chay
+        sep.vong(t, dict(v0, pose=tuple(pose), rosout=[('lai_xe_lidar', doi % ('-', n, '', '', 'x'))], duong_day=[day]))
+    assert sep.luot_thoat == 1 and sep.thoat_xong_t is not None
+    assert not G.phu_lai_ban('XOAY_XONG') and G.phu_lai_ban('XOAY_P')   # gui_duong: XOAY_XONG = xong => TINH_LAI (test_18)
 
 
 if __name__ == '__main__':

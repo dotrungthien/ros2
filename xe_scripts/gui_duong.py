@@ -8,7 +8,8 @@ Ly do (xe 02/11 17:03): bang xs gui 6 diem qua /navigate_to_pose; moi diem Nav2 
 
 Mot tien trinh rclpy, KHONG goi ros2 CLI. Chay (chuyen.sh BANG=day goi):  python3 ~/gui_duong.py di_B|ve_A [tuyen_dau 1|2]
   1. KIEM: tf map->base_footprint moi (<= 1 s) va /global_costmap/costmap da co, xe khong dung trong o do. Sai => SAI_VI_TRI (ma 3).
-  2. Moi tuyen (thu tu nhu chuyen.sh), toi da LUOT lan: hoi sep (~/sep_lenh: DUNG => dung; CHO => cho SEP_CHO_S s, toi da 2 lan),
+  2. Moi tuyen (thu tu nhu chuyen.sh), toi da LUOT lan (18:09: phu lai XOAY xong => huy duong cu, tinh lai tu cho xe, ghi
+     TINH_LAI, KHONG tinh la mot lan hong; toi da LUOT lan tinh lai moi tuyen): hoi sep (~/sep_lenh: DUNG => dung; CHO => cho SEP_CHO_S s, toi da 2 lan),
      cho khi phu lai dang RA / XOAY / THOAT (/rosout cua lai_xe_lidar) hoac sep dang giao thoat (~/sep_thoat moi);
      tinh duong tu vi tri HIEN TAI tren costmap HIEN TAI (tinh_tuyen.tinh_duong), phat /duong_day, gui FollowPath.
      Trong luc chay: ~/sep_lenh DUNG => huy dich, DUNG_SEP (ma 4); /duong_day cap nhat (phan con lai) 2 lan/giay.
@@ -82,7 +83,9 @@ def chay(io, huong, tuyen_dau, cfg):
         return 3
     io.ghi(nhan, thu_tu[0], 1, 0, 'KIEM_DAT', 0)
     for r in thu_tu:
-        for lan in range(1, cfg['luot'] + 1):
+        lan = tinh_lai = 0
+        while lan < cfg['luot']:
+            lan += 1
             if cho_truoc_khi_gui(io, cfg) == 'DUNG':
                 return dung_sep(io, nhan, r, lan)
             pose, ban = io.pose(), io.ban()
@@ -107,6 +110,12 @@ def chay(io, huong, tuyen_dau, cfg):
             giay = int(round(io.now() - t0))
             if kq == 'DUNG':
                 return dung_sep(io, nhan, r, lan)
+            if kq == 'TINH_LAI' and tinh_lai < cfg['luot']:   # 18:09: phu lai vua RA/XOAY xong: tinh lai tu cho xe, khong tinh la hong
+                tinh_lai += 1
+                io.bao('   phu lai vua XOAY xong: tinh lai duong tu cho xe (lan %d/%d).' % (tinh_lai, cfg['luot']))
+                io.ghi(nhan, r, 1, lan, 'TINH_LAI', giay)
+                lan -= 1
+                continue
             pose = io.pose()
             lech = None if pose is None else math.hypot(pose[0] - dx, pose[1] - dy)
             if kq == 'SUCCEEDED' and lech is not None and lech <= cfg['toi_sai_so']:
@@ -178,10 +187,15 @@ def cho(io, giay):
 def theo_doi(io, duong, cfg):
     """Gui duong, theo doi toi khi xong. Tra 'SUCCEEDED' | 'ABORTED' | 'CANCELED' | 'TU_CHOI' | 'QUA_GIO' | 'DUNG'."""
     io.phat_duong(duong)
+    n_xong = io.so_lan_phu_lai_xong()
     if not io.gui(duong):
         return 'TU_CHOI'
     t0 = t_phat = io.now()
     while True:
+        if io.so_lan_phu_lai_xong() != n_xong:        # 18:09: phu lai XOAY xong (xe da doi cho, doi huong): bo duong cu
+            io.huy()
+            io.da_xu_ly_thoat()
+            return 'TINH_LAI'
         kq = io.ket_qua()
         if kq is not None:
             return kq
@@ -231,6 +245,7 @@ if rclpy is not None:
             self.pub = self.create_publisher(Path, '/duong_day', giu)
             self.ac = ActionClient(self, FollowPath, 'follow_path')
             self.cm, self.cm_ban, self.l1 = None, None, ''
+            self.n_xong, self.ma_xu_ly = 0, None       # 18:09: so lan phu lai XOAY xong; ma ~/sep_thoat da xu ly
             self.goal, self.kq = None, None
             self.tep_lenh = os.path.expanduser('~/sep_lenh')
             self.tep_thoat = os.path.expanduser('~/sep_thoat')
@@ -244,6 +259,8 @@ if rclpy is not None:
             if msg.name == 'lai_xe_lidar':
                 e = S.doc_rosout(msg.name, msg.msg)
                 if e and e[0] == 'L1':
+                    if e[1] == 'XOAY_XONG' and self.l1 != 'XOAY_XONG':
+                        self.n_xong += 1
                     self.l1 = e[1]
 
         # --- io cho chay() ---
@@ -302,12 +319,25 @@ if rclpy is not None:
             except OSError:
                 return None
 
-        def sep_dang_giao_thoat(self):
+        def _thoat_moi(self):
             try:
                 with open(self.tep_thoat) as f:
-                    return L.doc_sep_thoat(f.readline(), time.clock_gettime(time.CLOCK_BOOTTIME)) is not None
+                    return L.doc_sep_thoat(f.readline(), time.clock_gettime(time.CLOCK_BOOTTIME))
             except OSError:
-                return False
+                return None
+
+        def sep_dang_giao_thoat(self):
+            """Sep dang giao mot dot thoat CHUA xu ly (ma moi): cho phu lai lam truoc roi moi gui."""
+            t = self._thoat_moi()
+            return t is not None and t['ma'] != self.ma_xu_ly
+
+        def da_xu_ly_thoat(self):
+            t = self._thoat_moi()
+            if t is not None:
+                self.ma_xu_ly = t['ma']
+
+        def so_lan_phu_lai_xong(self):
+            return self.n_xong
 
         def phu_lai_ban(self):
             return phu_lai_ban(self.l1)

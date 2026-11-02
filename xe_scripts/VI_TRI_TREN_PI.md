@@ -213,3 +213,21 @@ Gốc lỗi xe 17:57: đường dày rẽ 52° ở (1,26; 0,06); RPP hạ tốc 
 | `tinh_tuyen.tinh_duong` (mặc định `kieu='doan'`) | `gui_duong.py` → `/follow_path`, `/duong_day` | điểm cách ≤ 5 cm, góc = hướng đoạn | khớp; rclpy thật + thế giới giả: ca thẳng và ca hỏng lần đầu vẫn `DEN_NOI`, `/duong_day` 2 lần/giây |
 | `tinh_tuyen.doan_thang` cảnh báo | `gui_duong.py` in `CANH BAO: dinh re … chi cach o do …` | — | trên `costmap_v3_020`: khe trên (tuyến 2) có đỉnh (0,41; 0,76) rẽ 49°, cách ô đỏ 0,224 m < 0,236 (vẫn > R_XOAY 0,186): **không dời** vì mọi chỗ dời đều làm đường cắt chéo khe gần vật hơn; tuyến 1 không có cảnh báo |
 | `tinh_tuyen.main()` (bảng `xs` in trên PC) | `chuyen.sh` bảng `xs` | 4 dòng `xs:` | khớp từng dòng (`test_11`, so với đầu ra gốc) |
+
+## Đối chiếu luật G — (i)(ii)(iii): sếp giao thoát ngay, P = đỉnh kế tiếp, gửi lại sau XOAY (02/11 18:4x; `test_sep.py` 40/40, `test_lai_xe_lidar.py` 68/68, `test_gui_duong.py` 19/19; CHƯA chạy trên Pi)
+
+Gốc lỗi xe 17:57: thoát kẹt lặp `THOAT_CUNG`, nhánh RA/XOAY chưa từng được gọi (sếp chỉ giao khi đứng yên 10 s và LiDAR ≤ 10 cm). Ca `test_19` chạy cả chuỗi trên bản đồ xưởng (mũi cách K4 3 cm): RPP muốn xoay ⇒ `CHAN_XOAY` ⇒ `CHO_SEP (XOAY_BI_CHAN_QUA_LAU)` ⇒ sếp giao `~/sep_thoat` ngay (P = (1,26; 0,06), hướng đoạn 6°) ⇒ phụ lái nhường, lùi 3 cm, xoay 76°, hướng cuối lệch đoạn 20° ⇒ `XOAY_XONG` ⇒ sếp đếm lượt 1 ⇒ `gui_duong` huỷ đường cũ, tính lại (ghi `TINH_LAI`, không mất lần). Xe lý tưởng, không trễ. **Chưa giả lập cả hệ thống.**
+
+| Bên ghi | Bên đọc | Tên/khuôn phải khớp | Khớp? |
+|---|---|---|---|
+| `bat_xe.sh` `-p sep_ra_thoat:="$SEP_RA_THOAT"` (phụ lái) và `-p ra_thoat:="$SEP_RA_THOAT"` (sếp) | `lai_xe_lidar.py` `DEFAULT['sep_ra_thoat']`; `sep.py` `ra_thoat` | một biến `SEP_RA_THOAT` cho cả hai | khớp (đọc mã); bật tay thì phải đặt cả hai tham số giống nhau |
+| `lai_xe_lidar.py` câu `… -> CHO_SEP (XOAY_BI_CHAN_QUA_LAU \| KET_HINH_HOC)` (nay in lý do cả khi `CHO_SEP`) | `sep.py` `doc_rosout` → `_rosout` (`l1_cho_sep_moi`) → `_dot_thoat` | tên `CHO_SEP`; lý do trong ngoặc | khớp (`test_19`, `test_39`; ca "in ly do ca khi CHO_SEP") |
+| `sep.py` `ly_thoat` → `~/sep_thoat` | `lai_xe_lidar.doc_sep_thoat`; `gui_duong.py` (cùng hàm) | 6 cột như c1; **cột 7 mới** = hướng đoạn tới P (rad, bản đồ), chỉ khi có `/duong_day` | khớp: đọc được cả 6 và 7 cột, cột 7 hỏng ⇒ bỏ dòng (`test_32`, ca 18:09 của `test_lai_xe_lidar.py`) |
+| `gui_duong.py` `/duong_day` (đoạn thẳng) | `sep.py` `dinh_ke_tiep` | đổi hướng > 5° là một đỉnh | khớp (`test_19`, `test_39`); `BANG=xs` (không `/duong_day`) vẫn P = điểm cuối `/plan`, không có cột 7 |
+| `lai_xe_lidar.py` tên `RA_TIEN`, `RA_LUI`, `RA_XONG`, `XOAY_P`, `XOAY_XONG` | `sep.py` (đếm lượt khi `RA_*`/`XOAY_P` đầu tiên của đợt; `XOAY_XONG` = xong chuỗi); `gui_duong.py` (`XOAY_XONG` ⇒ tính lại) | tên trạng thái | khớp (`test_19`, `test_39`, `test_18`); lỗi tìm thấy khi thử: sếp đóng đợt ở `RA_XONG` trước khi XOAY ⇒ đã sửa (`DANG_LAM` có `RA_XONG`) |
+| `sep.py` hết lượt (3 lượt đã RA/XOAY, hoặc 3 đợt liền phụ lái không làm gì) | `di_hay_khong` ⇒ `DUNG` ⇒ `chuyen.sh` / `gui_duong.py` huỷ đích | chữ `DUNG` | khớp (`test_40`) |
+| `gui_duong.py` CSV chữ mới `TINH_LAI` | `sep.py` `_csv` (bỏ qua chữ lạ, chỉ ghi `diem_txt`); người đếm x/n | cột `ket_qua` | không làm sai bộ đếm chuyến của sếp (chỉ `KIEM_DAT`/`DEN_NOI`/… mới mở/đóng chuyến); người đếm cần biết chữ này |
+| `ra_thoat=false` | `sep.py` | đếm lượt như việc 105 (tại `KET_SAT_VAT` và L1 `THOAT_*`) | khớp: mọi ca cũ đạt; `test_40` kiểm `CHO_SEP` không mở đợt khi `ra_thoat=false` |
+| Tệp đổi đã vào `so_voi_pi.sh` chưa? | `sep.py`, `lai_xe_lidar.py`, `gui_duong.py`, `bat_xe.sh` đã có | `--nhac` | 0 dòng |
+
+Ca cũ đổi theo luật mới: `test_36` nay kiểm P = đỉnh kế tiếp (trước: điểm cách đầu đường 0,40 m).

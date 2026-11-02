@@ -521,7 +521,7 @@ def test_36_duong_day_dich_va_P_phia_truoc():
         tt, l = c(duong_day=[day])
         th.append(tt['thoat'])
     t = next(t for t in th if t)
-    assert t['p'] == tuple(round(v, 2) for v in S.diem_truoc(day)) and t['p'] != (1.60, 0.82)   # P tren duong day, khong phai dich
+    assert t['p'] == (0.60, 0.10) == S.dinh_ke_tiep(day)[0] and t['p'] != (1.60, 0.82)   # 18:09: P = dinh ke tiep tren duong day
     s = S.Sep()
     s.dich, s.day_pts, s.day_t = (1.60, 0.82), day, 0.0
     assert s._p_thoat('TIN', 1.0) == t['p'] and s._p_thoat('TIN', 5.0) == (1.6, 0.82)   # /duong_day cu > 3 s: ve diem cuoi nhu c1
@@ -558,6 +558,56 @@ def test_38_plan_lech_chi_xet_khi_co_dich_dang_chay():
     c(goals=[[(b'g2', 4)]])
     tt, log = c(duong_day=[xa])                                       # /duong_day khi khong co dich (gui_duong phat truoc khi gui): khong xet
     assert not co(log, 'PLAN_LECH') and tt['di'] == 'DI'
+
+
+def _ra_thoat_mo_dot(c, doi):
+    """Co dich fp + /duong_day + 1,5 s; roi phu lai vao CHO_SEP. Tra trang thai."""
+    day = [(0.0, 0.0), (0.05, 0.0), (0.10, 0.0), (0.15, 0.05), (0.20, 0.10)]
+    c(goals_fp=[[(b'f', 2)]], duong_day=[day], ra_thoat=True)
+    for _ in range(14):
+        c(duong_day=[day], ra_thoat=True)
+    return c(rosout=[('lai_xe_lidar', doi % ('CHAN_XOAY', 'CHO_SEP', 'XOAY_BI_CHAN_QUA_LAU', '', 'x'))], duong_day=[day], ra_thoat=True), day
+
+
+def test_39_ra_thoat_luot_chi_dem_khi_ra_xoay_chay():
+    doi = '%s -> %s (%s)%s | %s'
+    c = Chay(vao())
+    (tt, log), day = _ra_thoat_mo_dot(c, doi)
+    assert tt['thoat']['luot'] == 1 and c.s.luot_thoat == 0 and tt['thoat']['p'] == (0.1, 0.0) and abs(tt['thoat']['yaw']) < 1e-9
+    assert ' 0.0000' in S.ly_thoat(tt['thoat'])                       # cot 7 = huong doan
+    ma1 = tt['thoat']['ma']
+    for n in ('RA_LUI', 'RA_XONG', 'XOAY_P', 'XOAY_XONG'):
+        tt, _ = c(rosout=[('lai_xe_lidar', doi % ('-', n, '', '', 'x'))], duong_day=[day], ra_thoat=True)
+    assert c.s.luot_thoat == 1 and tt['thoat'] and tt['thoat']['ma'] == ma1   # XOAY xong: dot con mo T_LAI_THOAT s
+    tt, _ = c(rosout=[('lai_xe_lidar', doi % ('XOAY_XONG', 'CHO_SEP', 'XOAY_BI_CHAN_QUA_LAU', '', 'x'))], duong_day=[day], ra_thoat=True)
+    for _ in range(31):                                               # van ket (phu lai lai CHO_SEP) sau 3 s: giao luot moi, ma moi
+        tt, log = c(duong_day=[day], ra_thoat=True)
+        if tt['thoat'] and tt['thoat']['ma'] != ma1:
+            break
+    assert tt['thoat'] and tt['thoat']['ma'] != ma1 and tt['thoat']['luot'] == 2 and c.s.luot_thoat == 1
+
+
+def test_40_ra_thoat_het_luot_va_phu_lai_khong_lam_gi():
+    doi = '%s -> %s (%s)%s | %s'
+    c = Chay(vao())
+    (tt, _), day = _ra_thoat_mo_dot(c, doi)
+    c.s.luot_thoat = 3                                                # da RA/XOAY du 3 luot trong chuyen
+    c.s.thoat_ma = None
+    c(rosout=[('lai_xe_lidar', doi % ('CHO_SEP', 'NGHI', '', '', 'x'))], ra_thoat=True)
+    tt, log = c(rosout=[('lai_xe_lidar', doi % ('NGHI', 'CHO_SEP', 'KET_HINH_HOC', '', 'x'))], ra_thoat=True)
+    assert c.s.het_luot and tt['thoat'] is None and tt['di'] == 'DUNG' and any('HET 3 LUOT' in d for d in log)
+    c = Chay(vao())
+    (tt, _), day = _ra_thoat_mo_dot(c, doi)
+    for vong in range(4):                                             # 3 dot lien tiep phu lai XOAY KHONG (khong RA/XOAY gi): het
+        c(rosout=[('lai_xe_lidar', doi % ('-', 'XOAY_XONG', '', '', 'x'))], duong_day=[day], ra_thoat=True)
+        c(rosout=[('lai_xe_lidar', doi % ('XOAY_XONG', 'CHO_SEP', 'XOAY_BI_CHAN_QUA_LAU', '', 'x'))], duong_day=[day], ra_thoat=True)
+        for _ in range(31):
+            tt, _ = c(duong_day=[day], ra_thoat=True)
+    assert c.s.luot_thoat == 0 and c.s.het_luot and tt['di'] == 'DUNG'
+    c = Chay(vao())                                                   # ra_thoat = false: nhu cu, CHO_SEP khong mo dot
+    c(goals_fp=[[(b'f', 2)]])
+    tt, _ = c(rosout=[('lai_xe_lidar', doi % ('CHAN_XOAY', 'CHO_SEP', 'XOAY_BI_CHAN_QUA_LAU', '', 'x'))])
+    assert tt['thoat'] is None and c.s.luot_thoat == 0
 
 
 if __name__ == '__main__':

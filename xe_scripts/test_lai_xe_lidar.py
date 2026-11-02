@@ -445,6 +445,20 @@ _bk = L.NguoiLai()
 _bk.state = 'CHO_SEP'
 check('17:33 CHO_SEP ma khong con dich: tro ve binh thuong, khong phat', _bk.step(_sat_trai, 1.0, False)[:2] == (None, None) and _bk.state == 'BINH_THUONG')
 
+# --- 18:09: sep ra_thoat => khong tu THOAT_CUNG, CHO_SEP kem ly do; XOAY theo huong doan ---
+_bs = L.NguoiLai(sep_ra_thoat=True)
+_ten18 = [_bs.step(_sat_trai, 0.1 * (k + 1), True, None, (0.0, 0.0)) for k in range(60)]
+check('18:09 sep_ra_thoat: ket hinh hoc => CHO_SEP (ly do KET_HINH_HOC), khong THOAT_CUNG, khong ton luot tu thoat',
+      _bs.state == 'CHO_SEP' and _bs.ly_do == 'KET_HINH_HOC' and not any(t[2].startswith('THOAT') for t in _ten18) and _bs.n_tu_thoat == 0
+      and _ten18[-1] == (0.0, 0.0, 'CHO_SEP'))
+check('18:09 doc ~/sep_thoat 7 cot (huong doan), 6 cot nhu cu', L.doc_sep_thoat('100.00 THOAT 1.26 0.06 1 16 0.0982', 100.5) == dict(luot=1, ma=16, p=(1.26, 0.06), yaw=0.0982)
+      and L.doc_sep_thoat('100.00 THOAT 1.26 0.06 1 16', 100.5) == dict(luot=1, ma=16, p=(1.26, 0.06))
+      and L.doc_sep_thoat('100.00 THOAT 1.26 0.06 1 16 x', 100.5) is None)
+check('18:09 XOAY ve huong doan (co yaw) hoac ve P (khong yaw)', abs(L.goc_xoay_ve((0, 0, -math.pi / 2), (1, 0), 0.0) - math.pi / 2) < 1e-9
+      and abs(L.goc_xoay_ve((0, 0, 0), (0, 1), None) - math.pi / 2) < 1e-9 and L.goc_xoay_ve(None, (1, 0), 0.0) is None)
+_tick18 = _src[_src.index('def _tick'):_src.index('def main')]
+check("18:09 cau doi trang thai in ly do ca khi CHO_SEP (sep bat qua /rosout)", "self.brain.state in ('THOAT', 'CHO_SEP')" in _tick18)
+
 fails = [n for n, ok in results if not ok]
 print('\nTONG: %d/%d dat' % (len(results) - len(fails), len(results)))
 sys.exit(1 if fails else 0)

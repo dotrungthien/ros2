@@ -355,7 +355,7 @@ def test_25_ghi_lenh_doi_ten_nguyen_tep():
         shutil.rmtree(d)
 
 
-def _chay_kep(day, vong):
+def _chay_kep(day, vong, plan=None):
     """Xe dung yen o K4 (co dich), khoang cach LiDAR gan than xe bi thay bang chuoi `day` (m, lap vong, moi vong mot
     gia tri). Chay 11 s cho du t_dung roi `vong` vong. Tra (c, toan bo nhat ky)."""
     that, i = S.sat_than_xe, [0]
@@ -366,10 +366,13 @@ def _chay_kep(day, vong):
     S.sat_than_xe = gia
     try:
         c = Chay(vao(pose=(0.60, 0.02, -math.pi / 2)))
-        log = c(goals=[[(b'g', 2)]])[1]
-        log += dung_n_giay(c, 11)[1]
-        for _ in range(vong):
-            log += c()[1]
+        c.thoats = []                                                 # viec 109c-c1: tt['thoat'] moi vong
+        tt, log = c(goals=[[(b'g', 2)]], plans=[plan] if plan else [])
+        for _ in range(110 + vong):
+            tt, l = c()
+            log += l
+            c.thoats.append(tt['thoat'])
+        c.tt = tt
     finally:
         S.sat_than_xe = that
     return c, log
@@ -411,6 +414,58 @@ def test_28_l1_thoat_luc_ket_sat_vat_bat_khong_cong():
         c2(rosout=[('lai_xe_lidar', doi % ('THOAT_CUNG', 'XONG', '', '', 'x'))])
         c2(rosout=[('lai_xe_lidar', doi % ('XAC_NHAN', 'THOAT_CUNG', 'KET_HINH_HOC', '', 'x'))])
     assert c2.s.luot_thoat == 3
+
+
+
+PLAN_K4 = [(0.60, 0.02), (1.05, 0.06)]        # /plan: tu xe toi diem xs ke tiep (1,05; 0,06)
+
+
+def test_29_sep_ghi_thoat_luot_1_co_P():
+    c, log = _chay_kep([0.05], 0, PLAN_K4)
+    th = [t for t in c.thoats if t]
+    assert th and all(t['luot'] == 1 and t['p'] == (1.05, 0.06) for t in th) and len({t['ma'] for t in th}) == 1
+    dong = [d for d in log if ',KET_SAT_VAT,' in d and ',BAT,' in d]
+    assert len(dong) == 1 and 'THOAT luot 1/3' in dong[0] and 'phia ket TRUOC' in dong[0] and 'P=(1.05;0.06)' in dong[0]   # 1.7
+    assert S.ly_thoat(th[0]) == '1.05 0.06 1 %d' % th[0]['ma']
+
+
+def test_30_thoat_tat_khi_dau_hieu_tat_va_P_trong_khi_khong_tin():
+    c, log = _chay_kep([0.05, 0.20], 0, PLAN_K4)                      # het dot ket => thoat None ngay vong sau
+    assert c.thoats[-1] is None and any(c.thoats)                     # co luc co, cuoi cung het
+    c, log = _chay_kep([0.05], 0)                                     # khong co /plan => chua co dich
+    th = [t for t in c.thoats if t]
+    assert th and th[0]['p'] is None and S.ly_thoat(th[0]).startswith('- - 1 ')
+    s = S.Sep()
+    s.dich = (1.05, 0.06)
+    assert s._p_thoat('TIN') == (1.05, 0.06) and s._p_thoat('NGHI') is None and s._p_thoat('KHONG_TIN') is None
+
+
+def test_31_luot_4_khong_ghi_thoat_va_ra_DUNG():
+    c, log = _chay_kep([0.05, 0.20], 40, PLAN_K4)
+    assert c.s.het_luot and c.thoats[-1] is None and c.tt['di'] == 'DUNG' and 'HET_3_LUOT_THOAT' in c.tt['di_ly']
+    assert S.di_hay_khong(dict(het_luot=True)) == ('DUNG', 'HET_3_LUOT_THOAT')
+    assert S.di_hay_khong(dict()) == ('DI', '')
+    ma = {t['ma'] for t in c.thoats if t}
+    assert len(ma) == 3                                               # ba luot, ba ma khac nhau, luot 4 khong co ma
+    c.s._csv(dict(ket_qua='KIEM_DAT', huong='di_B', tuyen='1', diem='1'), lambda *a, **k: None)
+    assert S.di_hay_khong(dict(het_luot=c.s.het_luot)) == ('DI', '')   # KIEM_DAT moi dat lai
+
+
+def test_32_luat_G_sep_thoat_giua_sep_va_lai_xe_lidar():
+    c, _ = _chay_kep([0.05], 0, PLAN_K4)
+    th = next(t for t in c.thoats if t)
+    dong = '%.2f THOAT %s' % (100.0, S.ly_thoat(th))                  # dung khuon ghi_lenh(path, t, 'THOAT', ly_thoat)
+    assert L.doc_sep_thoat(dong, 101.0) == dict(luot=1, ma=th['ma'], p=(1.05, 0.06))
+    assert L.doc_sep_thoat(dong, 103.5) is None                       # tuoi > 3 s
+    assert L.doc_sep_thoat('100.00 THOAT - - 2 77', 101.0) == dict(luot=2, ma=77, p=None)
+    assert L.doc_sep_thoat('100.00 CHO x', 101.0) is None and L.doc_sep_thoat('', 101.0) is None and L.doc_sep_thoat('a THOAT 1 2 3 4', 1.0) is None
+    src = open(os.path.join(DAY, 'sep.py')).read()
+    assert "declare_parameter('ra_thoat', False)" in src and "'THOAT', ly_thoat(" in src      # ten tham so, mac dinh tat, chu THOAT
+    sh = open(os.path.join(DAY, 'chuyen.sh')).read()
+    assert re.search(r'\n\s*DUNG\)', sh) and 'read -r T C L < "$SEP_LENH"' in sh                # chuyen.sh doc chu DUNG tu ~/sep_lenh
+    cau = L.cau_se_lam(dict(luot=1, ma=5, p=(1.05, 0.06)), quet((0.60, 0.02, -math.pi / 2)), 0.3)
+    assert cau.startswith('SE LAM') and S.doc_rosout('lai_xe_lidar', cau) is None   # sep khong nham la cau cua may trang thai
+
 
 
 if __name__ == '__main__':

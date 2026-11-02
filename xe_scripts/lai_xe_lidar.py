@@ -20,6 +20,7 @@ Khoang cach tinh tu MEP THAN XE den vat, khong tu LiDAR.
 Ma thuan (khong can ROS) o nua tren de thu bang test_lai_xe_lidar.py.
 """
 import math
+import os
 import time
 
 INF = 1e9
@@ -351,6 +352,41 @@ class NguoiLai:
         return self._ket_thuc(now, 'XONG', p['t_nghi_sau_xong'])
 
 
+# ---------- viec 109c-c1: doc ~/sep_thoat, CHI IN "SE LAM", khong phat toc do ----------
+
+def doc_sep_thoat(dong, t_now, tuoi_max=3.0):
+    """Mot dong ~/sep_thoat '<giay BOOTTIME> THOAT <xP|-> <yP|-> <luot> <ma>' (sep.py ly_thoat ghi) -> dict(luot, ma, p) neu hop le
+    va tuoi <= tuoi_max s (t_now cung CLOCK_BOOTTIME), nguoc lai None. p = (x, y) tren ban do hoac None (sep khong co P tin)."""
+    o = (dong or '').split()
+    if len(o) != 6 or o[1] != 'THOAT':
+        return None
+    try:
+        t, luot, ma = float(o[0]), int(o[4]), int(o[5])
+        p = None if '-' in (o[2], o[3]) else (float(o[2]), float(o[3]))
+    except ValueError:
+        return None
+    if not -1.0 <= t_now - t <= tuoi_max:
+        return None
+    return dict(luot=luot, ma=ma, p=p)
+
+
+def goc_toi_diem(pose, p):
+    """Huong tu xe toi P trong khung than xe (rad, 0 = mui, + = trai); None neu thieu vi tri xe hoac P."""
+    if pose is None or p is None:
+        return None
+    return wrap(math.atan2(p[1] - pose[1], p[0] - pose[0]) - pose[2])
+
+
+def cau_se_lam(t, pts, goc_p, toi_thieu=0.05):
+    """Cau log c1 'SE LAM ...': dieu phu lai SE LAM neu duoc ra tay (c2/c3). Khong dung '->' va 'trang_thai=' de sep.py khong nham la cau cua may trang thai."""
+    ff, fb = thoang(pts, 0.0), thoang(pts, math.pi)
+    ra = 'khong ra duoc' if max(ff, fb) < toi_thieu else ('TIEN' if ff >= fb else 'LUI')
+    xoay = 'duoc' if all(math.hypot(x, y) > R_XOAY for x, y in pts) else 'chua du cho'
+    huong_p = 'khong co' if goc_p is None else '%.0f do' % math.degrees(goc_p)
+    return 'SE LAM (chi nhin, khong phat toc do) THOAT luot %d ma %d: ra phia %s (thoang truoc %.2f m, sau %.2f m); xoay %s; huong toi P %s; P=%s' % (
+        t['luot'], t['ma'], ra, ff, fb, xoay, huong_p, '-' if t['p'] is None else '(%.2f;%.2f)' % t['p'])
+
+
 # ---------- nut ROS 2 (chi dung khi co ROS) ----------
 
 try:
@@ -378,6 +414,8 @@ if rclpy is not None:
             self.declare_parameter('scan_timeout', 0.5)
             self.declare_parameter('dung_ban_do', True)       # phan biet dia hinh (co trong ban do) voi vat la
             self.declare_parameter('tf_tuoi_toi_da', 1.0)     # s, vi tri xe cu hon so nay thi khong tin (coi la vat la)
+            self.declare_parameter('tep_thoat', os.path.expanduser('~/sep_thoat'))   # viec 109c-c1: chi doc va in, khong phat toc do
+            self.ma_thoat_cu = None
             for k, v in DEFAULT.items():
                 self.declare_parameter(k, v)
             self.brain = NguoiLai()
@@ -421,6 +459,19 @@ if rclpy is not None:
             yaw = math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
             return (tf.transform.translation.x, tf.transform.translation.y, yaw)
 
+        def _doc_thoat(self, pts):
+            """c1: doc ~/sep_thoat, moi ma moi in mot cau 'SE LAM ...'. Ham nay KHONG phat toc do, bat ke co bat phat lenh hay khong."""
+            try:
+                with open(self.get_parameter('tep_thoat').value, 'r') as f:
+                    dong = f.readline()
+            except OSError:
+                return
+            t = doc_sep_thoat(dong, time.clock_gettime(time.CLOCK_BOOTTIME))
+            if t is None or t['ma'] == self.ma_thoat_cu:
+                return
+            self.ma_thoat_cu = t['ma']
+            self.get_logger().info(cau_se_lam(t, pts, goc_toi_diem(self._pose_ban_do(), t['p'])))
+
         def _on_nav(self, msg):
             self.nav_cmd, self.nav_time = (msg.linear.x, msg.angular.z), time.monotonic()
 
@@ -441,6 +492,7 @@ if rclpy is not None:
                         self.pub.publish(Twist())
                 return
             pts = scan_to_xy(self.scan, math.radians(self.get_parameter('lidar_angle_offset_deg').value))
+            self._doc_thoat(pts)
             phan_loai = None
             if self.get_parameter('dung_ban_do').value:
                 phan_loai = lambda diem: la_dia_hinh(diem, self._pose_ban_do(), self.grid)   # chi tinh khi can

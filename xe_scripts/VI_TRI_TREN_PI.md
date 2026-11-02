@@ -81,3 +81,18 @@ Chữ `sep.py` ghi ra mà nơi khác đọc. **Chưa giả lập cả hệ thố
 | `lai_xe_lidar.py` log `/rosout` `'%s -> %s (%s)%s \| %s'` | `sep.py` `doc_rosout` (cộng/không cộng lượt khi `THOAT`) | khuôn câu log; `test_15` kiểm nguyên văn | khớp |
 | `sep.py` `P_MAC_DINH` (thêm `sat_vat_tat`) | `declare_parameter` trong nút; không launch/yaml nào đặt | tên tham số `sat_vat_tat` (m, 0,12); mã dùng `max(sat_vat_tat, sat_vat)` nên đặt nhỏ hơn `sat_vat` cũng không đảo khoảng trễ | khớp (không bên nào khác đặt tên này) |
 | Tệp mới/đổi đã vào `so_voi_pi.sh` chưa? | `sep.py` có trong danh sách (`~/sep.py`); `test_sep.py` thuộc luật loại trừ `test_*` | `bash xe_scripts/so_voi_pi.sh --nhac` | đã vào |
+
+## Đối chiếu luật G — việc 109c, commit c1 (02/11; đọc mã + `test_sep.py` 32/32 + `test_lai_xe_lidar.py` 36/36; CHƯA chạy trên xe)
+
+c1 chỉ có phần "nói": sếp ghi `~/sep_thoat`, phụ lái đọc và **in** "SE LAM", không phát tốc độ. **Chưa giả lập cả hệ thống (PC trường thiếu `install`); nút ROS của hai tệp chưa chạy ở đâu**, chỉ hàm thuần và đọc mã.
+
+| Bên ghi | Bên đọc | Tên/khuôn phải khớp | Khớp? |
+|---|---|---|---|
+| `sep.py` `ghi_lenh(~/sep_thoat, BOOTTIME, 'THOAT', ly_thoat(...))` | `lai_xe_lidar.py` `doc_sep_thoat` | một dòng `<giây BOOTTIME> THOAT <xP\|-> <yP\|-> <lượt> <mã>` (6 trường); tuổi ≤ 3 s; `-` = sếp không có P tin | khớp: `test_32` ghi bằng `ly_thoat` rồi đọc bằng `doc_sep_thoat`, cả tuổi quá hạn, tệp hỏng, `P=-` |
+| `sep.py` tham số `ra_thoat` (mặc định false), `tep_thoat` | người bật tay (`-p ra_thoat:=true`) | tên `ra_thoat`; đường dẫn `~/sep_thoat` | khớp: `test_32` kiểm chữ `declare_parameter('ra_thoat', False)`; `lai_xe_lidar.py` khai `tep_thoat` cùng mặc định `~/sep_thoat` |
+| `sep.py` `di_hay_khong` trả `DUNG` (lượt 4, `HET_3_LUOT_THOAT`) vào `~/sep_lenh` (chỉ khi `ra_lenh=true`) | `chuyen.sh` `doc_sep` / `theo_sep` (`read -r T C L`, nhánh `DUNG)`) | chữ `DUNG` | khớp: `test_32` kiểm hai dòng trong `chuyen.sh`; `chuyen.sh` chỉ đọc ở ranh giới nên có thể muộn tới `TO` = 130 s |
+| `lai_xe_lidar.py` câu log `SE LAM (chi nhin…)` (qua `/rosout`) | `sep.py` `doc_rosout` (chỉ bắt `->` và `trang_thai=`) | câu không chứa `->` và `trang_thai=` | khớp: `test_32` kiểm `doc_rosout('lai_xe_lidar', cau) is None`; sếp **không** bắt câu này (muốn sếp ghi lại thì là việc sau) |
+| `sep.py` dòng nhật ký `TRUY_VET,KET_SAT_VAT` (thêm `phia ket X, P=(x;y)\|-`) | người đọc nhật ký; chưa có chương trình đọc | chữ `phia ket`, `P=` | không có bên đọc để lệch (như bảng việc 105) |
+| `sep.py` `/sep/trang_thai`, khoá mới `thoat` (dict hoặc null) và `ra_thoat` | chưa có bên đọc trong kho | khoá `thoat`, `ra_thoat` | không có bên đọc |
+| `chuyen.sh` ghi `KIEM_DAT` | `sep.py` `_csv` đặt lại `het_luot` | `KIEM_DAT` | khớp (cũ). **Rủi ro:** `chuyen.sh` ghi `KIEM_DAT` rồi hỏi sếp ngay; nếu `DUNG` của chuyến trước còn trong `~/sep_lenh` thì có thể đọc trúng trước khi sếp kịp đặt lại (cửa sổ ≈ 0,1 s) |
+| Tệp đổi đã vào `so_voi_pi.sh` chưa? | `sep.py`, `lai_xe_lidar.py` đã có; không tệp mới | `bash xe_scripts/so_voi_pi.sh --nhac` | đã vào; tự nhắc: 0 dòng |

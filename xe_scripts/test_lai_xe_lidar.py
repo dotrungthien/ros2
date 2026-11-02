@@ -244,6 +244,29 @@ while tong < 40 and lan_thu < 2000:
         bo_cuoc += any('BO_CUOC' in n for n in r['names'])
 check('12 ngau nhien: %d ca sat vat, %d ca cham vat' % (tong, cham), tong >= 30 and cham == 0, 'xe da chu dong di chuyen %d ca, bo cuoc %d ca' % (da_nhuc, bo_cuoc))
 
+# --- viec 109c-c1: doc ~/sep_thoat, chi in "SE LAM", khong phat toc do ---
+ok_t = L.doc_sep_thoat('100.00 THOAT 1.05 0.06 2 777', 101.5)
+check('c1 doc ~/sep_thoat hop le', ok_t == dict(luot=2, ma=777, p=(1.05, 0.06)), str(ok_t))
+check('c1 tep cu hon 3 s hoac tuoi am qua 1 s: bo', L.doc_sep_thoat('100.00 THOAT 1 2 2 7', 103.5) is None and L.doc_sep_thoat('100.00 THOAT 1 2 2 7', 98.0) is None)
+check('c1 tep hong hoac sai chu: bo', all(L.doc_sep_thoat(d, 101.0) is None for d in ('', 'x', '100.00 CHO 1 2 3 4', '100.00 THOAT 1 2 3', '100.00 THOAT a 2 3 4', '100.00 THOAT 1 2 3 x')))
+check('c1 P = "-" thanh p None', L.doc_sep_thoat('100.00 THOAT - - 1 5', 101.0) == dict(luot=1, ma=5, p=None))
+check('c1 goc toi P trong khung than xe', abs(L.goc_toi_diem((0, 0, 0), (1, 0))) < 1e-9 and abs(L.goc_toi_diem((0, 0, 0), (0, 1)) - math.pi / 2) < 1e-9
+      and abs(L.goc_toi_diem((0, 0, math.pi / 2), (1, 0)) + math.pi / 2) < 1e-9 and L.goc_toi_diem(None, (1, 0)) is None and L.goc_toi_diem((0, 0, 0), None) is None)
+_t = dict(luot=1, ma=9, p=(1.05, 0.06))
+_pts_truoc = L.scan_to_xy(make_scan(hanh_lang([(0.205, 0.30, -0.10, 0.10)]), (0, 0, 0)))      # vat sat mui, phia sau thoang
+_pts_sau = L.scan_to_xy(make_scan(hanh_lang([(-0.20, -0.125, -0.10, 0.10)]), (0, 0, 0)))      # vat sat duoi, phia truoc thoang
+_pts_kin = L.scan_to_xy(make_scan(hanh_lang([(0.17, 0.30, -0.10, 0.10), (-0.20, -0.125, -0.10, 0.10)]), (0, 0, 0)))
+_c1 = L.cau_se_lam(_t, _pts_truoc, 0.3)
+_c2 = L.cau_se_lam(_t, _pts_sau, None)
+_c3 = L.cau_se_lam(_t, _pts_kin, -0.5)
+check('c1 SE LAM: vat truoc => ra phia sau (LUI), co P', _c1.startswith('SE LAM') and 'ra phia LUI' in _c1 and 'P=(1.05;0.06)' in _c1 and '17 do' in _c1, _c1)
+check('c1 SE LAM: vat sau => ra phia truoc (TIEN), khong co huong P', 'ra phia TIEN' in _c2 and 'huong toi P khong co' in _c2, _c2)
+check('c1 SE LAM: ke hai dau => khong ra duoc', 'khong ra duoc' in _c3, _c3)
+check('c1 cau SE LAM khong giong cau may trang thai', '->' not in _c1 and 'trang_thai=' not in _c1)
+_src = open(L.__file__ if L.__file__.endswith('.py') else L.__file__[:-1]).read()
+_khoi = _src[_src.index('def _doc_thoat'):_src.index('def _on_nav')]
+check('c1 _doc_thoat khong phat toc do (khong publish / Twist / self.pub / phat_lenh)', not any(k in _khoi for k in ('publish', 'Twist', 'self.pub', 'phat_lenh')))
+
 fails = [n for n, ok in results if not ok]
 print('\nTONG: %d/%d dat' % (len(results) - len(fails), len(results)))
 sys.exit(1 if fails else 0)

@@ -319,9 +319,11 @@ def chon_tu_the(bt):
 def di_hay_khong(bt):
     """Muc B: neu gui diem ngay bay gio thi nen DI, CHO hay DUNG? Tra (chu, ly do). Chi xet dieu kien truoc khi gui
     (khong xet tu the, vi giua hai diem tu the luon la CHO KHONG_CO_DICH). Muc NGHI (0,50-0,70) KHONG chan.
-    DUNG: khong tin qua 15 s (BAO) hoac Nav2 mat nhip. CHO: mat /scan, tf cu, nhay chua kiem xong, khong tin (5-15 s),
+    DUNG: het 3 luot thoat ma van ket (het_luot), khong tin qua 15 s (BAO) hoac Nav2 mat nhip. CHO: mat /scan, tf cu, nhay chua kiem xong, khong tin (5-15 s),
     ABORT_NHANH / PLAN_RONG / PLAN_LECH trong T_PLAN_XAU giay vua qua."""
     g = bt.get
+    if g('het_luot'):                                # viec 109c-c1: het LUOT_THOAT_MAX luot ma van ket => DUNG (co hieu luc khi ra_lenh)
+        return 'DUNG', 'HET_%d_LUOT_THOAT' % LUOT_THOAT_MAX
     if g('muc_tin') == 'BAO':
         return 'DUNG', 'KHONG_TIN_QUA_%ds' % T_BAO
     if g('nav2') == 'MAT_NHIP':
@@ -338,6 +340,13 @@ def di_hay_khong(bt):
     if t is not None and t <= T_PLAN_XAU:
         return 'CHO', '%s %.0fs truoc' % (g('plan_xau') or 'PLAN_XAU', t)
     return 'DI', ''
+
+
+def ly_thoat(thoat):
+    """Phan sau chu THOAT trong ~/sep_thoat: '<xP|-> <yP|-> <luot> <ma>' (lai_xe_lidar.doc_sep_thoat doc lai dung khuon nay)."""
+    p = thoat['p']
+    xy = ('-', '-') if p is None else ('%.2f' % p[0], '%.2f' % p[1])
+    return '%s %s %d %d' % (xy + (thoat['luot'], thoat['ma']))
 
 
 def ghi_lenh(path, t, chu, ly=''):
@@ -435,6 +444,7 @@ class Sep:
         self.diem_txt = ''
         self.nav2_lan = 0
         self.luot_thoat = 0
+        self.thoat_ma, self.thoat_luot = None, 0   # viec 109c-c1: dot ket dang mo (ma duy nhat, luot) de ghi ~/sep_thoat
         self.het_luot = False       # viec 105: kep lan thu LUOT_THOAT_MAX + 1 => chot, DUNG_VA_BAO, den KIEM_DAT moi
         self.nav2_crit = False
         self.l1 = ''
@@ -577,11 +587,20 @@ class Sep:
                 if dang_bat:
                     pass                                         # dang bat: khong cong, khong in luot moi
                 elif self._luot_moi():
-                    se_kep = 'THOAT luot %d/%d, huong thoang nhat %s' % (self.luot_thoat, LUOT_THOAT_MAX, huong_thoang(pts))
+                    self.thoat_ma, self.thoat_luot = int(now * 10), self.luot_thoat
+                    p_thoat = self._p_thoat(mt)
+                    se_kep = 'THOAT luot %d/%d, huong thoang nhat %s, phia ket %s, P=%s' % (
+                        self.luot_thoat, LUOT_THOAT_MAX, huong_thoang(pts), phia,
+                        '-' if p_thoat is None else '(%.2f;%.2f)' % p_thoat)
                 else:
                     se_kep = 'HET %d LUOT, DUNG_VA_BAO' % LUOT_THOAT_MAX
             else:
                 kep = 'DUNG_YEN_KHONG_RO'
+        if kep != 'KET_SAT_VAT':
+            self.thoat_ma = None
+        thoat = None             # viec 109c-c1: cho node ghi ~/sep_thoat (chi khi dot ket con mo va con luot)
+        if kep == 'KET_SAT_VAT' and self.thoat_ma is not None and not self.het_luot:
+            thoat = dict(luot=self.thoat_luot, ma=self.thoat_ma, p=self._p_thoat(mt))
         dung_txt = 'co dich; tam xe dich %s cm trong %ds' % ('-' if dich is None else '%.1f' % (dich * 100), p['t_dung'])
         self._co('KET_SAT_VAT', kep == 'KET_SAT_VAT', ghi, 'than xe sat vat', '%s; %s' % (kep_ly, dung_txt), se_kep)
         self._co('DUNG_YEN_KHONG_RO', kep == 'DUNG_YEN_KHONG_RO', ghi, 'chua ro (Nav2 dung?)',
@@ -605,7 +624,7 @@ class Sep:
             self.tu_the = tt
         # muc B: "di hay khong di" (node ghi ~/sep_lenh khi ra_lenh = true)
         di, di_ly = di_hay_khong(dict(
-            mat_scan=mat_scan, tf_cu=tfc, nhay=nh, muc_tin=mt, nav2=n2, plan_xau=self.plan_xau,
+            mat_scan=mat_scan, tf_cu=tfc, nhay=nh, muc_tin=mt, nav2=n2, plan_xau=self.plan_xau, het_luot=self.het_luot,
             plan_xau_s=None if self.t_plan_xau is None else now - self.t_plan_xau))
         if di != self.di:
             ghi('LENH', di, kq=di_ly, se='%s (%s)' % (di, 'ra lenh' if v.get('ra_lenh') else 'chi nhin'))
@@ -632,8 +651,14 @@ class Sep:
             xe=None if pose is None else [round(pose[0], 2), round(pose[1], 2), round(math.degrees(pose[2]))],
             tf_tuoi=_r(v.get('tf_tuoi'), 1), lech_plan=_r(self.lech_plan), dich=self.dich, nav2_dich=self.goal_active,
             nav2_song=n2, nav2_lan=self.nav2_lan, l1=self.l1, luot_thoat=self.luot_thoat, ket=ket, nhay=nh,
-            vat_truoc=vat, t_cho=round(t_cho), nhin_xa=_r(nx), kep=kep, chuyen=self.diem_txt)
+            vat_truoc=vat, t_cho=round(t_cho), nhin_xa=_r(nx), kep=kep, chuyen=self.diem_txt, thoat=thoat)
         return trang_thai, log
+
+    def _p_thoat(self, mt):
+        """Diem P = diem cuoi /plan (diem xs ke tiep Nav2 dang di toi), hoac None neu chua co hoac vi tri khong TIN (#16, #19)."""
+        if self.dich is None or mt != 'TIN':
+            return None
+        return round(self.dich[0], 2), round(self.dich[1], 2)
 
     def _luot_moi(self):
         """Cong mot luot thoat neu con (toi da LUOT_THOAT_MAX) va tra True. Het luot: chot het_luot, khong cong, tra False."""
@@ -780,6 +805,8 @@ if rclpy is not None:
             self.declare_parameter('lidar_angle_offset_deg', 0.0)
             self.declare_parameter('ra_lenh', False)          # muc B: true = ghi ~/sep_lenh cho chuyen.sh doc
             self.declare_parameter('tep_lenh', os.path.expanduser('~/sep_lenh'))
+            self.declare_parameter('ra_thoat', False)         # viec 109c: true = ghi ~/sep_thoat cho lai_xe_lidar doc
+            self.declare_parameter('tep_thoat', os.path.expanduser('~/sep_thoat'))
             for k, v in P_MAC_DINH.items():
                 self.declare_parameter(k, v)
             self.sep = Sep()
@@ -895,6 +922,12 @@ if rclpy is not None:
                 ghi_lenh(tep, time.clock_gettime(time.CLOCK_BOOTTIME), tt['di'], tt['di_ly'])
             else:
                 self.xoa_lenh()
+            ra_thoat = self.get_parameter('ra_thoat').value
+            if ra_thoat and tt.get('thoat'):
+                ghi_lenh(self.get_parameter('tep_thoat').value, time.clock_gettime(time.CLOCK_BOOTTIME), 'THOAT', ly_thoat(tt['thoat']))
+            else:
+                self.xoa_thoat()
+            tt['ra_thoat'] = ra_thoat
             tt['vong_ms'] = round((time.monotonic() - now) * 1000)
             for d in log:
                 self.f_log.write(d + '\n')
@@ -912,6 +945,13 @@ if rclpy is not None:
             except OSError:
                 pass
 
+        def xoa_thoat(self):
+            """Xoa ~/sep_thoat (dau hieu tat, het luot, ra_thoat = false hoac sep tat): lai_xe_lidar khong thay tep thi khong lam gi."""
+            try:
+                os.remove(self.get_parameter('tep_thoat').value)
+            except OSError:
+                pass
+
     def main():
         rclpy.init()
         node = SepNode()
@@ -921,6 +961,7 @@ if rclpy is not None:
             pass
         finally:
             node.xoa_lenh()
+            node.xoa_thoat()
             node.f_log.close()
             node.destroy_node()
             if rclpy.ok():

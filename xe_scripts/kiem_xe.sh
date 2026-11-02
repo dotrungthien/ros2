@@ -69,6 +69,14 @@ echo "== Buoc 5: 3 tham so =="
 kiem_tp "yaw_nguon" /odom_tu_lenh yaw_nguon gyro
 kiem_tp "gyro_scale" /gyro_mpu6050 gyro_scale 131.0
 kiem_tp "dau_yaw" /gyro_mpu6050 dau_yaw -1.0
+# 113a: ros-humble-tf2 phai >= 0.25.24; chua cai cung la KHONG DAT
+V_TF2=$(dpkg-query -W -f='${Version}' ros-humble-tf2 2>/dev/null)
+if [ -n "$V_TF2" ] && dpkg --compare-versions "$V_TF2" ge 0.25.24; then
+  echo "DAT        ros-humble-tf2 = $V_TF2"
+else
+  echo "KHONG DAT  ros-humble-tf2 = ${V_TF2:-chua cai} (mong >= 0.25.24)"
+  KQ=1
+fi
 
 echo "== Buoc 7: vi tri xe tren ban do (doc khoang 8 giay) =="
 TF=$(timeout 8 ros2 run tf2_ros tf2_echo map base_link 2>&1)

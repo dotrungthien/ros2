@@ -69,6 +69,8 @@ XA_TRUOC = 0.15                  # m tu mep mui: vat trong dai nay la "vat phia 
 T_CHO, T_CHO_THEM, T_CHO_B = 30.0, 10.0, 60.0          # s (#9, #12; vat tai B: 2 x 30 s)
 T_PLAN_XAU = 10.0                # s, muc B: ABORT_NHANH / PLAN_RONG / PLAN_LECH vua xay ra trong chung nay giay => CHO
 B_XY, R_B = (1.60, 0.82), 0.20   # B (chuyen.sh) va ban kinh coi la "dich tai B"
+A_XY = (0.0, 0.0)                # A (goc map, chuyen.sh)
+R_VAT_DICH = 0.30                # m, F4 (03/11): vat la cach dich chuyen <= so nay moi la "vat tai B" (#9); xa hon = giua duong
 TREO = 1.0                       # s, mot vong cham hon so nay = sep treo (muc 9.9) [de xuat]
 ABORT_NHANH = 2.0                # s, ABORTED som hon so nay = nghi "0 poses"
 L1_KET = ('KET_HINH_HOC', 'XOAY_BI_CHAN_QUA_LAU')     # ly do thoat cua lai_xe_lidar = no bao ket
@@ -198,6 +200,25 @@ def vat_truoc(pts, pose, grid, xa=XA_TRUOC):
     if k is None:
         return None
     return 'DIA_HINH' if k else 'VAT_LA'
+
+
+def dich_chuyen(chuyen, dich):
+    """Dich cua chuyen: B khi di_B, A khi ve_A (cot huong cua ~/ket_qua_chuyen.csv). Chua biet chuyen: diem cuoi duong
+    neu no la B hoac A (cach <= R_B), khong thi None."""
+    if chuyen:
+        return B_XY if chuyen.startswith('di_B') else (A_XY if chuyen.startswith('ve_A') else None)
+    if dich is not None:
+        return next((p for p in (B_XY, A_XY) if math.hypot(dich[0] - p[0], dich[1] - p[1]) <= R_B), None)
+    return None
+
+
+def vat_gan_dich(pts, pose, dich, r=R_VAT_DICH, xa=XA_TRUOC):
+    """F4: True khi mot diem dang chan mui (nhu vat_truoc) nam cach dich chuyen <= r (khung ban do)."""
+    if dich is None or pose is None:
+        return False
+    c, s = math.cos(pose[2]), math.sin(pose[2])
+    return any(math.hypot(pose[0] + c * x - s * y - dich[0], pose[1] + s * x + c * y - dich[1]) <= r
+               for x, y in _L1.diem_chan_truoc(pts, xa))
 
 
 def sat_than_xe(pts):
@@ -677,7 +698,7 @@ class Sep:
             self.nav2_lan += 1
         self._co('NAV2_MAT_NHIP', n2 == 'MAT_NHIP', ghi, 'Nav2 hoac mang ROS', '%s; lan %d trong chuyen' % (n2_txt, self.nav2_lan))
 
-        tai_b = self.dich is not None and math.hypot(self.dich[0] - B_XY[0], self.dich[1] - B_XY[1]) <= R_B
+        tai_b = vat == 'VAT_LA' and vat_gan_dich(pts, pose_ok, dich_chuyen(self.chuyen, self.dich))   # F4: vat gan dich, khong phai "dich la B"
 
         # ---- C. chien luoc (chi ghi) ----
         tt, ly = chon_tu_the(dict(

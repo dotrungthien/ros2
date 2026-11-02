@@ -693,6 +693,30 @@ def test_43_G3_ong_khong_di_khong_thoat_khong_dung_het_duong():
     _, log = c(csv=['2026-11-03 10:02:00,di_B_day,-,het,0,HET_DUONG,0,-,-,-'])
     assert c.s.chuyen is None and co(log, 'KET_THUC') and co(log, 'HET_DUONG')
 
+
+def test_44_F4_tai_B_chi_khi_vat_gan_dich_chuyen():
+    """F4: BANG=day gui mot duong ket thuc o B (dich = B ca chuyen di_B). Ong o (0,73; 0,08) giua khe duoi => vat la giua
+    duong: CHO 'VAT_LA', 30 s => DOI_HANH_LANG, khong TAI_B. Vat cach B 0,2 m => TAI_B. ve_A: dich chuyen la A."""
+    duong = [(0.40, 0.09), (1.00, 0.07), (1.30, 0.80), (1.60, 0.82)]     # duong day tu cho xe toi B
+    c = Chay(vao(pose=XE_ONG, them=[ONG_8CM]))
+    c(csv=[CSV_KIEM])
+    c(goals_fp=[[(b'f1', 2)]], plans=[duong])
+    tt, _ = dung_n_giay(c, 1)
+    assert tuple(c.s.dich) == (1.60, 0.82) and tt['vat_truoc'] == 'VAT_LA'
+    assert tt['tu_the'] == 'CHO' and tt['ly_do'].startswith('VAT_LA ') and 'TAI_B' not in tt['ly_do']
+    tt, _ = dung_n_giay(c, 30)
+    assert tt['tu_the'] == 'DOI_HANH_LANG'                              # nhu thiet ke #9, khong phai cho 60 s
+    xe_b, vat_b = (1.175, 0.82, 0.0), (1.40, 1.58, 0.73, 0.91)       # mui x = 1,32; mat vat x = 1,40 (cach B 0,20 m)
+    c = Chay(vao(pose=xe_b, them=[vat_b]))
+    c(csv=[CSV_KIEM])
+    c(goals_fp=[[(b'f1', 2)]], plans=[[(1.175, 0.82), (1.60, 0.82)]])
+    tt, _ = dung_n_giay(c, 1)
+    assert tt['vat_truoc'] == 'VAT_LA' and tt['tu_the'] == 'CHO' and tt['ly_do'].startswith('VAT_LA_TAI_B')
+    assert S.dich_chuyen('di_B_day', None) == S.B_XY and S.dich_chuyen('ve_A_day', duong[-1]) == S.A_XY
+    assert S.dich_chuyen(None, (1.62, 0.80)) == S.B_XY and S.dich_chuyen(None, (0.90, 0.50)) is None
+    gan_a = [(0.20, -0.02), (0.20, 0.02)]                             # xe (0,30; 0) quay ve A: vat o x = 0,10
+    assert S.vat_gan_dich(gan_a, (0.30, 0.0, math.pi), S.A_XY) and not S.vat_gan_dich(gan_a, (0.30, 0.0, math.pi), S.B_XY)
+
 if __name__ == '__main__':
     import sys
     import traceback

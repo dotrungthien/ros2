@@ -3,6 +3,7 @@
 IO gia: dong ho gia, ket qua FollowPath dat san theo tung lan gui. Costmap = du_lieu_0111/costmap_v3_020 (ban do xuong 01/11).
 KHONG chung minh chay tren xe: chi kiem logic chuyen (thu lai, cho, DUNG, CSV, ma thoat) va duong day."""
 import contextlib
+import copy
 import io as _io
 import math
 import os
@@ -462,6 +463,84 @@ def test_22_bi_ngat_huy_dich_ghi_NGAT_ma_130():
     assert '130 = bi ngat (NGAT)' in open(os.path.join(DAY, 'chuyen.sh')).read()
     io2 = IOGia([('SUCCEEDED', 20, Bp)])                              # khong bi ngat: nhu chay()
     assert G.chay_co_ngat(io2, 'di_B', 1, CFG) == 0 and CUA(io2.rows)[-1] == 'DEN_NOI'
+
+
+# ---------- G3 (dong 9): ong O18 chan giua duong. Phan Nav2 (RPP dung vi va cham phia truoc, FollowPath ABORTED) dat san
+# trong IO gia; o day chi kiem gui_duong: cho, tinh lai tren costmap luc do, doi tuyen, HET_DUONG ----------
+ONG1 = (0.70, 0.88, 0.00, 0.18)            # (x0, x1, y0, y1) ong O18 giua hanh lang duoi (= mo_phong_he_thong.NGUOI)
+ONG2 = (0.70, 0.88, 0.66, 0.84)            # ong thu hai giua hanh lang tren
+XE_DUNG = (0.45, 0.09, 0.0)                # RPP dung truoc ong (mui x = 0,595, cach ong 10,5 cm)
+
+
+def cach_ong(x, y, r):
+    return math.hypot(max(r[0] - x, 0.0, x - r[1]), max(r[2] - y, 0.0, y - r[3]))
+
+
+def ban_co_ong(ong, le=0.08, ban=BAN):
+    """Costmap them ong: o cach mep ong <= le (nua be ngang xe = vung inscribed cua Nav2, chi phi >= 98) thanh do."""
+    b = copy.copy(ban)
+    b.v = dict(ban.v)
+    for k in b.v:
+        if any(cach_ong(*b.tam(k), r) <= le for r in ong):
+            b.v[k] = 0
+    b._khoang_cach()
+    return b
+
+
+class _IOOng(IOGia):
+    """Costmap theo thoi gian: co_ong(t) True thi costmap co ong (Nav2 da thay ong tren /global_costmap)."""
+
+    def __init__(self, kq, ban_ong, co_ong, **kw):
+        IOGia.__init__(self, kq, **kw)
+        self.ban_ong, self.co_ong = ban_ong, co_ong
+
+    def cho_san_sang(self):
+        return self.p, self.ban()
+
+    def ban(self):
+        return self.ban_ong if self.co_ong(self.t) else self.b
+
+
+def khong_qua_ong(d, ban, ong):
+    """Moi diem duong ngoai o do cua costmap luc gui va tam xe cach mep ong >= nua be ngang xe (0,08 m)."""
+    return all(not ban.do(ban.o(x, y)) and all(cach_ong(x, y, r) >= 0.08 for r in ong) for x, y, _ in d)
+
+
+def test_23_G3_ong_chan_cho_vat_di_thi_di_tiep_den_noi():
+    """Chuoi (1): ong xuat hien luc t = 3 s; RPP dung (va cham phia truoc), FollowPath ABORTED luc t = 8 s o XE_DUNG;
+    nguoi lay ong di luc t = 30 s. gui_duong dung yen >= CHO_HONG, tinh lai tu cho xe tren costmap luc do => tuyen 1 => DEN_NOI."""
+    b1 = ban_co_ong([ONG1])
+    io = _IOOng([('ABORTED', 8, XE_DUNG), ('SUCCEEDED', 20, Bp)], b1, lambda t: 3 <= t < 30)
+    assert G.chay(io, 'di_B', 1, CFG) == 0
+    assert CUA(io.rows) == ['KIEM_DAT', 'KHONG_DAT', 'SUCCEEDED', 'DEN_NOI'] and [r[1] for r in io.rows[1:3]] == ['1', '1']
+    (t1, _), (t2, d2) = io.gui_ds
+    assert t2 - (t1 + 8) >= CFG['cho_hong'] and t2 >= 30               # khong gui gi trong luc ong con do
+    assert math.hypot(d2[0][0] - XE_DUNG[0], d2[0][1] - XE_DUNG[1]) < 0.01
+    assert all(y < 0.5 for x, y, _ in d2 if 0.3 <= x <= 1.2)          # van hanh lang duoi (tuyen 1)
+    assert io.da_huy == 0
+
+
+def test_24_G3_ong_khong_di_het_luot_het_duong_khong_dam_khong_lui():
+    """Chuoi (2): ong o ca hai hanh lang, khong ai lay. Moi lan RPP dung, ABORTED. Tuyen 1: 3 luot, cach nhau >= CHO_HONG,
+    moi duong tinh tren costmap co ong va khong qua ong; tuyen 2: khong co duong => HET_DUONG (ma 1), xe dung yen.
+    Chi mot ong (hanh lang duoi): het 3 luot tuyen 1 thi doi sang tuyen 2 (hanh lang tren) => DEN_NOI."""
+    b2 = ban_co_ong([ONG1, ONG2])
+    io = _IOOng([('ABORTED', 8, XE_DUNG)] + [('ABORTED', 1, XE_DUNG)] * 5, b2, lambda t: t >= 3)
+    assert G.chay(io, 'di_B', 1, CFG) == 1
+    assert CUA(io.rows) == ['KIEM_DAT'] + ['KHONG_DAT'] * 4 + ['HET_DUONG'] and [r[1] for r in io.rows[1:5]] == ['1', '1', '1', '2']
+    assert len(io.gui_ds) == 3 and any('tuyen 2:' in c and 'doi tuyen' in c for c in io.cau)
+    t = [g[0] for g in io.gui_ds]
+    assert t[1] - (t[0] + 8) >= CFG['cho_hong'] and t[2] - (t[1] + 1) >= CFG['cho_hong']
+    assert all(khong_qua_ong(d, b2, [ONG1, ONG2]) for _, d in io.gui_ds[1:])
+    assert re.search(r'^\s*allow_reversing:\s*false', open(os.path.join(DAY, 'nav2_params_cho.yaml')).read(), re.M)
+    assert not re.search(r'<(BackUp|Spin)\b', open(os.path.join(DAY, 'bt_cho.xml')).read())   # khong lui, khong quay
+    b1 = ban_co_ong([ONG1])
+    io = _IOOng([('ABORTED', 8, XE_DUNG)] + [('ABORTED', 1, XE_DUNG)] * 2 + [('SUCCEEDED', 30, Bp)], b1, lambda t: t >= 3)
+    assert G.chay(io, 'di_B', 1, CFG) == 0
+    assert [r[1] for r in io.rows[1:5]] == ['1', '1', '1', '2'] and CUA(io.rows)[-1] == 'DEN_NOI'
+    assert all(khong_qua_ong(d, b1, [ONG1]) for _, d in io.gui_ds[1:])
+    assert any(y > 0.5 and 0.3 <= x <= 1.2 for x, y, _ in io.gui_ds[3][1])   # tuyen 2 di khe tren (nhu test_03)
+
 
 if __name__ == '__main__':
     import sys

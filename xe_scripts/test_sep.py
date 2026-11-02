@@ -623,6 +623,76 @@ def test_41_NGAT_dong_chuyen_chuyen_sau_dem_lai_tu_0():
     _, log = c(csv=['2026-11-03 02:51:29,ve_A_day,1,1,0,KIEM_DAT,0,-,-,-'])
     assert c.s.chuyen == 've_A_day' and c.s.nav2_lan == 0 and c.s.luot_thoat == 0 and co(log, 'BAT_DAU')
 
+
+# ---------- G3 (dong 9): ong O18 la chan giua duong, BANG=day (dich qua kenh fp), muc B (ra_lenh, ra_thoat) ----------
+XE_ONG = (0.40, 0.09, 0.0)                                            # mui o x = 0,545
+ONG_8CM = (0.625, 0.80, 0.0, 0.18)                                    # ong O18 khong co trong ban do, cach mui 8 cm (nhu test_17)
+CSV_KIEM = '2026-11-03 10:00:00,di_B_day,1,1,0,KIEM_DAT,0,-,-,-'
+
+
+class _Ghi:
+    """Goi c() tung 0,1 s, gom tu the / LENH / thoat / kep da thay va nhat ky."""
+
+    def __init__(self, c):
+        self.c, self.tu_the, self.di, self.thoat, self.kep, self.log, self.t_doi = c, set(), set(), [], set(), [], None
+
+    def __call__(self, n=1, **kw):
+        for _ in range(n):
+            tt, log = self.c(**kw)
+            self.tu_the.add(tt['tu_the'])
+            self.di.add(tt['di'])
+            self.kep.add(tt['kep'])
+            self.log += log
+            if tt['thoat'] is not None:
+                self.thoat.append(tt['thoat'])
+            if tt['tu_the'] == 'DOI_HANH_LANG' and self.t_doi is None:
+                self.t_doi = self.c.t
+        return tt
+
+
+def test_42_G3_ong_chan_cho_vat_di_thi_di_tiep():
+    """Chuoi (1): ong la truoc mui khi FollowPath dang chay => TU_THE CHO (chi ghi); LENH van DI (di_hay_khong khong xet
+    vat: sep KHONG giu gui_duong, gui_duong tu cho CHO_HONG); khong KET_SAT_VAT, khong giao thoat (khong RA/XOAY/lui).
+    ABORTED kenh fp khong phai ABORT_NHANH. Ong di => het VAT_LA; dich moi => DI_THUONG; CSV DEN_NOI dong chuyen."""
+    c = Chay(vao(pose=XE_ONG, them=[ONG_8CM], ra_lenh=True, ra_thoat=True))
+    g = _Ghi(c)
+    g(csv=[CSV_KIEM])
+    g(goals_fp=[[(b'f1', 2)]])
+    tt = g(80)                                                        # RPP dung truoc ong, 8 s
+    assert tt['vat_truoc'] == 'VAT_LA' and tt['tu_the'] == 'CHO' and 'VAT_LA' in tt['ly_do'] and tt['di'] == 'DI'
+    tt = g(goals_fp=[[(b'f1', 6)]])                                   # Controller patience exceeded => ABORTED
+    assert not c.s.goal_active and not co(g.log, 'ABORT_NHANH') and tt['di'] == 'DI'
+    tt = g(150)                                                       # gui_duong cho; nguoi lay ong luc ~23 s
+    assert tt['tu_the'] == 'CHO' and tt['t_cho'] >= 20
+    tt = g(20, pts=quet(XE_ONG))                                      # ong da di
+    assert tt['vat_truoc'] is None and tt['t_cho'] == 0 and tt['tu_the'] == 'CHO' and tt['ly_do'] == 'KHONG_CO_DICH'
+    tt = g(goals_fp=[[(b'f2', 2)]], pts=quet(XE_ONG))                 # gui_duong gui lai
+    tt = g(10, pts=quet(XE_ONG))
+    assert tt['tu_the'] == 'DI_THUONG' and tt['di'] == 'DI'
+    assert g.di == {'DI'} and not g.thoat and g.kep == {None} and 'DOI_HANH_LANG' not in g.tu_the
+    _, log = c(csv=['2026-11-03 10:01:00,di_B_day,1,tong,0,DEN_NOI,60,-,-,-'], pts=quet(XE_ONG))
+    assert c.s.chuyen is None and co(log, 'KET_THUC') and co(log, 'DEN_NOI')
+
+
+def test_43_G3_ong_khong_di_khong_thoat_khong_dung_het_duong():
+    """Chuoi (2): ong o lai. gui_duong gui lai 3 lan (moi lan ~1 s roi ABORTED, cach nhau 31 s). Sep: CHO toi 30 s roi
+    DOI_HANH_LANG (chi ghi, 'chi nhin'); KHONG THOAT, KHONG giao thoat (phu lai khong RA/XOAY/lui theo lenh sep), khong
+    KET_SAT_VAT; LENH luon DI (sep khong chan; HET_DUONG do gui_duong). CSV HET_DUONG dong chuyen."""
+    c = Chay(vao(pose=XE_ONG, them=[ONG_8CM], ra_lenh=True, ra_thoat=True))
+    g = _Ghi(c)
+    g(csv=[CSV_KIEM])
+    for k in range(3):
+        g(goals_fp=[[(b'f%d' % k, 2)]])
+        g(10)
+        g(goals_fp=[[(b'f%d' % k, 6)]])
+        g(310)
+    assert g.tu_the == {'CHO', 'DOI_HANH_LANG'} and g.t_doi - c.s.t_vat >= S.T_CHO     # dong ho tu luc thay ong
+    assert co(g.log, 'SE_LAM=DOI_HANH_LANG (chi nhin)')
+    assert g.di == {'DI'} and not g.thoat and g.kep == {None} and c.s.luot_thoat == 0 and not c.s.het_luot
+    assert not co(g.log, ',TU_THE,THOAT,') and not co(g.log, 'ABORT_NHANH')
+    _, log = c(csv=['2026-11-03 10:02:00,di_B_day,-,het,0,HET_DUONG,0,-,-,-'])
+    assert c.s.chuyen is None and co(log, 'KET_THUC') and co(log, 'HET_DUONG')
+
 if __name__ == '__main__':
     import sys
     import traceback

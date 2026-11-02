@@ -10,6 +10,10 @@
 # - canh_pid: PID cua launch mapping; launch do chet thi xe_gia tu thoat (de "bat_xe.sh tat" don sach).
 # - Moi 1 s va khi tat: ghi /tmp/gia_lap/vi_tri_that.csv = vi tri THAT, vi tri xe tin (tf map -> base_footprint)
 #   va khoang cach nho nhat tu than xe that toi o chiem cua map v3 trong 1 s vua qua (do 10 Hz).
+# - G3 phan B (03/11): ong gia. Moi lan quet (10 Hz) doc ~/ong_gia ("x y", m, khung map = khung vi tri that); co tep thi LiDAR
+#   gia thay them hinh tron ban kinh R_ONG = 0,09 m (O 18 cm) o do, xoa tep la ong bien mat. Co ong thi ghi 10 Hz vao
+#   /tmp/gia_lap/ong_gia.csv: vi tri that, khoang cach than xe (hinh chu nhat) va mui xe (0,145 m truoc tam) toi MAT ong
+#   (am = da cham). Ong KHONG tinh vao d_min_cm cua vi_tri_that.csv (cot do giu nghia cu: o chiem map v3).
 import math
 import os
 import sys
@@ -36,6 +40,38 @@ LIDAR_X = 0.025
 N_TIA, R_MIN, R_MAX, BUOC = 500, 0.10, 8.0, 0.01
 X_MUI, X_DUOI, Y_HONG = 0.145, -0.105, 0.08   # lai_xe_lidar.py
 TEP_VI_TRI = '/tmp/gia_lap/vi_tri_that.csv'
+TEP_ONG, R_ONG = os.path.expanduser('~/ong_gia'), 0.09
+TEP_ONG_CSV = '/tmp/gia_lap/ong_gia.csv'
+
+
+def doc_ong(path):
+    """(x, y) cua ong trong ~/ong_gia; None neu khong co tep. Tep hong (khong phai 2 so) => ValueError."""
+    try:
+        with open(path) as f:
+            o = f.read().split()
+    except FileNotFoundError:
+        return None
+    if len(o) != 2:
+        raise ValueError('~/ong_gia can "x y", co %r' % o)
+    return float(o[0]), float(o[1])
+
+
+def tia_cat_tron(lx, ly, goc, cx, cy, r):
+    """Khoang cach tu (lx, ly) theo tung huong `goc` (mang) toi mat hinh tron (cx, cy, r); inf neu khong cat."""
+    dx, dy = np.cos(goc), np.sin(goc)
+    ux, uy = cx - lx, cy - ly
+    b = dx * ux + dy * uy
+    disc = b * b - (ux * ux + uy * uy - r * r)
+    t = b - np.sqrt(np.maximum(disc, 0.0))
+    return np.where((disc >= 0.0) & (t >= R_MIN) & (t <= R_MAX), t, np.inf)
+
+
+def cach_ong(x, y, th, cx, cy, r):
+    """(than, mui): khoang cach [m] tu hinh chu nhat than xe va tu diem mui (X_MUI truoc tam) toi mat ong; am = da cham."""
+    c, s = math.cos(th), math.sin(th)
+    px, py = c * (cx - x) + s * (cy - y), -s * (cx - x) + c * (cy - y)
+    than = math.hypot(max(X_DUOI - px, px - X_MUI, 0.0), max(abs(py) - Y_HONG, 0.0)) - r
+    return than, math.hypot(px - X_MUI, py) - r
 
 
 def van_toc_san(v, w, banh_trai_that):
@@ -76,6 +112,9 @@ class XeGia(Node):
         TransformListener(self.tf_buf, self)
         with open(TEP_VI_TRI, 'w') as f:
             f.write('gio,t_epoch,nguon,x,y,goc_do,x_tin,y_tin,goc_tin_do,d_min_cm\n')
+        with open(TEP_ONG_CSV, 'w') as f:
+            f.write('t_epoch,ong_x,ong_y,x,y,goc_do,d_than_cm,d_mui_cm\n')
+        self.ong_loi = ''
         self.x, self.y = self.get_parameter('x0').value, self.get_parameter('y0').value
         self.th = math.radians(self.get_parameter('goc0_do').value)
         self.v = self.w_lenh = 0.0
@@ -145,9 +184,24 @@ class XeGia(Node):
         m.angle_max = float(self.goc[-1])
         m.scan_time = 0.1
         m.range_min, m.range_max = R_MIN, R_MAX
-        m.ranges = np.where(co, self.r[dau], np.inf).astype(np.float32).tolist()
+        rr = np.where(co, self.r[dau], np.inf)
+        try:
+            ong = doc_ong(TEP_ONG)
+        except ValueError as e:                    # tep hong: bao 1 lan, coi nhu khong co ong
+            if str(e) != self.ong_loi:
+                self.get_logger().error(str(e))
+                self.ong_loi = str(e)
+            ong = None
+        if ong is not None:
+            rr = np.minimum(rr, tia_cat_tron(lx, ly, a[:, 0], ong[0], ong[1], R_ONG))
+        m.ranges = rr.astype(np.float32).tolist()
         self.pub.publish(m)
         self.d_min = min(self.d_min, self.cach_o_chiem())
+        if ong is not None:
+            than, mui = cach_ong(self.x, self.y, self.th, ong[0], ong[1], R_ONG)
+            with open(TEP_ONG_CSV, 'a') as f:
+                f.write('%.3f,%.3f,%.3f,%.4f,%.4f,%.2f,%.1f,%.1f\n' % (time.time(), ong[0], ong[1], self.x, self.y,
+                                                                     math.degrees(self.th), than * 100, mui * 100))
 
     def cach_o_chiem(self):
         """Khoang cach [m] tu hinh chu nhat than xe that toi diem gan nhat cua o chiem (0 neu cham)."""

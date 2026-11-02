@@ -22,6 +22,7 @@ bat_xe.sh.v3|?
 kiem_xe.sh|~/kiem_xe.sh
 chuyen.sh|~/chuyen.sh
 ghi_bag.sh|~/ghi_bag.sh
+chup_loi.sh|~/chup_loi.sh
 bt_cho.xml|~/bt_cho.xml
 nav2_params_cho.yaml|~/nav2_params_cho.yaml
 cai_cau_noi.sh|~/cai_cau_noi.sh

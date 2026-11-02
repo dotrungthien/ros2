@@ -241,3 +241,17 @@ Gốc lỗi xe 18:18, 18:20 (3/3 chuyến `BANG=day`: lần 1 luôn "khong co tf
 | Nav2 `global_costmap` `/global_costmap/costmap` (`OccupancyGrid`; Humble: KeepLast(1), TRANSIENT_LOCAL, RELIABLE) | `gui_duong.py` (KeepLast(1), TRANSIENT_LOCAL, RELIABLE) | bên nghe TRANSIENT_LOCAL chỉ nhận được khi bên phát cũng TRANSIENT_LOCAL | khớp: QoS bên phát đọc theo mã nguồn Humble (thư viện có gọi `QoS::transient_local`; header không ghi QoS) **và** trên xe lần 2 đã nhận costmap, điều không thể nếu bên phát VOLATILE. Kiểm lại trên Pi: `ros2 topic info -v /global_costmap/costmap` |
 | tf `map→base_footprint` | `gui_duong.py` `pose()` (cũ > 1 s ⇒ None) | — | khớp; nay luôn spin lấy tf mới **sau** khi đổi costmap |
 | `gui_duong.py` câu báo | người đọc log | `khong co tf moi`, `khong co costmap`, `... sau 15 s` | thay câu cũ `khong co tf hoac costmap moi` (nay nói rõ thiếu cái nào) |
+
+## Đối chiếu luật G — việc 113 bước 2a, `chup_loi.sh` (02/11 20:2x; `bash -n`, chạy trên PC với HOME giả: không pid và pid giả; CHƯA chạy trên Pi; **chưa giả lập cả hệ thống**)
+
+Chụp trạng thái `controller_server` lúc tốt (`goc`) và lúc "Transform data too old" (`loi`). Chỉ đọc, không giết hay bật lại gì; `gdb` (mục 5, cuối cùng) làm tiến trình đứng vài giây. Mã truy cập trong dòng lệnh (`access_code:=…` và biến ACCESS) bị thay bằng `XOA` trước khi ghi mục 1.
+
+| Bên ghi | Bên đọc | Tên / đường dẫn / khuôn phải khớp | Khớp? |
+|---|---|---|---|
+| `bat_xe.sh` dòng 182: chỉ `source ~/ros2_ws/install/setup.bash`, không đặt `ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, `FASTRTPS_*` (thừa hưởng từ terminal gọi nó) | `chup_loi.sh` mục 4: `source` đúng tệp đó rồi `ros2 topic info -v /tf` | cùng `setup.bash` | khớp |
+| môi trường terminal bật `bat_xe.sh` (ví dụ `export FASTRTPS_DEFAULT_PROFILES_FILE=~/udp.xml` lúc thử chỉ UDP) | terminal chạy `chup_loi.sh` | `ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, `ROS_LOCALHOST_ONLY`, `FASTRTPS_DEFAULT_PROFILES_FILE` | **chỉ khớp nếu cùng kiểu terminal**: mục 4 in cả môi trường của lệnh và của `controller_server` (đọc `/proc/<pid>/environ`, chỉ các khoá trên) để so tại chỗ; khác `ROS_DOMAIN_ID` ⇒ `topic info` không thấy ai |
+| Nav2 launch: tiến trình `.../nav2_controller/controller_server --ros-args …` | `pgrep -f '[c]ontroller_server'` (bài 303) rồi chọn pid có `/proc/<pid>/comm` = `controller_serv` (bài 304, 15 ký tự) | tên tệp chạy | khớp (thử: tiến trình giả tên `controller_server` cạnh vỏ bash chứa chữ đó ⇒ chọn đúng pid giả); không thấy ⇒ `KHONG_THAY` |
+| `ss -p` dạng `users:(("controller_serv",pid=N,fd=…))` | `chup_loi.sh` mục 2 đánh dấu `>>CS` | chuỗi `pid=N,` | khớp khuôn `ss` (iproute2); cần `sudo -n`, không có ⇒ `KHONG_SUDO`, chạy `ss -uam` không `-p` |
+| `so_voi_pi.sh` bảng | `~/chup_loi.sh` | dòng `chup_loi.sh\|~/chup_loi.sh` | đã thêm; `--nhac` 0 dòng |
+| `chup_loi.sh` | người đọc | `~/chup_loi_HHMMSS_<nhan>.txt` (`/home/project1/`), 5 mục `===== (1)` … `===== (5)` | khớp (thử PC: đủ 5 mục, thoát 0, in đường dẫn) |
+| `gdb` trên Pi | mục 5 | `sudo -n timeout 60 gdb -p <pid> -batch -ex "thread apply all bt"` | chưa biết Pi có `gdb` không: thiếu ⇒ ghi `KHONG_CO_GDB (sudo apt install gdb)` |

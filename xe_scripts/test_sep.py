@@ -355,6 +355,64 @@ def test_25_ghi_lenh_doi_ten_nguyen_tep():
         shutil.rmtree(d)
 
 
+def _chay_kep(day, vong):
+    """Xe dung yen o K4 (co dich), khoang cach LiDAR gan than xe bi thay bang chuoi `day` (m, lap vong, moi vong mot
+    gia tri). Chay 11 s cho du t_dung roi `vong` vong. Tra (c, toan bo nhat ky)."""
+    that, i = S.sat_than_xe, [0]
+
+    def gia(pts):
+        i[0] += 1
+        return day[i[0] % len(day)], 'TRUOC'
+    S.sat_than_xe = gia
+    try:
+        c = Chay(vao(pose=(0.60, 0.02, -math.pi / 2)))
+        log = c(goals=[[(b'g', 2)]])[1]
+        log += dung_n_giay(c, 11)[1]
+        for _ in range(vong):
+            log += c()[1]
+    finally:
+        S.sat_than_xe = that
+    return c, log
+
+
+def test_26_dao_dong_9_5_10_5_cm_khong_nhay():
+    c, log = _chay_kep([0.105, 0.095], 40)
+    bat = [d for d in log if ',KET_SAT_VAT,' in d and ',BAT,' in d]
+    het = [d for d in log if ',KET_SAT_VAT,' in d and ',HET' in d]
+    assert len(bat) == 1 and not het and c.s.luot_thoat == 1          # bat mot lan o 9,5 cm; 10,5 cm chua tat (< 12 cm)
+    c, log = _chay_kep([0.095, 0.115, 0.125], 40)                     # 11,5 van giu; 12,5 > 12 moi tat => co the bat lai
+    het = [d for d in log if ',KET_SAT_VAT,' in d and ',HET' in d]
+    assert het                                                        # > 12 cm thi tat that
+
+
+def test_27_20_lan_ket_toi_da_3_luot_roi_mot_dung_va_bao():
+    c, log = _chay_kep([0.05, 0.20], 40)                              # 0,05 = ket; 0,20 > 12 cm = het: moi 2 vong mot lan ket
+    luot = [int(m) for d in log for m in re.findall(r'luot (\d+)/3', d)]
+    assert sorted(set(luot)) == [1, 2, 3], luot
+    assert c.s.luot_thoat == 3 and c.s.het_luot
+    assert sum(',TU_THE,DUNG_VA_BAO,' in d for d in log) == 1         # dung mot dong DUNG_VA_BAO
+    assert not any(re.search(r'luot ([4-9]|\d\d)/3', d) for d in log)
+    c.s._csv(dict(ket_qua='KIEM_DAT', huong='di_B', tuyen='1', diem='1'), lambda *a, **k: None)   # KIEM_DAT dat lai
+    assert c.s.luot_thoat == 0 and not c.s.het_luot
+
+
+def test_28_l1_thoat_luc_ket_sat_vat_bat_khong_cong():
+    doi = '%s -> %s (%s)%s | %s'
+    xe = (0.60, 0.02, -math.pi / 2)
+    c = Chay(vao(pose=xe))
+    c(goals=[[(b'g', 2)]])
+    dung_n_giay(c, 11)
+    assert c.s.co.get('KET_SAT_VAT') and c.s.luot_thoat == 1
+    tt, log = c(rosout=[('lai_xe_lidar', doi % ('XAC_NHAN', 'THOAT_CUNG', 'KET_HINH_HOC', '', 'x'))])
+    assert c.s.luot_thoat == 1 and co(log, 'BAT_DAU_THOAT') and co(log, 'khong cong')
+    # khong co KET_SAT_VAT: L1 tu cong, va co tran 3
+    c2 = Chay(vao())
+    for k in range(5):
+        c2(rosout=[('lai_xe_lidar', doi % ('THOAT_CUNG', 'XONG', '', '', 'x'))])
+        c2(rosout=[('lai_xe_lidar', doi % ('XAC_NHAN', 'THOAT_CUNG', 'KET_HINH_HOC', '', 'x'))])
+    assert c2.s.luot_thoat == 3
+
+
 if __name__ == '__main__':
     import sys
     import traceback

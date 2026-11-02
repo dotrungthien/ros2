@@ -67,3 +67,17 @@ Luật G: bên ghi và bên đọc phải dùng cùng tên/đường dẫn. Cộ
 | `ghi_bag.sh` | hướng dẫn cuối buổi (`tar ~/bag_*`) | `$HOME/bag_*` | khớp |
 | `NODES` (`bat_xe.sh`, 19 tên) | `CHINH` (`cau_noi_xe.py`, 12 tên) | cùng danh sách tên tiến trình | **LỆCH có chủ ý**: 7 tên thêm 31/10 chỉ có ở `NODES`; `CHINH` chưa đổi theo lệnh Thiên |
 | **Tệp mới đã vào danh sách `so_voi_pi.sh` chưa?** | `sep.py`, `tinh_tuyen.py`, `slam_dinh_vi_xuong.yaml`, `map_xuong_v3_pg.posegraph/.data` | có. Còn ngoài danh sách: `costmap_v3_020.*`, `sep_nhat_ky.csv` (dữ liệu máy, thuộc `du_lieu_*/`). Từ nay `so_voi_pi.sh` tự nhắc `CHUA_CO_TRONG_DANH_SACH` | đã vào; tự nhắc trên kho: 0 dòng |
+
+## Đối chiếu luật G — việc 105 (02/11; đọc mã + `test_sep.py` 28/28; CHƯA chạy trên xe)
+
+Chữ `sep.py` ghi ra mà nơi khác đọc. **Chưa giả lập cả hệ thống:** `gia_lap/bat_gia.sh` không chạy được trên PC này (không có `~/ros2_ws/install`, thiếu gói `my_bot`, `twist_mux`, `joint_state_publisher`), nên không chạy lại ca kẹt sát K4 trong giả lập. Phần đã thử chỉ là hàm thuần + `Sep.vong` với LiDAR/bản đồ giả (`mo_phong_he_thong.py`, chưa hiệu chuẩn: chỉ bắt lỗi ghép).
+
+| Bên ghi | Bên đọc | Tên/đường dẫn phải khớp | Khớp? |
+|---|---|---|---|
+| `sep.py` → `~/sep_nhat_ky.csv`, 11 cột `COT_NHAT_KY` | chưa có tệp nào ngoài `sep.py`/`test_sep.py` đọc (grep toàn kho) | tiêu đề cột; chữ mới: `TRUY_VET,KET_SAT_VAT` (`THOAT luot n/3…` hoặc `HET 3 LUOT, DUNG_VA_BAO`), `TU_THE,DUNG_VA_BAO` (lý do `HET_3_LUOT_THOAT_VAN_KET`), `L1,BAT_DAU_THOAT` (`khong cong (KET_SAT_VAT dang bat)…`, `het 3 luot, khong cong`) | không có bên đọc để lệch; **chữ mới chưa có trong tài liệu nào** (người đọc nhật ký phải biết) |
+| `sep.py` → `~/sep_lenh` (`DI\|CHO\|DUNG` + lý do) | `chuyen.sh` `doc_sep` / `theo_sep` | ba chữ `DI`, `CHO`, `DUNG`; đồng hồ `CLOCK_BOOTTIME` = `/proc/uptime` | khớp; **việc 105 không đổi `di_hay_khong`**, nên `het_luot` / `DUNG_VA_BAO` KHÔNG làm sếp ra lệnh `DUNG` (chỉ nằm ở tư thế ghi nhật ký). Cố ý, chờ Thiên quyết |
+| `sep.py` → `/sep/trang_thai` (JSON) | chưa có bên đọc trong kho (chỉ tài liệu nói `ghi_bag.sh` sẽ ghi) | khoá `luot_thoat`, `tu_the`; giá trị `tu_the` mới có thể là `DUNG_VA_BAO` do KET_SAT_VAT | không thêm khoá; `luot_thoat` nay ≤ 3 (trước đây vượt 3) |
+| `chuyen.sh` → `~/ket_qua_chuyen.csv` cột `ket_qua` | `sep.py` `_csv` (đặt lại `luot_thoat`, `het_luot` khi `KIEM_DAT`) | `KIEM_DAT`, `DEN_NOI`, `HET_DUONG`, `SAI_VI_TRI`, `DUNG_SEP` | khớp cả 5 tên |
+| `lai_xe_lidar.py` log `/rosout` `'%s -> %s (%s)%s \| %s'` | `sep.py` `doc_rosout` (cộng/không cộng lượt khi `THOAT`) | khuôn câu log; `test_15` kiểm nguyên văn | khớp |
+| `sep.py` `P_MAC_DINH` (thêm `sat_vat_tat`) | `declare_parameter` trong nút; không launch/yaml nào đặt | tên tham số `sat_vat_tat` (m, 0,12); mã dùng `max(sat_vat_tat, sat_vat)` nên đặt nhỏ hơn `sat_vat` cũng không đảo khoảng trễ | khớp (không bên nào khác đặt tên này) |
+| Tệp mới/đổi đã vào `so_voi_pi.sh` chưa? | `sep.py` có trong danh sách (`~/sep.py`); `test_sep.py` thuộc luật loại trừ `test_*` | `bash xe_scripts/so_voi_pi.sh --nhac` | đã vào |

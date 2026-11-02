@@ -14,6 +14,8 @@ Thien chot 01/11 (duyet ke hoach buoc 1):
   "0 poses": ghi ca /plan rong va ABORTED < 2 s.
 Viec 100 (01/11 toi): bo nghe /bond (~100 tin/s) cho nhe; Nav2 song/chet suy tu /rosout + trang thai goal.
   Tu thay ket: co dich VA tam xe dich < dich_dung trong t_dung giay VA diem LiDAR gan than xe <= sat_vat
+  (viec 105: khoang tre - da bat thi chi tat khi > sat_vat_tat = 12 cm; toi da LUOT_THOAT_MAX luot THOAT moi chuyen,
+  kep lan thu 4 => mot dong DUNG_VA_BAO, khong cong them den KIEM_DAT moi)
   => vat la truoc: CHO; khong: KET_SAT_VAT (phia, cm); khong co vat gan: DUNG_YEN_KHONG_RO.
   Cu 10 s ghi mot dong VONG (vong cham nhat va phan cham nhat). Moi dong nhat ky co them x, y, goc_do.
 Muc B (01/11 dem): tham so ra_lenh (mac dinh false). true: moi vong ghi ~/sep_lenh "<giay CLOCK_BOOTTIME> DI|CHO|DUNG
@@ -67,7 +69,8 @@ L1_KET = ('KET_HINH_HOC', 'XOAY_BI_CHAN_QUA_LAU')     # ly do thoat cua lai_xe_l
 P_MAC_DINH = dict(               # tham so ROS (viec 100) [de xuat]
     t_dung=10.0,                 # s, co dich ma tam xe dung yen lau tu so nay
     dich_dung=0.03,              # m, "dung yen" = tam xe dich duoi so nay trong t_dung
-    sat_vat=0.10,                # m, diem LiDAR cach hinh chu nhat than xe tu so nay tro xuong = sat vat
+    sat_vat=0.10,                # m, diem LiDAR cach hinh chu nhat than xe tu so nay tro xuong = sat vat (BAT)
+    sat_vat_tat=0.12,            # m, khoang tre (viec 105): da bat thi chi TAT khi diem gan nhat > so nay
 )
 CUA_SO_VONG = 10.0               # s, cu bay nhieu giay ghi mot dong VONG
 
@@ -255,6 +258,8 @@ def chon_tu_the(bt):
     lai_xe_lidar (#10); (2) vi tri co tin duoc khong (#16, #19); (3) Nav2 con song khong (#8); (4) vat can, duong di.
     Doi hanh lang va thoat (dua vao ban do) chi khi vi tri TIN: muc NGHI cung chi CHO (vi du muc 4: tin cay 0,60)."""
     g = bt.get
+    if g('het_luot'):                                # viec 105: het luot ma van ket => dung, bao, giu den KIEM_DAT moi
+        return 'DUNG_VA_BAO', 'HET_%d_LUOT_THOAT_VAN_KET' % LUOT_THOAT_MAX
     if g('mat_scan'):
         return 'CHO', 'MAT_SCAN'
     l1 = g('l1') or ''
@@ -430,6 +435,7 @@ class Sep:
         self.diem_txt = ''
         self.nav2_lan = 0
         self.luot_thoat = 0
+        self.het_luot = False       # viec 105: kep lan thu LUOT_THOAT_MAX + 1 => chot, DUNG_VA_BAO, den KIEM_DAT moi
         self.nav2_crit = False
         self.l1 = ''
         self.l1_ket = False
@@ -563,12 +569,17 @@ class Sep:
         d_sat, phia = INF, ''
         if dy and not mat_scan and vat != 'VAT_LA':              # vat la truoc mat: nhanh CHO cua chon_tu_the
             d_sat, phia = sat_than_xe(pts)                       # chi tinh khi da dung yen (cho nhe)
-            if d_sat <= p['sat_vat']:
+            dang_bat = bool(self.co.get('KET_SAT_VAT'))
+            # khoang tre: bat khi <= sat_vat, da bat thi giu den khi > sat_vat_tat (khong the nho hon sat_vat)
+            if d_sat <= (max(p['sat_vat_tat'], p['sat_vat']) if dang_bat else p['sat_vat']):
                 kep = 'KET_SAT_VAT'
-                if not self.co.get('KET_SAT_VAT'):
-                    self.luot_thoat += 1
                 kep_ly = 'KET_SAT_VAT %s %.1f cm' % (phia, d_sat * 100)
-                se_kep = 'THOAT luot %d/%d, huong thoang nhat %s' % (self.luot_thoat, LUOT_THOAT_MAX, huong_thoang(pts))
+                if dang_bat:
+                    pass                                         # dang bat: khong cong, khong in luot moi
+                elif self._luot_moi():
+                    se_kep = 'THOAT luot %d/%d, huong thoang nhat %s' % (self.luot_thoat, LUOT_THOAT_MAX, huong_thoang(pts))
+                else:
+                    se_kep = 'HET %d LUOT, DUNG_VA_BAO' % LUOT_THOAT_MAX
             else:
                 kep = 'DUNG_YEN_KHONG_RO'
         dung_txt = 'co dich; tam xe dich %s cm trong %ds' % ('-' if dich is None else '%.1f' % (dich * 100), p['t_dung'])
@@ -587,7 +598,7 @@ class Sep:
         # ---- C. chien luoc (chi ghi) ----
         tt, ly = chon_tu_the(dict(
             mat_scan=mat_scan, l1=self.l1, tf_cu=tfc, muc_tin=mt, tin_cay=tc, ket=ket, nhay=nh, nav2=n2,
-            nav2_lan=self.nav2_lan, plan_lech=self.plan_sai, luot_thoat=self.luot_thoat, vat_truoc=vat,
+            nav2_lan=self.nav2_lan, plan_lech=self.plan_sai, luot_thoat=self.luot_thoat, het_luot=self.het_luot, vat_truoc=vat,
             t_cho=t_cho, khe_rong=khe, tai_B=tai_b, goal=self.goal_active, kep=kep, kep_ly=kep_ly))
         if tt != self.tu_the:
             ghi('TU_THE', tt, kq=ly, se='SE_LAM=%s (chi nhin)' % tt)
@@ -624,6 +635,14 @@ class Sep:
             vat_truoc=vat, t_cho=round(t_cho), nhin_xa=_r(nx), kep=kep, chuyen=self.diem_txt)
         return trang_thai, log
 
+    def _luot_moi(self):
+        """Cong mot luot thoat neu con (toi da LUOT_THOAT_MAX) va tra True. Het luot: chot het_luot, khong cong, tra False."""
+        if self.luot_thoat < LUOT_THOAT_MAX:
+            self.luot_thoat += 1
+            return True
+        self.het_luot = True
+        return False
+
     def _co(self, ten, bat, ghi, nguon='', kiem='', se=''):
         """Ghi mot dong khi dau hieu bat len va khi het (khong ghi lap moi vong)."""
         if bat and not self.co.get(ten):
@@ -641,6 +660,7 @@ class Sep:
         if kq == 'KIEM_DAT' and self.chuyen is None:
             self.chuyen = r['huong']
             self.nav2_lan = self.luot_thoat = 0
+            self.het_luot = False
             ghi('CHUYEN', 'BAT_DAU', kiem=r['huong'], se='dem lai: Nav2 0/%d; thoat 0/%d' % (NAV2_LAN_MAX, LUOT_THOAT_MAX))
         elif kq in ('DEN_NOI', 'HET_DUONG', 'SAI_VI_TRI', 'DUNG_SEP') and self.chuyen is not None:
             ghi('CHUYEN', 'KET_THUC', kiem=self.chuyen, kq=kq)
@@ -661,8 +681,12 @@ class Sep:
             ten, ly = e[1], e[2]
             if ten.startswith('THOAT'):
                 if not self.l1.startswith('THOAT'):
-                    self.luot_thoat += 1
-                    ghi('L1', 'BAT_DAU_THOAT', kiem=ly, kq='luot %d' % self.luot_thoat)
+                    if self.co.get('KET_SAT_VAT'):               # viec 105: dang KET_SAT_VAT thi la cung mot lan ket, khong cong
+                        ghi('L1', 'BAT_DAU_THOAT', kiem=ly, kq='khong cong (KET_SAT_VAT dang bat), luot %d' % self.luot_thoat)
+                    elif self._luot_moi():
+                        ghi('L1', 'BAT_DAU_THOAT', kiem=ly, kq='luot %d' % self.luot_thoat)
+                    else:
+                        ghi('L1', 'BAT_DAU_THOAT', kiem=ly, kq='het %d luot, khong cong' % LUOT_THOAT_MAX)
                 if ly:
                     self.l1_ket = ly in L1_KET
             else:

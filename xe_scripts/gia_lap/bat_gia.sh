@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Bat gia lap vong kin tren PC (WSL): launch mapping_my_bot + Nav2 that, chi xe va LiDAR la gia (xe_gia.py).
 # Tep that khong sua: chep slam_dinh_vi_xuong.yaml va nav2_params_cho.yaml vao $TAM, doi /home/project1.
-# Tat: bash xe_scripts/bat_xe.sh tat (xe_gia.py tu thoat khi launch mapping chet; odom_tu_lenh rieng khop mau NODES).
+# Tat: bash xe_scripts/bat_xe.sh tat (xe_gia.py tu thoat khi launch mapping chet; odom_tu_lenh rieng khop mau NODES;
+#   sep.py, lai_xe_lidar.py, gui_duong.py khop mau TAY).
+# 106: sau Nav2 active bat sep.py + lai_xe_lidar.py nhu bat_xe.sh B2b (cung bien SEP_RA_LENH, SEP_RA_THOAT, PHU_LAI_PHAT_LENH);
+#   lien ket ~/gui_duong.py, ~/tinh_tuyen.py cho chuyen.sh BANG=day; ROTATE_MIN ghi de rotate_to_heading_min_angle.
 export ROS_LOCALHOST_ONLY=1 ROS_DOMAIN_ID=87
 GIA=$(cd "$(dirname "$0")" && pwd)
 XS=$(dirname "$GIA")
@@ -11,6 +14,12 @@ T_CHO="${T_CHO:-90}"
 INFLATION="${INFLATION:-0.20}"     # inflation_radius cua global va local costmap (ban chep), nhu xe 01/11
 VI_TRI_DAU="${VI_TRI_DAU:-0 0 0}"  # "x y goc_do": vi tri that dau cua xe_gia, cung la map_start_pose cua SLAM
 # (banh_trai_that = 1/he_so_trai: tham so o dau xe_gia.py)
+ROTATE_MIN="${ROTATE_MIN:-}"       # rong = giu rotate_to_heading_min_angle cua yaml; vi du 0.785 (xe 02/11 16:43)
+# ---- sep va phu lai, nhu bat_xe.sh (mac dinh false) ----
+SEP_RA_LENH="${SEP_RA_LENH:-false}"; SEP_RA_THOAT="${SEP_RA_THOAT:-false}"; PHU_LAI_PHAT_LENH="${PHU_LAI_PHAT_LENH:-false}"
+for b in "SEP_RA_LENH=$SEP_RA_LENH" "SEP_RA_THOAT=$SEP_RA_THOAT" "PHU_LAI_PHAT_LENH=$PHU_LAI_PHAT_LENH"; do
+  case "${b#*=}" in true|false) ;; *) echo "LOI: $b (chi true hoac false)"; exit 1 ;; esac
+done
 mkdir -p "$TAM"
 source /opt/ros/humble/setup.bash
 source ~/ros2_ws/install/setup.bash
@@ -18,12 +27,20 @@ source ~/ros2_ws/install/setup.bash
 sed "s#/home/project1/#$XS/du_lieu_0111/#g" "$XS/du_lieu_0111/slam_dinh_vi_xuong.yaml" > "$TAM/slam.yaml"
 sed "s#/home/project1/#$XS/#g" "$XS/nav2_params_cho.yaml" > "$TAM/nav2.yaml"
 sed -i -E "s/^( *inflation_radius:) .*/\1 $INFLATION/" "$TAM/nav2.yaml"
+[ -n "$ROTATE_MIN" ] && sed -i -E "s/^( *rotate_to_heading_min_angle:) .*/\1 $ROTATE_MIN/" "$TAM/nav2.yaml"
+echo "rotate_to_heading_min_angle dung: $(sed -n 's/^ *rotate_to_heading_min_angle: *\([^ ]*\).*/\1/p' "$TAM/nav2.yaml") (ROTATE_MIN=${ROTATE_MIN:-khong dat, giu yaml})"
 read -r X0 Y0 G0 <<< "$(echo "$VI_TRI_DAU" | awk '{printf "%.4f %.4f %.4f", $1, $2, $3}')"   # so thuc cho -p
 G0_RAD=$(awk -v g="$G0" 'BEGIN{printf "%.6f", g * atan2(0, -1) / 180}')
 sed -i -E "s/^( *map_start_pose:).*/\1 [$X0, $Y0, $G0_RAD]/" "$TAM/slam.yaml"
 grep -h "inflation_radius\|map_start_pose" "$TAM/nav2.yaml" "$TAM/slam.yaml" | tr -s ' ' | tr '\n' ' '; echo
 if grep -n project1 "$TAM/slam.yaml" "$TAM/nav2.yaml"; then echo "LOI: con /home/project1 trong ban chep"; exit 1; fi
 grep -h "map_file_name\|default_nav_to_pose_bt_xml" "$TAM/slam.yaml" "$TAM/nav2.yaml"
+# ~/ ma chuyen.sh BANG=day can: lien ket toi ban trong kho; tep that (khong phai lien ket ve kho) thi giu nguyen
+for f in gui_duong.py tinh_tuyen.py; do
+  if [ "$(readlink -f ~/"$f")" = "$XS/$f" ]; then echo "~/$f: da lien ket toi kho"
+  elif [ -e ~/"$f" ] || [ -L ~/"$f" ]; then echo "~/$f: GIU tep co san (khong de)"
+  else ln -s "$XS/$f" ~/"$f" && echo "~/$f: lien ket -> $XS/$f"; fi
+done
 
 T0=$SECONDS
 setsid nohup ros2 launch my_bot mapping_my_bot.launch.py bat_lidar:=false bat_dong_co:=false bat_gyro:=false \
@@ -50,10 +67,23 @@ for i in $(seq "$T_CHO"); do
   if grep -q "Managed nodes are active" "$TAM/log_nav.txt"; then
     grep -h "Managed nodes are active" "$TAM/log_nav.txt"
     echo "NAV2_SAN_SANG sau $((SECONDS - T0)) s"
-    exit 0
+    break
   fi
-  [ $((SECONDS - T0)) -ge "$T_CHO" ] && break
+  if [ $((SECONDS - T0)) -ge "$T_CHO" ]; then
+    echo "NAV2_CHUA_SAN_SANG sau $((SECONDS - T0)) s (xem $TAM/log_nav.txt)"
+    exit 1
+  fi
   sleep 1
 done
-echo "NAV2_CHUA_SAN_SANG sau $((SECONDS - T0)) s (xem $TAM/log_nav.txt)"
-exit 1
+# ---- sep va phu lai, nhu bat_xe.sh B2b (chay tu ban trong kho; ghi ~/sep_* nhu tren xe) ----
+echo "== bat sep (ra_lenh=$SEP_RA_LENH ra_thoat=$SEP_RA_THOAT) va phu lai (phat_lenh=$PHU_LAI_PHAT_LENH) =="
+setsid nohup python3 "$XS/sep.py" --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" \
+  > "$TAM/log_sep.txt" 2>&1 < /dev/null &
+setsid nohup python3 "$XS/lai_xe_lidar.py" --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" -p sep_ra_thoat:="$SEP_RA_THOAT" \
+  > "$TAM/log_phu_lai.txt" 2>&1 < /dev/null &
+sleep 5
+n=0
+pgrep -f "^python3 $XS/[s]ep\.py " > /dev/null || { echo "THIEU sep.py (xem $TAM/log_sep.txt)"; n=1; }
+pgrep -f "^python3 $XS/[l]ai_xe_lidar\.py " > /dev/null || { echo "THIEU lai_xe_lidar.py (xem $TAM/log_phu_lai.txt)"; n=1; }
+[ "$n" -eq 0 ] && echo "SEP_PHU_LAI_SONG sau $((SECONDS - T0)) s"
+exit "$n"

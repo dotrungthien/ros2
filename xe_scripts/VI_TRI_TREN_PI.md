@@ -191,3 +191,13 @@ c3 = sau RA (kể cả `RA XONG DU_CHO_XOAY 0 cm`), pha XOAY tại chỗ về h�
 | Tệp đổi đã vào `so_voi_pi.sh` chưa? | `sep.py`, `lai_xe_lidar.py`, `chuyen.sh` đã có | `--nhac` | 0 dòng |
 
 Ca cũ đổi theo luật mới (không phải lỗi): `test_01` của `test_sep.py` nay gửi đích trước `/plan`; ca "đang tự thoát thì không bắt đầu RA" của `test_lai_xe_lidar.py` nay kiểm **nhường**.
+
+## Đối chiếu luật G — `kiem_xe.sh` bước 8 có hạn 10 s (02/11 18:1x; thử với `ros2` giả treo; CHƯA chạy trên Pi)
+
+| Bên ghi | Bên đọc | Tên/khuôn | Khớp? |
+|---|---|---|---|
+| `kiem_xe.sh` `lay()` (`timeout 10 ros2 param get`) | `kiem_tp`, bước 8a | quá giờ ⇒ chữ `HET_GIO` | khớp; bước 5 (3 tham số) quá giờ vẫn `KHONG DAT` (tham số bắt buộc), bước 8 quá giờ in `BO_QUA` không tính lỗi |
+| `kiem_xe.sh` (`timeout 10 ros2 node list`) | bước 8b | mã 124 ⇒ `BO_QUA` | khớp (thử giả: cả lần chạy 50 s thay vì treo) |
+| `kiem_xe.sh` mã thoát | `bat_xe.sh` B3 (`KQ`) | 0 đạt / 1 không đạt | không đổi; `BO_QUA` không làm `KQ=1` |
+
+**Chưa giả lập cả hệ thống.**

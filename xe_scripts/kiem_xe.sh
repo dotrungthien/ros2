@@ -16,13 +16,26 @@
 
 KQ=0
 
+# 02/11: moi lenh ros2 co han 10 s (lenh ros2 tren Pi hay treo); qua gio thi in chu HET_GIO thay cho gia tri
 lay() {
-  ros2 param get "$1" "$2" 2>/dev/null | sed -n 's/.*value is: *//p' | tail -1
+  local out
+  out=$(timeout 10 ros2 param get "$1" "$2" 2>/dev/null)
+  if [ $? -eq 124 ]; then echo HET_GIO; return; fi
+  printf '%s\n' "$out" | sed -n 's/.*value is: *//p' | tail -1
 }
 
-kiem_tp() {
+kiem_tp() { # $5 = bo_qua: qua 10 s thi in BO_QUA (khong tinh khong dat), dung o Buoc 8
   local ten="$1" node="$2" tp="$3" mong="$4" v
   v=$(lay "$node" "$tp")
+  if [ "$v" = "HET_GIO" ]; then
+    if [ "$5" = "bo_qua" ]; then
+      echo "BO_QUA     $ten: ros2 param get qua 10 s ($node $tp)"
+    else
+      echo "KHONG DAT  $ten: ros2 param get qua 10 s ($node $tp)"
+      KQ=1
+    fi
+    return
+  fi
   if [ -z "$v" ]; then
     echo "KHONG DAT  $ten: khong doc duoc ($node $tp)"
     KQ=1
@@ -95,10 +108,14 @@ fi
 echo "== Buoc 8: cay hanh vi, tien trinh trung, costmap (v3, chi doc) =="
 # 8a. cay hanh vi Nav2 dang dung. Co MONG_BT thi phai khop (bat_xe.sh tu dat MONG_BT khi co NAV_PARAMS).
 if [ -n "$MONG_BT" ]; then
-  kiem_tp "bt_xml" /bt_navigator default_nav_to_pose_bt_xml "$MONG_BT"
+  kiem_tp "bt_xml" /bt_navigator default_nav_to_pose_bt_xml "$MONG_BT" bo_qua
 else
   BTV=$(lay /bt_navigator default_nav_to_pose_bt_xml)
-  echo "GHI LAI    bt_xml = ${BTV:-'(rong hoac khong doc duoc)'}  (khong khai MONG_BT nen chua so sanh)"
+  if [ "$BTV" = "HET_GIO" ]; then
+    echo "BO_QUA     bt_xml: ros2 param get qua 10 s"
+  else
+    echo "GHI LAI    bt_xml = ${BTV:-'(rong hoac khong doc duoc)'}  (khong khai MONG_BT nen chua so sanh)"
+  fi
 fi
 # 8b. tien trinh Nav2 bi trung (danh sach don cu thieu 5 ten): moi loai phai dung 1 tien trinh
 for p in planner_server controller_server bt_navigator; do
@@ -110,10 +127,13 @@ for p in planner_server controller_server bt_navigator; do
     echo "DAT        $p: $n tien trinh"
   fi
 done
-NL=$(ros2 node list 2>/dev/null)
+NL=$(timeout 10 ros2 node list 2>/dev/null)
+RC_NL=$?
 NN=$(printf '%s\n' "$NL" | grep -c '^/')
 DUP=$(printf '%s\n' "$NL" | sort | uniq -d)
-if [ "$NN" -lt 3 ]; then
+if [ "$RC_NL" -eq 124 ]; then
+  echo "BO_QUA     ros2 node list qua 10 s: khong kiem node trung ten"
+elif [ "$NN" -lt 3 ]; then
   echo "GHI LAI    khong doc duoc danh sach node (chi thay $NN); bo qua buoc nay"
 elif [ -n "$DUP" ]; then
   echo "KHONG DAT  node trung ten: $DUP"

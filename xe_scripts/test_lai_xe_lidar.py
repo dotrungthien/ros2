@@ -311,8 +311,8 @@ _b5.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, True)
 _b5.step(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 10.5, True)
 check('c2 qua 10 s: dung', _b5.ra_xong.startswith('RA XONG QUA_10S'), _b5.ra_xong)
 _b6 = L.NguoiLai()
-check('c2 khong co dich / dang tu thoat: khong bat dau', _b6.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, False) == (False, 'RA BO QUA: khong co dich')
-      and (setattr(_b6, 'state', 'THOAT') or _b6.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, True)) == (False, 'RA BO QUA: dang THOAT'))
+check('c2 khong co dich: khong bat dau; dang tu THOAT: NHUONG cho RA cua sep (luat 02/11 17:33)', _b6.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, False) == (False, 'RA BO QUA: khong co dich')
+      and (setattr(_b6, 'state', 'THOAT') or _b6.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, True))[1].startswith('NHUONG THOAT: RA BAT DAU') and _b6.state == 'RA')
 _r7 = ra_chay(_hep, (0.0, 0.0, 0.0), goal_active=True)
 _b7 = L.NguoiLai()
 _b7.ra_bat_dau(L.scan_to_xy(make_scan(_hep, (0, 0, 0))), 0.0, True)
@@ -423,6 +423,27 @@ check('109b co dich = /navigate_to_pose HOAC /follow_path (tat duoc bang nghe_fo
       "self.goal_kenh['nav'] or (self.goal_kenh['fp'] and self.get_parameter('nghe_follow_path').value)" in _tick109
       and "'/follow_path/_action/status', self._on_status_fp" in _src and "self.goal_kenh['fp'] = any(s.status in (1, 2)" in _src
       and _tick109.index('self.goal_active =') < _tick109.index('self._doc_thoat('))
+
+# --- 02/11 17:33: tu THOAT toi da 3 lan moi dich, roi dung yen cho sep; ~/sep_thoat moi thi nhuong ---
+_sat_trai = L.scan_to_xy(make_scan([(-0.30, 0.40, 0.13, 0.30), (0.60, 0.90, -0.30, 0.30)], (0, 0, 0)))   # tuong trai cach hong 5 cm
+_bt = L.NguoiLai()
+_ten_ds, _t = [], 0.0
+for _k in range(2000):                                               # 200 s xe dung yen (THOAT_CUNG khong lam xe dich trong ca nay)
+    _t += 0.1
+    _ten_ds.append(_bt.step(_sat_trai, _t, True, None, (0.0, 0.0)))
+_lan = sum(1 for k in range(1, len(_ten_ds)) if _ten_ds[k][2].startswith('THOAT') and not _ten_ds[k - 1][2].startswith('THOAT'))
+check('17:33 tu THOAT toi da 3 lan moi dich roi CHO_SEP (dung yen v = w = 0)', _lan == 3 and _ten_ds[-1] == (0.0, 0.0, 'CHO_SEP') and _bt.state == 'CHO_SEP'
+      and sum(1 for x in _ten_ds if x[2] == 'BO_CUOC_HET_GIO') == 3 and _bt.ly_do.startswith('HET_3_LUOT_TU_THOAT'), 'so lan %d, cuoi %s' % (_lan, _ten_ds[-1]))
+_bt.step(_sat_trai, _t + 0.1, False, None, (0.0, 0.0))                 # het dich (chuyen.sh / gui_duong gui dich moi)
+_moi = [_bt.step(_sat_trai, _t + 0.2 + 0.1 * k, True, None, (0.0, 0.0))[2] for k in range(40)]
+check('17:33 dich moi: dem lai, duoc tu THOAT lai', _bt.n_tu_thoat == 1 and any(n.startswith('THOAT') for n in _moi) and 'CHO_SEP' not in _moi, str(_moi[-3:]))
+_bn = L.NguoiLai()
+_bn.state, _bn.n_tu_thoat = 'CHO_SEP', 3
+_ok, _cau = _bn.ra_bat_dau(_sat_trai, 0.0, True)
+check('17:33 dang CHO_SEP ma co ~/sep_thoat moi: NHUONG cho pha RA', _ok and _cau.startswith('NHUONG CHO_SEP: RA BAT DAU') and _bn.state == 'RA', _cau)
+_bk = L.NguoiLai()
+_bk.state = 'CHO_SEP'
+check('17:33 CHO_SEP ma khong con dich: tro ve binh thuong, khong phat', _bk.step(_sat_trai, 1.0, False)[:2] == (None, None) and _bk.state == 'BINH_THUONG')
 
 fails = [n for n, ok in results if not ok]
 print('\nTONG: %d/%d dat' % (len(results) - len(fails), len(results)))

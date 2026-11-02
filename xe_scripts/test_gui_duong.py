@@ -210,6 +210,17 @@ def test_13_luat_G_csv_ma_thoat_va_khong_goi_ros2_cli():
     assert "'/duong_day'" in src and "'follow_path'" in src and "'/global_costmap/costmap'" in src
 
 
+def test_14_dung_huy_dich_dang_chay_ca_hai_bang():
+    sh = open(os.path.join(DAY, 'chuyen.sh')).read()
+    gui = sh[sh.index('gui() {'):sh.index('\n}\n', sh.index('gui() {'))]
+    assert 'ros2 service call /navigate_to_pose/_action/cancel_goal action_msgs/srv/CancelGoal "{}"' in sh   # huy het dich cua bt_navigator
+    assert 'while kill -0 "$P"' in gui and 'doc_sep' in gui and gui.index('huy_nav') < gui.index('exit 4')    # BANG=xs: hoi sep moi giay khi dang chay
+    ts = sh[sh.index('theo_sep() {'):sh.index('CHO)', sh.index('theo_sep() {'))]
+    assert 'huy_nav' in ts                                             # DUNG truoc khi gui cung huy dich con sot
+    io = IOGia([('SUCCEEDED', 60, Bp)], lenh=lambda t: ('DUNG', 'x') if t >= 5 else None)
+    assert G.chay(io, 'di_B', 1, CFG) == 4 and io.da_huy >= 1 and io.dang is None   # BANG=day: huy /follow_path
+
+
 if __name__ == '__main__':
     import sys
     import traceback

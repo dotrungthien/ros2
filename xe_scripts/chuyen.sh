@@ -171,10 +171,30 @@ kiem_vi_tri() { # $1 $2 = diem se gui ngay sau do. Tra 0 neu cho phep chay.
 }
 
 # gui mot diem, tra ve 0 neu SUCCEEDED
+# 02/11 17:33: huy MOI dich dang chay cua /navigate_to_pose (CancelGoal rong = huy het; khong phu thuoc tien trinh send_goal)
+huy_nav() {
+  timeout 10 ros2 service call /navigate_to_pose/_action/cancel_goal action_msgs/srv/CancelGoal "{}" > /dev/null 2>&1
+}
+
 gui() { # $1 x, $2 y, $3 z, $4 w, $5 ten tep log
   timeout "$TO" ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose \
     "{pose: {header: {frame_id: map}, pose: {position: {x: $1, y: $2, z: 0.0}, orientation: {z: $3, w: $4}}}}" \
-    --feedback > "$5" 2>&1
+    --feedback > "$5" 2>&1 &
+  local P=$!
+  # 02/11 17:33: trong luc xe chay van hoi sep moi giay; DUNG => huy dich dang chay (truoc day chi doc giua hai lan gui)
+  while kill -0 "$P" 2>/dev/null; do
+    sleep 1
+    doc_sep
+    if [ "$SEP" = "DUNG" ]; then
+      echo "DUNG_SEP: sep bao dung ($SEP_LY) luc xe dang chay: huy dich /navigate_to_pose."
+      huy_nav
+      kill "$P" 2>/dev/null
+      wait "$P" 2>/dev/null
+      ghi "$NHAN,$R,$IDX,$LAN,DUNG_SEP,0,$LECH,$LECHFP,$TUOI"
+      exit 4
+    fi
+  done
+  wait "$P"
   grep -q 'status: SUCCEEDED' "$5"
 }
 
@@ -197,6 +217,7 @@ theo_sep() {
   case "$SEP" in
     DUNG)
       echo "DUNG_SEP: sep bao dung ($SEP_LY). Xe dung yen, khong gui them lenh."
+      huy_nav                                # phong khi con dich cu dang chay
       ghi "$NHAN,$R,$IDX,$LAN,DUNG_SEP,0,$LECH,$LECHFP,$TUOI"
       exit 4 ;;
     CHO)

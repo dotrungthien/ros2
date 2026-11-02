@@ -174,3 +174,20 @@ c3 = sau RA (kể cả `RA XONG DU_CHO_XOAY 0 cm`), pha XOAY tại chỗ về h�
 | Tham số `nghe_follow_path` (mặc định true) | `sep.py`, `lai_xe_lidar.py` | cùng tên ở hai nút | khớp (`test_37`); false = như trước 109b |
 | `ghi_bag.sh` | người phân tích bag | thêm `/duong_day`, `/sep/trang_thai`, `/cmd_vel_nav`, `/cmd_vel_avoid`, `/rosout`, `/follow_path/_action/status`, `/navigate_to_pose/_action/status` | khớp tên với bên phát (`test_37`); `/sep/trang_thai` do `sep.py` phát |
 | Tệp đổi đã vào `so_voi_pi.sh` chưa? | `sep.py`, `lai_xe_lidar.py`, `ghi_bag.sh` đã có; không tệp mới | `--nhac` | 0 dòng |
+
+## Đối chiếu luật G — 3 sửa nhỏ sau xe 17:33–17:37 (02/11; `test_sep.py` 38/38, `test_lai_xe_lidar.py` 64/64, `test_gui_duong.py` 14/14; CHƯA chạy trên Pi)
+
+(1) `sep.py`: `PLAN_LECH` chỉ xét khi có đích đang chạy và đường đến cùng vòng hoặc sau đích đó; đích mới xoá `PLAN_LECH` cũ. (2) `DUNG` huỷ đích đang chạy: `chuyen.sh BANG=xs` hỏi sếp mỗi giây trong lúc chạy; `gui_duong.py` huỷ `/follow_path` (đã có, thêm ca thử). (3) `lai_xe_lidar.py`: tự THOAT tối đa `tu_thoat_max` = 3 lần mỗi đích, rồi `CHO_SEP` (đứng yên, v = w = 0) tới khi sếp giao `~/sep_thoat` hoặc hết đích; `~/sep_thoat` mới thì nhường (bỏ THOAT/CHO_SEP, vào pha RA). **Chưa giả lập cả hệ thống**; (2) thử bằng `ros2` giả và HOME giả.
+
+| Bên ghi | Bên đọc | Tên/khuôn phải khớp | Khớp? |
+|---|---|---|---|
+| `bt_navigator` `/navigate_to_pose/_action/status`; `controller_server` `/follow_path/_action/status` | `sep.py` `_goals` → `t_dich` (đích mới = id mới ở trạng thái 1/2) | kênh `nav`, `fp` | khớp; trong mỗi vòng sếp xử lý trạng thái đích **trước** `/plan`, `/duong_day` |
+| `planner_server` `/plan` (cả `compute_path_to_pose` của bước KIEM), `gui_duong.py` `/duong_day` | `sep.py` `_plan` | chỉ đặt `PLAN_LECH` khi `goal_active` | khớp (`test_38`: `/plan` của KIEM, `/duong_day` phát trước khi gửi đều không bị xét; đường cùng vòng với đích mới thì có) |
+| `sep.py` `~/sep_lenh` chữ `DUNG` | `chuyen.sh` `doc_sep` trong `gui()` (mỗi 1 s) và `theo_sep` | `DUNG` | khớp; thử giả: `DUNG` lúc xe đang chạy ⇒ huỷ, `DUNG_SEP`, mã 4 trong ≈ 3 s; không có `DUNG` thì 6 điểm vẫn `DEN_NOI` |
+| `chuyen.sh` `huy_nav` | `bt_navigator` dịch vụ `/navigate_to_pose/_action/cancel_goal` (`action_msgs/srv/CancelGoal`, yêu cầu rỗng = huỷ mọi đích) | tên dịch vụ ẩn chuẩn của action ROS 2 | khớp theo quy ước action của ROS 2 [đọc tài liệu, chưa gọi với Nav2 thật]; `test_14` kiểm chuỗi lệnh |
+| `gui_duong.py` `huy()` | `controller_server` `/follow_path` (cancel của đích đang giữ) | đích của chính `gui_duong` | khớp (`test_05`, `test_14`) |
+| `lai_xe_lidar.py` tên trạng thái mới `CHO_SEP` (câu đổi trạng thái trên `/rosout`) | `sep.py` `doc_rosout` → `l1`; `gui_duong.py` `phu_lai_ban` | `CHO_SEP` không bắt đầu bằng `THOAT`/`CHAN_`, không phải `RA_*`/`XOAY_P` | sếp không cộng lượt, `gui_duong` không coi là phụ lái đang lái (đứng yên chờ sếp). Câu `NHUONG THOAT: …`/`NHUONG CHO_SEP: …` sếp không bắt |
+| Tham số mới `tu_thoat_max` (3) trong `DEFAULT` | nút `lai_xe_lidar` | tên | khớp (vòng khai báo chung `DEFAULT`) |
+| Tệp đổi đã vào `so_voi_pi.sh` chưa? | `sep.py`, `lai_xe_lidar.py`, `chuyen.sh` đã có | `--nhac` | 0 dòng |
+
+Ca cũ đổi theo luật mới (không phải lỗi): `test_01` của `test_sep.py` nay gửi đích trước `/plan`; ca "đang tự thoát thì không bắt đầu RA" của `test_lai_xe_lidar.py` nay kiểm **nhường**.

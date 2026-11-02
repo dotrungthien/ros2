@@ -58,6 +58,7 @@ DEFAULT = dict(
     xoay_p_truoc=0.12,       # m, c3: huong dich (va luc dang xoay) phai co thoang phia truoc >= so nay
     xoay_p_w_cham=0.6,       # rad/s, c3: toc do xoay khi con < 45 do (san toc do quay chet cua dong co)
     xoay_p_t_max=10.0,       # s, c3: xoay qua lau thi dung
+    tu_thoat_max=3,          # 02/11 17:33: so lan tu THOAT (phan xa) toi da moi dich; het thi dung yen (CHO_SEP) cho sep giao RA
 )
 
 
@@ -130,6 +131,10 @@ def chon_huong(pts, cho_xoay=True, cap=0.5, toi_thieu=0.05):
         if s > best_s:
             best, best_s = phi, s
     return best
+
+
+def p_int(v):
+    return int(round(v))
 
 
 def chon_huong_quanh(pts, goc_p, nua=math.radians(45.0), buoc=math.radians(5.0), toi_thieu=0.12, cap=0.5):
@@ -207,6 +212,7 @@ class NguoiLai:
         self.xoay_cho = False    # viec 109c-c3: RA da xong, vong sau bat dau pha XOAY (neu du dieu kien)
         self.xoay = None         # pha XOAY dang chay (dict) hoac None
         self.xoay_xong = ''      # cau 'XOAY XONG <ly do> <do>' hoac 'XOAY KHONG: ...' cho nut ghi log mot lan
+        self.n_tu_thoat = 0      # so lan tu THOAT trong dich hien tai (02/11 17:33: da lap THOAT_CUNG -> BO_CUOC_HET_GIO 5 lan)
 
     def phan_tich(self, pts):
         """Tra (tt, red). tt: ff, fb = quang duong thoang di thang tien/lui (dai rong bang than xe), dl, dr = khoang cach
@@ -268,12 +274,17 @@ class NguoiLai:
             return self._xoay_bat_dau(pts, now, goal_active, yaw, goc_p)
         if self.state == 'RA':
             return self._ra(pts, now, goal_active)
+        if self.state == 'CHO_SEP':                      # het luot tu thoat: dung yen cho sep (~/sep_thoat => ra_bat_dau)
+            if goal_active:
+                return 0.0, 0.0, 'CHO_SEP'
+            self.state = 'BINH_THUONG'
         if self.state == 'THOAT':
             return self._thoat(pts, tt, now)
         dung_yen = nav_cmd is None or (abs(nav_cmd[0]) < 0.02 and abs(nav_cmd[1]) < 0.05)
         f_chan = tt['nf15'] >= p['dem_diem_do'] and tt['ff'] <= p['vang']       # mui sat vat (<= 15 cm), Nav2 dung xe o 8-13 cm
         solo_f = (red == {'F'} or (not red and f_chan)) and dung_yen     # Nav2 dang xoay/di thi KHONG giu lenh 0: de Nav2 tu thoat
         if not goal_active:
+            self.n_tu_thoat = 0                          # dich moi: dem lai so lan tu thoat
             if not red and not f_chan:
                 self.t_truoc = None          # gioi han 1 dong ho cho: giua hai dich lien tiep (~3 s) KHONG dat lai dong ho neu van bi chan
             self.n_veto = 0
@@ -323,11 +334,19 @@ class NguoiLai:
 
     def ra_bat_dau(self, pts, now, goal_active):
         """Viec 109c-c2: sep giao pha RA (di thang ve phia thoang hon cho du cho xoay). Tra (bat_dau, cau_log).
-        Khong di khi: dang tu thoat / nghi, khong co dich, hai dau deu chan (thoang <= vung do), hoac da du cho xoay."""
+        Dang tu THOAT hoac CHO_SEP thi NHUONG (bo phan xa, lam theo sep). Khong di khi: dang RA/XOAY, khong co dich,
+        hai dau deu chan (thoang <= vung do), hoac da du cho xoay."""
+        nhuong = ''
+        if self.state in ('THOAT', 'CHO_SEP') and goal_active:     # 02/11 17:33: lenh cua sep thang phan xa tu thoat
+            nhuong, self.state, self.trigger = 'NHUONG %s: ' % self.state, 'BINH_THUONG', set()
         if self.state != 'BINH_THUONG':
             return False, 'RA BO QUA: dang %s' % self.state
         if not goal_active:
             return False, 'RA BO QUA: khong co dich'
+        ok, cau = self._ra_bat_dau(pts, now)
+        return ok, nhuong + cau
+
+    def _ra_bat_dau(self, pts, now):
         ff, fb = thoang(pts, 0.0), thoang(pts, math.pi)
         if all(math.hypot(x, y) > R_XOAY for x, y in pts):
             self.xoay_cho = True
@@ -420,6 +439,10 @@ class NguoiLai:
         return self._ket_thuc(now, 'XOAY_XONG', p['t_nghi_sau_xong'])
 
     def _bat_dau(self, red, now, ly_do, pts, tt):
+        if self.n_tu_thoat >= p_int(self.p['tu_thoat_max']):
+            self.state, self.ly_do = 'CHO_SEP', 'HET_%d_LUOT_TU_THOAT (%s)' % (p_int(self.p['tu_thoat_max']), ly_do)
+            return 0.0, 0.0, 'CHO_SEP'
+        self.n_tu_thoat += 1
         self.state = 'THOAT'
         self.t0 = now
         self.trigger = set(red)

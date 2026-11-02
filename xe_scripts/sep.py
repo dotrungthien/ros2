@@ -469,6 +469,7 @@ class Sep:
         self.kenh_da_thay = set()      # viec 109b: kenh trang thai dich da nhan ban tin dau (nav | fp)
         self.goal_kenh = {}             # kenh -> co dich dang chay; goal_active = co it nhat mot kenh
         self.day_pts, self.day_t = None, None   # /duong_day moi nhat (gui_duong.py) va luc nhan
+        self.t_dich = None              # 02/11 17:33: luc sep thay dich dang chay hien tai (PLAN_LECH chi xet duong moi hon)
         self.goal_active = False
         self.plan_cuoi = None
         self.dich = None
@@ -514,12 +515,12 @@ class Sep:
             self._csv(doc_csv(dong), ghi)
         for name, msg in v.get('rosout', ()):
             self._rosout(doc_rosout(name, msg), ghi)
-        for plan in v.get('plans', ()):
-            self._plan(plan, pose, ghi, now)
-        for ds in v.get('goals', ()):
+        for ds in v.get('goals', ()):                    # dich truoc /plan: /plan cung vong voi dich moi la /plan cua dich moi
             self._goals(ds, now, pose, ghi)
         for ds in v.get('goals_fp', ()):                 # viec 109b: /follow_path/_action/status (BANG=day)
             self._goals(ds, now, pose, ghi, 'fp')
+        for plan in v.get('plans', ()):
+            self._plan(plan, pose, ghi, now)
         for d in v.get('duong_day', ()):                 # viec 109b: /duong_day = phan con lai cua duong day
             if d:
                 self.day_pts, self.day_t = d, now
@@ -677,6 +678,15 @@ class Sep:
             vat_truoc=vat, t_cho=round(t_cho), nhin_xa=_r(nx), kep=kep, chuyen=self.diem_txt, thoat=thoat)
         return trang_thai, log
 
+    def _dich_moi(self, now, ghi):
+        """Dich moi bat dau: PLAN_LECH cua duong cu khong con gia tri (sep da noi CHO sai truoc ca 10 diem, 02/11 17:33)."""
+        self.t_dich = now
+        if self.plan_sai:
+            ghi('TRUY_VET', 'PLAN_SAI', kq='HET', kiem='dich moi')
+        self.plan_sai = False
+        if self.plan_xau == 'PLAN_LECH':
+            self.t_plan_xau = None
+
     def _p_thoat(self, mt, now=None):
         """Diem P: co /duong_day moi (<= DAY_TUOI s) thi diem tren duong cach dau duong P_DAY_XA m (viec 109b); khong thi
         diem cuoi /plan (diem xs ke tiep, c1). None neu chua co hoac vi tri khong TIN (#16, #19)."""
@@ -758,6 +768,8 @@ class Sep:
         self.dich = plan[-1]
         d, vuot = lech_dau_plan(plan[0], pose)
         self.lech_plan = d
+        if not (self.goal_active and self.t_dich is not None):
+            return            # 02/11 17:33: khong co dich dang chay (vd /plan cua buoc KIEM, duong cua dich cu) => khong xet PLAN_LECH
         if vuot:
             self.t_plan_xau, self.plan_xau = now, 'PLAN_LECH'
         if vuot and not self.plan_sai:
@@ -780,6 +792,8 @@ class Sep:
             if s in (4, 5, 6) and dau:
                 self.xong.append(gid)        # dich da xong truoc khi sep chay: bo qua
                 continue
+            if gid not in self.goals and s in (1, 2):
+                self._dich_moi(now, ghi)
             t0 = self.goals.setdefault(gid, now)
             if s not in (4, 5, 6):
                 continue

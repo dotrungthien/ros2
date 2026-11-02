@@ -47,6 +47,7 @@ def test_01_plan_lech_va_0_poses():
     assert S.lech_dau_plan((1.0, 0.0), (1.1, 0.0, 0.0))[1] is False
     c = Chay(vao())
     c()
+    c(goals=[[(b'g0', 2)]])                                           # 02/11 17:33: PLAN_LECH chi xet khi co dich dang chay
     tt, log = c(plans=[[(1.20, 0.60), (0.0, 0.0)]])
     assert co(log, 'PLAN_LECH') and tt['tu_the'] == 'KHONG_DI'
     tt, log = c(plans=[[(0.02, 0.0), (1.0, 0.0)]])
@@ -539,6 +540,24 @@ def test_37_luat_G_kenh_109b():
     for t in ('/duong_day', '/sep/trang_thai', '/cmd_vel_nav', '/cmd_vel_avoid', '/rosout', '/follow_path/_action/status', '/navigate_to_pose/_action/status'):
         assert ' %s ' % t in bag.replace('\\\n', ' ') or ' %s >' % t in bag, t
     assert "create_publisher(String, '/sep/trang_thai'" in sp
+
+
+def test_38_plan_lech_chi_xet_khi_co_dich_dang_chay():
+    xa = [(1.20, 0.60), (0.0, 0.0)]                                   # dau duong cach xe ~1,3 m
+    c = Chay(vao())
+    c()
+    tt, log = c(plans=[xa])                                           # /plan cua buoc KIEM (chua co dich): khong xet
+    assert not co(log, 'PLAN_LECH') and tt['di'] == 'DI' and tt['tu_the'] != 'KHONG_DI'
+    tt, log = c(goals=[[(b'g1', 2)]], plans=[xa])                     # /plan cung vong voi dich moi: la duong cua dich moi
+    assert co(log, 'PLAN_LECH') and tt['di'] == 'CHO' and tt['tu_the'] == 'KHONG_DI'
+    c(goals=[[(b'g1', 4)]])
+    tt, log = c(goals=[[(b'g2', 2)]])                                 # dich moi: PLAN_LECH cu het gia tri ngay, chua can /plan moi
+    assert co(log, ',PLAN_SAI,') and tt['di'] == 'DI' and tt['tu_the'] != 'KHONG_DI'
+    tt, log = c(plans=[[(0.02, 0.0), (1.0, 0.0)]])
+    assert not co(log, 'PLAN_LECH') and tt['di'] == 'DI'
+    c(goals=[[(b'g2', 4)]])
+    tt, log = c(duong_day=[xa])                                       # /duong_day khi khong co dich (gui_duong phat truoc khi gui): khong xet
+    assert not co(log, 'PLAN_LECH') and tt['di'] == 'DI'
 
 
 if __name__ == '__main__':

@@ -231,3 +231,13 @@ Gốc lỗi xe 17:57: thoát kẹt lặp `THOAT_CUNG`, nhánh RA/XOAY chưa từ
 | Tệp đổi đã vào `so_voi_pi.sh` chưa? | `sep.py`, `lai_xe_lidar.py`, `gui_duong.py`, `bat_xe.sh` đã có | `--nhac` | 0 dòng |
 
 Ca cũ đổi theo luật mới: `test_36` nay kiểm P = đỉnh kế tiếp (trước: điểm cách đầu đường 0,40 m).
+
+## Đối chiếu luật G — `gui_duong.py` chờ tf + costmap tối đa 15 s (02/11 18:3x; `test_gui_duong.py` 21/21; CHƯA chạy trên Pi)
+
+Gốc lỗi xe 18:18, 18:20 (3/3 chuyến `BANG=day`: lần 1 luôn "khong co tf hoac costmap moi", chờ ~30 s mới lần 2): **không phải QoS** mà là thứ tự. Bản cũ lấy tf rồi mới đổi costmap ra `Ban` (vài giây trên Pi, không spin); tới lần gửi 1, tf trong bộ đệm đã cũ > 1 s ⇒ `pose()` = None ⇒ tính là một lần hỏng ⇒ chờ 30 s. Tái hiện bằng nút rclpy thật cùng tiến trình (costmap tới sau 3 s, đổi costmap chậm 2 s như Pi): bản cũ đúng triệu chứng (52 s, đi ở lần 2), bản mới đi ngay lần 1 (22 s). Sửa: `cho_tf_costmap` đợi costmap **trước**, đổi ra `Ban`, rồi spin tới khi có tf mới; tối đa 15 s; dùng ở KIEM và trước mỗi lần gửi; quá 15 s mới báo (`khong co tf moi|costmap sau 15 s`). **Chưa giả lập cả hệ thống.**
+
+| Bên phát | Bên nghe | QoS / tên phải khớp | Khớp? |
+|---|---|---|---|
+| Nav2 `global_costmap` `/global_costmap/costmap` (`OccupancyGrid`; Humble: KeepLast(1), TRANSIENT_LOCAL, RELIABLE) | `gui_duong.py` (KeepLast(1), TRANSIENT_LOCAL, RELIABLE) | bên nghe TRANSIENT_LOCAL chỉ nhận được khi bên phát cũng TRANSIENT_LOCAL | khớp: QoS bên phát đọc theo mã nguồn Humble (thư viện có gọi `QoS::transient_local`; header không ghi QoS) **và** trên xe lần 2 đã nhận costmap, điều không thể nếu bên phát VOLATILE. Kiểm lại trên Pi: `ros2 topic info -v /global_costmap/costmap` |
+| tf `map→base_footprint` | `gui_duong.py` `pose()` (cũ > 1 s ⇒ None) | — | khớp; nay luôn spin lấy tf mới **sau** khi đổi costmap |
+| `gui_duong.py` câu báo | người đọc log | `khong co tf moi`, `khong co costmap`, `... sau 15 s` | thay câu cũ `khong co tf hoac costmap moi` (nay nói rõ thiếu cái nào) |

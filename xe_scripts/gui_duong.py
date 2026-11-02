@@ -63,6 +63,24 @@ def cat_con_lai(duong, pose):
     return duong[k:]
 
 
+def cho_tf_costmap(co_cm, lay_ban, lay_pose, now, ngu, giay=15.0):
+    """02/11 18:2x (xe 18:18, 18:20: lan 1 luon 'khong co tf hoac costmap moi', cho 30 s moi thu lan 2): doi toi `giay` s.
+    Costmap TRUOC (doi luoi ra Ban mat vai giay tren Pi va khong spin, tf cu di), roi spin toi khi co tf moi. Tra (pose, ban)."""
+    t_het = now() + giay
+    while not co_cm() and now() < t_het:
+        ngu(0.1)
+    ban = lay_ban() if co_cm() else None
+    pose = lay_pose()
+    while pose is None and now() < t_het:
+        ngu(0.05)
+        pose = lay_pose()
+    return pose, ban
+
+
+def thieu_gi(pose, ban):
+    return ' va '.join(t for t, ok in (('tf moi', pose is not None), ('costmap', ban is not None)) if not ok)
+
+
 def phu_lai_ban(l1):
     l1 = l1 or ''
     return l1 in PHU_LAI_BAN or l1.startswith('THOAT')
@@ -77,7 +95,7 @@ def chay(io, huong, tuyen_dau, cfg):
 
     pose, ban = io.cho_san_sang()
     if pose is None or ban is None or ban.do(ban.o(pose[0], pose[1])):
-        ly = 'khong co tf moi' if pose is None else ('khong co costmap' if ban is None else 'xe nam trong o do cua costmap')
+        ly = ('khong co %s sau 15 s' % thieu_gi(pose, ban)) if pose is None or ban is None else 'xe nam trong o do cua costmap'
         io.bao('DUNG: SAI_VI_TRI (%s). KHONG gui lenh nao.' % ly)
         io.ghi(nhan, '-', 1, 0, 'SAI_VI_TRI', 0)
         return 3
@@ -88,9 +106,9 @@ def chay(io, huong, tuyen_dau, cfg):
             lan += 1
             if cho_truoc_khi_gui(io, cfg) == 'DUNG':
                 return dung_sep(io, nhan, r, lan)
-            pose, ban = io.pose(), io.ban()
+            pose, ban = io.cho_san_sang()                 # 18:2x: doi toi 15 s (khong tinh la hong), chi bao khi qua han
             if pose is None or ban is None:
-                io.bao('   lan %d: khong co tf hoac costmap moi' % lan)
+                io.bao('   lan %d: khong co %s sau 15 s' % (lan, thieu_gi(pose, ban)))
                 io.ghi(nhan, r, 1, lan, 'KHONG_DAT', 0)
                 if cho_sau_hong(io, cfg) == 'DUNG':
                     return dung_sep(io, nhan, r, lan)
@@ -239,6 +257,7 @@ if rclpy is not None:
             self.cfg = cfg
             self.tf_buf = tf2_ros.Buffer()
             self.tf_listener = tf2_ros.TransformListener(self.tf_buf, self)
+            # costmap cua Nav2: KeepLast(1), TRANSIENT_LOCAL, RELIABLE => nghe cung QoS de nhan ngay ban dang giu
             giu = QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL)
             self.create_subscription(OccupancyGrid, '/global_costmap/costmap', self._on_costmap, giu)
             self.create_subscription(Log, '/rosout', self._on_rosout, QoSProfile(depth=100, reliability=ReliabilityPolicy.RELIABLE))
@@ -306,11 +325,8 @@ if rclpy is not None:
                 self.cm_ban = TT.Ban.tu_luoi(i.width, i.height, i.resolution, i.origin.position.x, i.origin.position.y, list(self.cm.data))
             return self.cm_ban
 
-        def cho_san_sang(self, giay=10.0):
-            t_het = time.monotonic() + giay
-            while time.monotonic() < t_het and (self.pose() is None or self.cm is None):
-                self.ngu(0.1)
-            return self.pose(), self.ban()
+        def cho_san_sang(self, giay=15.0):
+            return cho_tf_costmap(lambda: self.cm is not None, self.ban, self.pose, time.monotonic, self.ngu, giay)
 
         def lenh_sep(self):
             try:

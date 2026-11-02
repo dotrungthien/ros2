@@ -385,6 +385,58 @@ def test_19_chuoi_chan_xoay_sep_thoat_ra_xoay_gui_lai():
     assert not G.phu_lai_ban('XOAY_XONG') and G.phu_lai_ban('XOAY_P')   # gui_duong: XOAY_XONG = xong => TINH_LAI (test_18)
 
 
+class _XeCham:
+    """Gia nut that tren Pi: costmap toi sau t_cm s; doi luoi ra Ban mat 2 s ma KHONG spin; tf 'moi' chi khi da spin trong 1 s."""
+
+    def __init__(self, t_cm=3.0):
+        self.t, self.t_cm, self.t_spin = 0.0, t_cm, 0.0
+
+    def now(self):
+        return self.t
+
+    def ngu(self, s):
+        self.t += s
+        self.t_spin = self.t
+
+    def co_cm(self):
+        return self.t >= self.t_cm
+
+    def lay_ban(self):
+        self.t += 2.0                                                 # doi costmap 52 x 32 tren Pi: vai giay, khong spin
+        return BAN
+
+    def lay_pose(self):
+        return (0.0, 0.0, 0.0) if self.t - self.t_spin <= 1.0 else None
+
+
+def test_20_cho_tf_costmap_toi_15_s():
+    x = _XeCham(3.0)
+    pose, ban = G.cho_tf_costmap(x.co_cm, x.lay_ban, x.lay_pose, x.now, x.ngu)
+    assert pose is not None and ban is BAN and x.t < 6.0               # costmap 3 s + doi 2 s + mot lan spin: van co tf moi
+    x = _XeCham(99.0)
+    pose, ban = G.cho_tf_costmap(x.co_cm, x.lay_ban, x.lay_pose, x.now, x.ngu)
+    assert ban is None and 15.0 <= x.t < 15.2 and G.thieu_gi(pose, ban) == 'costmap'
+    x = _XeCham(0.0)
+    x.lay_pose = lambda: None
+    pose, ban = G.cho_tf_costmap(x.co_cm, x.lay_ban, x.lay_pose, x.now, x.ngu)
+    assert pose is None and ban is BAN and G.thieu_gi(pose, ban) == 'tf moi'
+
+
+def test_21_costmap_toi_sau_3_s_di_ngay_khong_lan_2():
+    class IOCham(IOGia):
+        def cho_san_sang(self):
+            x = self.x
+            x.t = self.t
+            p, b = G.cho_tf_costmap(x.co_cm, x.lay_ban, x.lay_pose, x.now, x.ngu)
+            self.t = x.t
+            return p, b
+    io = IOCham([('SUCCEEDED', 20, Bp)])
+    io.x = _XeCham(3.0)
+    assert G.chay(io, 'di_B', 1, CFG) == 0
+    assert CUA(io.rows) == ['KIEM_DAT', 'SUCCEEDED', 'DEN_NOI'] and len(io.gui_ds) == 1 and io.gui_ds[0][0] < 12.0
+    assert not any('khong co' in c for c in io.cau)
+
+
 if __name__ == '__main__':
     import sys
     import traceback

@@ -110,3 +110,18 @@ c2 = phụ lái **ra tay** pha RA (đi thẳng về phía thoáng) khi `phat_len
 | Tệp đổi đã vào `so_voi_pi.sh` chưa? | `lai_xe_lidar.py` đã có; không tệp mới | `bash xe_scripts/so_voi_pi.sh --nhac` | đã vào; tự nhắc 0 dòng |
 
 Điều rút ra từ ca thử (cần Thiên biết): vật cách mũi **5,5 cm** (K4 đo 01/11) thì mọi điểm LiDAR đã cách tâm 20 cm > 18,56 cm (`R_XOAY`), nên RA **không đi** (`RA XONG DU_CHO_XOAY 0 cm`); RA chỉ đi khi vật gần hơn ≈ 4,1 cm trước mũi, hoặc hông/sau chật hơn. Hết RA là xoay được ngay (c3).
+
+## Đối chiếu luật G — việc 109c, commit c3 (02/11; đọc mã + `test_lai_xe_lidar.py` 59/59 + `test_sep.py` 34/34; CHƯA chạy trên xe)
+
+c3 = sau RA (kể cả `RA XONG DU_CHO_XOAY 0 cm`), pha XOAY tại chỗ về hướng **thoáng nhất trong ±45° quanh hướng tới P**. **Chưa giả lập cả hệ thống (PC trường thiếu `install`); nút ROS chưa chạy ở đâu**, chỉ `NguoiLai` + xe lý tưởng (không trễ tf, không trễ motor, không vùng chết).
+
+| Bên ghi | Bên đọc | Tên/khuôn phải khớp | Khớp? |
+|---|---|---|---|
+| `odom_tu_lenh.py` phát `/odom` (`Odometry`; `yaw_nguon=gyro` khi chạy thật) | `lai_xe_lidar.py` nghe `/odom`, chỉ lấy **góc đã xoay** = hiệu yaw so với lúc bắt đầu | topic `/odom`; kiểu `Odometry`; yaw tuyệt đối không cần khớp khung bản đồ | khớp: kiểm bằng đọc mã (`create_publisher(Odometry, '/odom'` / `create_subscription(Odometry, '/odom'`); ca thử đưa vào `/odom` lệch hằng số 0,7 rad so với bản đồ mà vẫn xoay đúng. `/odom` cũ > 0,5 s ⇒ không xoay, log |
+| `sep.py` `~/sep_thoat` (c1), cột P | `lai_xe_lidar.py` `doc_sep_thoat` → `thoat_p`; vị trí xe từ tf `map→base_footprint` (`_pose_ban_do`, cũ > `tf_tuoi_toi_da` = 1 s ⇒ `None`) | P = `(x, y)` trên bản đồ; `-` ⇒ không xoay | khớp (khuôn c1, `test_32`); tf cũ hay `P=-` ⇒ log `XOAY KHONG: khong co huong toi P …` |
+| `lai_xe_lidar.py` phát `Twist` (c2, 10 lần/s) với `w` khi XOAY (1,0 rad/s, 0,6 rad/s khi còn < 45°) | `twist_mux` (`/cmd_vel_avoid`, 60, timeout 0,2 s) | như c2 | khớp (ca "luat G" của c2). 0,6 rad/s = `min_rotational_vel` của `behavior_server` (`nav2_params_cho.yaml`, né vùng chết) |
+| `lai_xe_lidar.py` log `XOAY XONG <lý do> <độ>`, `XOAY KHONG: …`; câu đổi trạng thái `… -> XOAY_P \| XOAY_XONG (…)` | `sep.py` `doc_rosout` | lý do: `DEN_HUONG`, `TRUOC_DUOI_12CM`, `DIEM_TRONG_R_XOAY`, `QUA_10S`, `MAT_DICH`, `MAT_ODOM`; tên không bắt đầu bằng `THOAT`/`CHAN_` | `test_34`: sếp không bắt hai kiểu câu `XOAY XONG`/`XOAY KHONG`, bắt `XOAY_P` thành `l1` mà **không cộng lượt** |
+| Tham số mới trong `DEFAULT` (`xoay_p_nua` 45, `xoay_p_truoc` 0,12, `xoay_p_w_cham` 0,6, `xoay_p_t_max` 10) | nút `lai_xe_lidar` (`declare_parameter` theo `DEFAULT`) | tên | khớp (vòng khai báo/đọc chung với mọi tham số `DEFAULT`) |
+| Tệp đổi đã vào `so_voi_pi.sh` chưa? | `lai_xe_lidar.py` đã có; không tệp mới | `bash xe_scripts/so_voi_pi.sh --nhac` | đã vào; tự nhắc 0 dòng |
+
+Điều rút ra từ ca thử: hướng đích **không phải lúc nào cũng là hướng P**. Khi vật trước mũi che P (ca "P +40°"), hướng chọn thành 80°; khi P sau tường, chọn 130° (thoáng 0,50 m so với 0,22 m ở hướng P). Dải bám đường dùng bề rộng quét của thân xe (rộng hơn 16 cm khi chéo), nên chéo gần vật hay bị coi là bị chắn. Dừng cách hướng đích tới 20° (`xoay_den_deg`); phần còn lại để RPP (xoay tự khi lệch > 45°).

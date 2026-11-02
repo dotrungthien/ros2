@@ -331,6 +331,92 @@ check('luat G: lai_xe_lidar phat /cmd_vel_avoid, twist_mux uu tien 60 > Nav2 20,
       _av is not None and _av.group(1) == '/cmd_vel_avoid' and int(_av.group(3)) == 60 and float(_av.group(2)) == 0.2
       and "declare_parameter('cmd_topic', '/cmd_vel_avoid')" in _src and 'self.create_timer(0.1, self._tick)' in _src, str(_av.groups() if _av else None))
 
+# --- viec 109c-c3: pha XOAY ve huong thoang nhat trong +-45 do quanh huong toi P ---
+_LECH_ODOM = 0.7          # /odom (con quay) khac khung ban do mot hang so: pha XOAY chi duoc dung goc da xoay, khong dung yaw tuyet doi
+
+
+def xoay_chay(world, pose, p, giay=15.0, doi_the_gioi=None, tf_ok=True, odom_ok=True, truoc_ra=True):
+    """Bo nao + xe ly tuong (0,1 s/vong). goc_p lay tu vi tri ban do that (nhu tf); yaw la /odom = yaw that + hang so. Tra dict."""
+    b = L.NguoiLai()
+    if truoc_ra:
+        b.ra_bat_dau(L.scan_to_xy(make_scan(world, pose)), 0.0, True)
+    else:
+        b.xoay_cho = True
+    r = dict(ten=[], w=[], v=[], ra='', xoay='', cham=False)
+    t = 0.0
+    while t < giay:
+        t += 0.1
+        if doi_the_gioi and t >= doi_the_gioi[0]:
+            world = doi_the_gioi[1](pose) if callable(doi_the_gioi[1]) else doi_the_gioi[1]
+        pts = L.scan_to_xy(make_scan(world, pose))
+        v, w, ten = b.step(pts, t, True, None, None, pose[2] + _LECH_ODOM if odom_ok else None, L.goc_toi_diem(pose, p) if tf_ok else None)
+        r['ten'].append(ten)
+        r['ra'] = r['ra'] or b.ra_xong
+        r['xoay'] = r['xoay'] or b.xoay_xong
+        b.ra_xong = b.xoay_xong = ''
+        if v is not None:
+            r['v'].append(v)
+            r['w'].append(w)
+            pose = (pose[0] + v * math.cos(pose[2]) * 0.1, pose[1] + v * math.sin(pose[2]) * 0.1, pose[2] + w * 0.1)
+            r['cham'] = r['cham'] or collides(world, pose)
+        if r['xoay'] and b.state == 'BINH_THUONG' and not b.xoay_cho:
+            break
+    r['pose'], r['state'] = pose, b.state
+    return r
+
+
+def lech_do(a, b_):
+    return abs(math.degrees(L.wrap(a - b_)))
+
+
+_MO = [(0.20, 0.40, -0.10, 0.10)]                              # troi trong, chi co vat truoc mui 5,5 cm (K4)
+_P40 = (math.cos(math.radians(40)), math.sin(math.radians(40)))
+_x1 = xoay_chay(_MO, (0.0, 0.0, 0.0), _P40)
+_phi1 = L.chon_huong_quanh(L.scan_to_xy(make_scan(_MO, (0.0, 0.0, 0.0))), math.radians(40))
+check('c3 xoay dung huong P (+40 do): quay trai, toi huong trong 20 do, khong cham', _x1['xoay'].startswith('XOAY XONG DEN_HUONG') and all(w > 0 for w in _x1['w'])
+      and lech_do(_x1['pose'][2], _phi1) <= 26 and not _x1['cham'], '%s | huong chon %.0f do, xe %.0f do' % (_x1['xoay'], math.degrees(_phi1), math.degrees(_x1['pose'][2])))
+_xm = xoay_chay(_MO, (0.0, 0.0, 0.0), (math.cos(math.radians(-100)), math.sin(math.radians(-100))))
+check('c3 xoay dung huong P (-100 do): quay phai, cham lai khi gan', _xm['xoay'].startswith('XOAY XONG DEN_HUONG') and all(w < 0 for w in _xm['w']) and min(abs(w) for w in _xm['w']) == 0.6
+      and max(abs(w) for w in _xm['w']) == 1.0 and 55 <= -math.degrees(_xm['pose'][2]) <= 150, '%s | xe %.0f do' % (_xm['xoay'], math.degrees(_xm['pose'][2])))
+_TUONG = _MO + [(0.0, 0.40, 0.30, 0.35)]                      # tuong cach tam 30 cm, chan huong +90 do (P sau tuong) nhung de ngo ben trai
+_pts_t = L.scan_to_xy(make_scan(_TUONG, (0.0, 0.0, 0.0)))
+_phi2 = L.chon_huong_quanh(_pts_t, math.pi / 2)
+_tot = max(L.thoang(_pts_t, math.radians(a), cap=0.5) for a in range(45, 136))
+check('c3 P sau tuong: chon huong thoang nhat trong +-45 do (khong phai huong P)', _phi2 is not None and 45 - 1e-9 <= math.degrees(_phi2) <= 135 + 1e-9
+      and L.thoang(_pts_t, _phi2, cap=0.5) >= _tot - 1e-9 and abs(math.degrees(_phi2) - 90) >= 5 and L.thoang(_pts_t, math.pi / 2, cap=0.5) < L.thoang(_pts_t, _phi2, cap=0.5),
+      'chon %.0f do, thoang %.2f m (huong P: %.2f m)' % (math.degrees(_phi2), L.thoang(_pts_t, _phi2, cap=0.5), L.thoang(_pts_t, math.pi / 2, cap=0.5)))
+_x2 = xoay_chay(_TUONG, (0.0, 0.0, 0.0), (0.0, 1.0))
+check('c3 P sau tuong (xe xoay that): toi huong thoang da chon, truoc mui >= 12 cm, khong cham', _x2['xoay'].startswith('XOAY XONG DEN_HUONG') and lech_do(_x2['pose'][2], _phi2) <= 26 and not _x2['cham']
+      and L.thoang(L.scan_to_xy(make_scan(_TUONG, _x2['pose'])), 0.0) >= 0.12, '%s | xe %.0f do' % (_x2['xoay'], math.degrees(_x2['pose'][2])))
+_x3 = xoay_chay(_MO, (0.0, 0.0, 0.0), (0.0, 1.0), doi_the_gioi=(0.8, _MO + [(-0.05, 0.05, 0.14, 0.17)]))
+check('c3 co diem vao R_XOAY giua chung: dung xoay, ngung phat', _x3['xoay'].startswith('XOAY XONG DIEM_TRONG_R_XOAY') and _x3['ten'][-1] == 'XOAY_XONG' and len(_x3['w']) <= 9 and not _x3['cham'], _x3['xoay'])
+_x4 = xoay_chay(_MO, (0.0, 0.0, 0.0), (0.0, 1.0), tf_ok=False)
+check('c3 tf cu hoac P "-": khong xoay, co log', not _x4['w'] and _x4['xoay'].startswith('XOAY KHONG: khong co huong toi P'), _x4['xoay'])
+_x5 = xoay_chay(_MO, (0.0, 0.0, 0.0), (0.0, 1.0), odom_ok=False)
+check('c3 khong co /odom moi: khong xoay, co log', not _x5['w'] and _x5['xoay'].startswith('XOAY KHONG: khong co /odom'), _x5['xoay'])
+_x6 = xoay_chay(hanh_lang([(0.17, 0.40, -0.10, 0.10), (-0.40, -0.125, -0.10, 0.10)]), (0.0, 0.0, 0.0), (0.0, 1.0))
+check('c3 hai dau chan (RA khong di): khong xoay vi chua du cho', not _x6['w'] and not _x6['v'] and _x6['state'] == 'BINH_THUONG', str(_x6['xoay']))
+# phia truoc < 12 cm khi dang xoay (da tung >= 12 cm)
+_b8 = L.NguoiLai()
+_b8.xoay_cho = True
+_pose8 = (0.0, 0.0, 0.0)
+_open = []
+for _i in range(1, 6):
+    _v8, _w8, _t8 = _b8.step(L.scan_to_xy(make_scan(_open, _pose8)), 0.1 * _i, True, None, None, _pose8[2], math.pi / 2)
+    _pose8 = (0.0, 0.0, _pose8[2] + _w8 * 0.1)
+_cx, _cy = (0.145 + 0.09 + 0.03) * math.cos(_pose8[2]), (0.145 + 0.09 + 0.03) * math.sin(_pose8[2])
+_v8, _w8, _t8 = _b8.step(L.scan_to_xy(make_scan([(_cx - 0.03, _cx + 0.03, _cy - 0.03, _cy + 0.03)], _pose8)), 0.6, True, None, None, _pose8[2], math.pi / 2)
+check('c3 toi huong ma phia truoc < 12 cm: dung', _t8 == 'XOAY_XONG' and _b8.xoay_xong.startswith('XOAY XONG TRUOC_DUOI_12CM') and _v8 is None, _b8.xoay_xong)
+_b9 = L.NguoiLai()
+_b9.xoay_cho = True
+_b9.step(L.scan_to_xy(make_scan([], (0, 0, 0))), 0.0, True, None, None, 0.0, math.pi / 2)
+_b9.step(L.scan_to_xy(make_scan([], (0, 0, 0))), 10.6, True, None, None, 0.0, math.pi / 2)
+check('c3 qua 10 s: dung', _b9.xoay_xong.startswith('XOAY XONG QUA_10S'), _b9.xoay_xong)
+_ring = [(-0.30, 0.30, 0.17, 0.30), (-0.30, 0.30, -0.30, -0.17), (0.17, 0.30, -0.30, 0.30), (-0.30, -0.17, -0.30, 0.30)]
+check('c3 chon_huong_quanh: None khi moi huong deu < 12 cm', L.chon_huong_quanh(L.scan_to_xy(make_scan(_ring, (0, 0, 0))), 0.0) is None)
+_odom_py = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dev_ws', 'src', 'my_bot', 'scripts', 'odom_tu_lenh.py')).read()
+check("luat G: lai_xe_lidar nghe '/odom' (Odometry) do odom_tu_lenh.py phat; yaw tuong doi, khung bat ky", "create_publisher(Odometry, '/odom'" in _odom_py and "create_subscription(Odometry, '/odom'" in _src)
+
 fails = [n for n, ok in results if not ok]
 print('\nTONG: %d/%d dat' % (len(results) - len(fails), len(results)))
 sys.exit(1 if fails else 0)

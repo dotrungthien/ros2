@@ -54,6 +54,10 @@ DEFAULT = dict(
     so_quet_ket=30,          # so lan quet lien tiep vua SAT (sau / hong / nhieu phia) vua XE DUNG YEN moi coi la KET (~2,5 s o 12 Hz; dieu kien chinh la xe dung yen; Thien dong y 31/10 02:27)
     dung_neu_mep=0.02,       # m, mep nao sat hon so nay thi dung han
     thoang_toi_thieu=0.05,   # m, huong di phai thoang it nhat bay nhieu
+    xoay_p_nua=45.0,         # do, viec 109c-c3: huong xoay tim trong +-so nay quanh huong toi P
+    xoay_p_truoc=0.12,       # m, c3: huong dich (va luc dang xoay) phai co thoang phia truoc >= so nay
+    xoay_p_w_cham=0.6,       # rad/s, c3: toc do xoay khi con < 45 do (san toc do quay chet cua dong co)
+    xoay_p_t_max=10.0,       # s, c3: xoay qua lau thi dung
 )
 
 
@@ -128,6 +132,19 @@ def chon_huong(pts, cho_xoay=True, cap=0.5, toi_thieu=0.05):
     return best
 
 
+def chon_huong_quanh(pts, goc_p, nua=math.radians(45.0), buoc=math.radians(5.0), toi_thieu=0.12, cap=0.5):
+    """Viec 109c-c3: huong (rad, khung than xe) THOANG NHAT trong [goc_p - nua, goc_p + nua]; thoang bang nhau (tu `cap`
+    tro len) thi lay huong gan goc_p nhat; None neu moi huong trong khoang deu thoang < toi_thieu."""
+    n = int(round(nua / buoc))
+    tot = None
+    for k in range(-n, n + 1):
+        phi = wrap(goc_p + k * buoc)
+        khoa = (thoang(pts, phi, cap=cap), -abs(k))
+        if tot is None or khoa > tot[0]:
+            tot = (khoa, phi)
+    return None if tot[0][0] < toi_thieu else tot[1]
+
+
 def o_chiem(grid, wx, wy, tol=1):
     """True neu o ban do chua (wx, wy) hoac o lan can (+-tol o) la o chiem (>= 65). grid: dict res, w, h, ox, oy, data."""
     res = grid['res']
@@ -187,6 +204,9 @@ class NguoiLai:
         self.ly_do = ''
         self.ra = None           # viec 109c-c2: pha RA dang chay (dict) hoac None
         self.ra_xong = ''        # cau 'RA XONG <ly do> <cm> cm' cho nut ghi log mot lan
+        self.xoay_cho = False    # viec 109c-c3: RA da xong, vong sau bat dau pha XOAY (neu du dieu kien)
+        self.xoay = None         # pha XOAY dang chay (dict) hoac None
+        self.xoay_xong = ''      # cau 'XOAY XONG <ly do> <do>' hoac 'XOAY KHONG: ...' cho nut ghi log mot lan
 
     def phan_tich(self, pts):
         """Tra (tt, red). tt: ff, fb = quang duong thoang di thang tien/lui (dai rong bang than xe), dl, dr = khoang cach
@@ -235,12 +255,17 @@ class NguoiLai:
             return 'CHAN_LUI'
         return None
 
-    def step(self, pts, now, goal_active, phan_loai=None, nav_cmd=None):
+    def step(self, pts, now, goal_active, phan_loai=None, nav_cmd=None, yaw=None, goc_p=None):
         """phan_loai: ham tuy chon nhan danh sach diem chan, tra True (dia hinh) / False (vat la) / None (khong biet).
-        nav_cmd: (v, w) lenh Nav2 dang muon gui (tuy chon); co thi nguoi lai phu quyet lenh se dam vao vat va biet xe co dang dung yen."""
+        nav_cmd: (v, w) lenh Nav2 dang muon gui (tuy chon); co thi nguoi lai phu quyet lenh se dam vao vat va biet xe co dang dung yen.
+        yaw (rad, tu /odom = con quay) va goc_p (rad, huong toi P trong khung than xe, tinh tu tf; None neu P '-' hoac tf cu): chi dung cho pha XOAY (c3)."""
         p = self.p
         tt, red = self.phan_tich(pts)
         self.n_do = self.n_do + 1 if red else 0
+        if self.state == 'XOAY':
+            return self._xoay(pts, now, goal_active, yaw)
+        if self.xoay_cho and self.state == 'BINH_THUONG':
+            return self._xoay_bat_dau(pts, now, goal_active, yaw, goc_p)
         if self.state == 'RA':
             return self._ra(pts, now, goal_active)
         if self.state == 'THOAT':
@@ -305,6 +330,7 @@ class NguoiLai:
             return False, 'RA BO QUA: khong co dich'
         ff, fb = thoang(pts, 0.0), thoang(pts, math.pi)
         if all(math.hypot(x, y) > R_XOAY for x, y in pts):
+            self.xoay_cho = True
             return False, 'RA XONG DU_CHO_XOAY 0 cm'
         if max(ff, fb) <= self.p['do']:
             return False, 'RA KHONG DI: hai dau deu chan (thoang truoc %.2f m, sau %.2f m)' % (ff, fb)
@@ -336,7 +362,62 @@ class NguoiLai:
         else:
             return r['huong'] * abs(p['v_esc']), 0.0, 'RA_TIEN' if r['huong'] > 0 else 'RA_LUI'
         self.ra, self.ra_xong = None, 'RA XONG %s %d cm' % (ly, round(di * 100))
+        self.xoay_cho = ly != 'MAT_DICH'
         return self._ket_thuc(now, 'RA_XONG', p['t_nghi_sau_xong'])
+
+    def _xoay_khong(self, now, ly):
+        self.xoay_cho = False
+        self.xoay_xong = 'XOAY KHONG: %s' % ly
+        return self._ket_thuc(now, 'XOAY_XONG', self.p['t_nghi_sau_xong'])
+
+    def _xoay_bat_dau(self, pts, now, goal_active, yaw, goc_p):
+        """Viec 109c-c3: sau RA, xoay tai cho ve huong THOANG NHAT trong +-xoay_p_nua do quanh huong toi P. Khong xoay khi:
+        mat dich, P '-' hoac tf cu (goc_p None), khong co /odom, chua du cho xoay, khong co huong thoang >= xoay_p_truoc."""
+        p = self.p
+        if not goal_active:
+            return self._xoay_khong(now, 'khong co dich')
+        if goc_p is None:
+            return self._xoay_khong(now, 'khong co huong toi P (P la "-" hoac tf cu > 1 s)')
+        if yaw is None:
+            return self._xoay_khong(now, 'khong co /odom moi (con quay)')
+        if not all(math.hypot(x, y) > R_XOAY for x, y in pts):
+            return self._xoay_khong(now, 'chua du cho xoay (co diem cach tam <= %.1f cm)' % (R_XOAY * 100))
+        phi = chon_huong_quanh(pts, goc_p, math.radians(p['xoay_p_nua']), toi_thieu=p['xoay_p_truoc'])
+        if phi is None:
+            return self._xoay_khong(now, 'khong co huong thoang >= %d cm trong +-%d do quanh P' % (round(p['xoay_p_truoc'] * 100), p['xoay_p_nua']))
+        self.xoay_cho = False
+        if abs(phi) <= math.radians(p['xoay_den_deg']):
+            self.xoay_xong = 'XOAY XONG DEN_HUONG 0 do'
+            return self._ket_thuc(now, 'XOAY_XONG', p['t_nghi_sau_xong'])
+        self.state = 'XOAY'
+        self.xoay = dict(t0=now, yaw0=yaw, phi=phi, armed=thoang(pts, 0.0) >= p['xoay_p_truoc'])
+        return self._xoay(pts, now, goal_active, yaw)
+
+    def _xoay(self, pts, now, goal_active, yaw):
+        """Pha XOAY: dung khi (theo thu tu) co diem cach tam <= R_XOAY; da toi huong ma phia truoc < xoay_p_truoc;
+        toi huong (lech < xoay_den_deg); qua xoay_p_t_max s; mat dich; mat /odom. Goc da xoay do bang /odom (con quay), khong bang ban do."""
+        r, p = self.xoay, self.p
+        da = None if yaw is None else wrap(yaw - r['yaw0'])
+        con = None if da is None else wrap(r['phi'] - da)
+        if thoang(pts, 0.0) >= p['xoay_p_truoc']:
+            r['armed'] = True                            # luc dau mui co the dang sat vat: chi canh bao sau khi da thoang
+        if not all(math.hypot(x, y) > R_XOAY for x, y in pts):
+            ly = 'DIEM_TRONG_R_XOAY'
+        elif da is None:
+            ly = 'MAT_ODOM'
+        elif r['armed'] and thoang(pts, 0.0) < p['xoay_p_truoc']:
+            ly = 'TRUOC_DUOI_%dCM' % round(p['xoay_p_truoc'] * 100)
+        elif abs(con) <= math.radians(p['xoay_den_deg']):
+            ly = 'DEN_HUONG'
+        elif now - r['t0'] > p['xoay_p_t_max']:
+            ly = 'QUA_%dS' % round(p['xoay_p_t_max'])
+        elif not goal_active:
+            ly = 'MAT_DICH'
+        else:
+            w = p['w_esc'] if abs(con) >= math.radians(45.0) else p['xoay_p_w_cham']
+            return 0.0, math.copysign(w, con), 'XOAY_P'
+        self.xoay, self.xoay_xong = None, 'XOAY XONG %s %d do' % (ly, round(abs(math.degrees(da or 0.0))))
+        return self._ket_thuc(now, 'XOAY_XONG', p['t_nghi_sau_xong'])
 
     def _bat_dau(self, red, now, ly_do, pts, tt):
         self.state = 'THOAT'
@@ -442,7 +523,7 @@ try:
     from geometry_msgs.msg import Twist
     from sensor_msgs.msg import LaserScan
     from action_msgs.msg import GoalStatusArray
-    from nav_msgs.msg import OccupancyGrid
+    from nav_msgs.msg import OccupancyGrid, Odometry
     from rclpy.time import Time
     import tf2_ros
 except ImportError:      # may khong co ROS: van import duoc phan ham thuan de thu
@@ -462,6 +543,9 @@ if rclpy is not None:
             self.declare_parameter('tf_tuoi_toi_da', 1.0)     # s, vi tri xe cu hon so nay thi khong tin (coi la vat la)
             self.declare_parameter('tep_thoat', os.path.expanduser('~/sep_thoat'))   # viec 109c-c1: chi doc va in, khong phat toc do
             self.ma_thoat_cu = None
+            self.thoat_p = None                              # c3: P cua lan ~/sep_thoat moi nhat
+            self.yaw_odom, self.yaw_odom_t = None, 0.0
+            self.create_subscription(Odometry, '/odom', self._on_odom, 10)
             for k, v in DEFAULT.items():
                 self.declare_parameter(k, v)
             self.brain = NguoiLai()
@@ -517,10 +601,16 @@ if rclpy is not None:
             if t is None or t['ma'] == self.ma_thoat_cu:
                 return
             self.ma_thoat_cu = t['ma']
+            self.thoat_p = t['p']
             self.get_logger().info(cau_se_lam(t, pts, goc_toi_diem(self._pose_ban_do(), t['p'])))
             if phat:
                 _, cau = self.brain.ra_bat_dau(pts, now, self.goal_active)
                 self.get_logger().info(cau)
+
+        def _on_odom(self, msg):
+            q = msg.pose.pose.orientation
+            self.yaw_odom = math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
+            self.yaw_odom_t = time.monotonic()
 
         def _on_nav(self, msg):
             self.nav_cmd, self.nav_time = (msg.linear.x, msg.angular.z), time.monotonic()
@@ -547,10 +637,15 @@ if rclpy is not None:
             if self.get_parameter('dung_ban_do').value:
                 phan_loai = lambda diem: la_dia_hinh(diem, self._pose_ban_do(), self.grid)   # chi tinh khi can
             nav = self.nav_cmd if now - self.nav_time < 0.5 else None
-            v, w, ten = self.brain.step(pts, now, self.goal_active, phan_loai, nav)
-            if self.brain.ra_xong:
-                self.get_logger().info(self.brain.ra_xong)
-                self.brain.ra_xong = ''
+            yaw = self.yaw_odom if self.yaw_odom is not None and now - self.yaw_odom_t < 0.5 else None
+            goc_p = None
+            if self.brain.xoay_cho or self.brain.state == 'XOAY':     # c3: huong toi P chi can luc bat dau xoay (tf cu > tf_tuoi_toi_da => None)
+                goc_p = goc_toi_diem(self._pose_ban_do(), self.thoat_p)
+            v, w, ten = self.brain.step(pts, now, self.goal_active, phan_loai, nav, yaw, goc_p)
+            for k in ('ra_xong', 'xoay_xong'):
+                if getattr(self.brain, k):
+                    self.get_logger().info(getattr(self.brain, k))
+                    setattr(self.brain, k, '')
             if v is not None and phat:
                 t = Twist()
                 t.linear.x, t.angular.z = float(v), float(w)

@@ -479,6 +479,17 @@ def test_33_luat_G_cau_log_RA_cua_lai_xe_lidar():
     assert c.s.luot_thoat == 0 and c.s.l1 == 'RA_XONG'                # ten RA_* khong bat dau bang THOAT: khong cong luot
 
 
+def test_34_luat_G_cau_log_XOAY_cua_lai_xe_lidar():
+    doi = '%s -> %s (%s)%s | %s'
+    assert S.doc_rosout('lai_xe_lidar', doi % ('-', 'XOAY_P', '', '', 'x')) == ('L1', 'XOAY_P', '')
+    for cau in ('XOAY XONG DEN_HUONG 61 do', 'XOAY KHONG: khong co huong toi P (P la "-" hoac tf cu > 1 s)'):
+        assert S.doc_rosout('lai_xe_lidar', cau) is None              # sep khong bat hai kieu cau nay
+    c = Chay(vao())
+    for tt_moi in ('RA_XONG', 'XOAY_P', 'XOAY_XONG'):
+        c(rosout=[('lai_xe_lidar', doi % ('-', tt_moi, '', '', 'x'))])
+    assert c.s.luot_thoat == 0 and c.s.l1 == 'XOAY_XONG'              # XOAY_* khong bat dau bang THOAT: khong cong luot
+
+
 if __name__ == '__main__':
     import sys
     import traceback

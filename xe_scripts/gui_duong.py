@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """gui_duong (viec 109a, soan 02/11/2026 o truong, CHUA CHAY TREN XE): gui DUONG DAY cua tinh_tuyen.py qua /follow_path.
 
+Tu 02/11 18:09 duong gui di la DUONG DOAN THANG da chia day (tinh_tuyen.doan_thang): dinh re dat cho du cho xoay,
+RPP xoay tai cho khi lech > 20 do (rotate_to_heading_min_angle 0.35) thay vi cua rong.
 Ly do (xe 02/11 17:03): bang xs gui 6 diem qua /navigate_to_pose; moi diem Nav2 nhan "da toi" khi con cach 14-15 cm
 (xy_goal_tolerance 0,15) nen sai so don lai, xe troi 14 cm ve K4 roi ket. Duong day la MOT dich: chi diem cuoi co dung sai.
 
@@ -90,12 +92,15 @@ def chay(io, huong, tuyen_dau, cfg):
                 if cho_sau_hong(io, cfg) == 'DUNG':
                     return dung_sep(io, nhan, r, lan)
                 continue
+            canh_bao = []
             try:
-                duong = TT.tinh_duong(ban, (pose[0], pose[1]), (dx, dy), r, yaw_cuoi=yaw_cuoi)
+                duong = TT.tinh_duong(ban, (pose[0], pose[1]), (dx, dy), r, yaw_cuoi=yaw_cuoi, canh_bao=canh_bao)
             except TT.KhongCoDuong as e:
                 io.bao('   tuyen %d: %s => doi tuyen' % (r, e))
                 io.ghi(nhan, r, 1, lan, 'KHONG_DAT', 0)
                 break
+            for x, y, c in canh_bao:
+                io.bao('   CANH BAO: dinh re (%.2f; %.2f) chi cach o do %.2f m (< %.2f), khong doi duoc' % (x, y, c, TT.R_XOAY_CAN))
             t0 = io.now()
             io.bao('-- tuyen %d, lan %d/%d: %d diem tu (%.2f; %.2f) toi (%.2f; %.2f)' % (r, lan, cfg['luot'], len(duong), pose[0], pose[1], dx, dy))
             kq = theo_doi(io, duong, cfg)

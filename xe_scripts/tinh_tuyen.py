@@ -34,6 +34,11 @@ CAM = {                # tuyen -> (x0, x1, y0, y1) vung cam (m)
 HUONG8 = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 BUOC_DAY = 0.05        # m, khoang cach hai diem cua duong day (bang do phan giai costmap)
 R_THA_CAM = 0.25       # m, o trong vung cam ma cach diem dau duoi so nay thi duoc di (xe dang dung trong vung cam sau khi thoat)
+# 02/11 18:09 (xe 17:57: duong day re 52 do, xe cua rong ra ngoai 12 cm vi banh khong chay cham hon ~0,092 m/s):
+DP_TOL = 0.05          # m, Douglas-Peucker: gop duong thanh doan thang, lech duong goc <= so nay
+GOC_XOAY = 0.35        # rad (~20 do) = rotate_to_heading_min_angle cua RPP: dinh re tu so nay tro len thi xe xoay tai cho
+R_XOAY_CAN = 0.1856 + 0.05   # m, dinh re phai cach o do > R_XOAY (lai_xe_lidar, 18,56 cm) + 5 cm
+DOI_MAX = 0.30         # m, tim cho dat dinh moi trong khoang nay (theo chieu dai duong goc) quanh dinh cu
 
 
 class KhongCoDuong(Exception):
@@ -186,9 +191,104 @@ def lam_day(pl, buoc=BUOC_DAY, delta=DELTA_TT, yaw_cuoi=None):
     return ra
 
 
-def tinh_duong(ban, dau, cuoi, tuyen, buoc=BUOC_DAY, yaw_cuoi=None):
+def douglas_peucker(pl, tol=DP_TOL):
+    """Chi so cac dinh giu lai cua duong gap khuc pl (moi diem bo di cach doan thang moi <= tol)."""
+    giu = {0, len(pl) - 1}
+    ngan = [(0, len(pl) - 1)]
+    while ngan:
+        a, b = ngan.pop()
+        (x0, y0), (x1, y1) = pl[a], pl[b]
+        L = math.hypot(x1 - x0, y1 - y0)
+        best, k = -1.0, None
+        for i in range(a + 1, b):
+            x, y = pl[i]
+            d = math.hypot(x - x0, y - y0) if L < 1e-9 else abs((x1 - x0) * (y0 - y) - (x0 - x) * (y1 - y0)) / L
+            if d > best:
+                best, k = d, i
+        if k is not None and best > tol:
+            giu.add(k)
+            ngan += [(a, k), (k, b)]
+    return sorted(giu)
+
+
+def doan_hop_le(ban, p, q, buoc=0.02):
+    """Doan thang p -> q khong di qua o do nao (lay mau moi buoc m)."""
+    n = max(1, int(math.ceil(math.hypot(q[0] - p[0], q[1] - p[1]) / buoc)))
+    return not any(ban.do(ban.o(p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n)) for k in range(n + 1))
+
+
+def cach_do_doan(ban, p, q, buoc=0.02):
+    """Khoang cach nho nhat (m) toi o do doc doan p -> q."""
+    n = max(1, int(math.ceil(math.hypot(q[0] - p[0], q[1] - p[1]) / buoc)))
+    return min(cach_do(ban, p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n) for k in range(n + 1))
+
+
+def cach_do(ban, x, y):
+    """Khoang cach (m) tu o chua (x, y) toi o do gan nhat (tam o toi tam o)."""
+    return ban.d.get(ban.o(x, y), 0.0) * ban.res
+
+
+def goc_re(a, b, c):
+    """Goc doi huong (rad, 0..pi) tai b khi di a -> b -> c."""
+    t1, t2 = math.atan2(b[1] - a[1], b[0] - a[0]), math.atan2(c[1] - b[1], c[0] - b[0])
+    return abs(math.atan2(math.sin(t2 - t1), math.cos(t2 - t1)))
+
+
+def doan_thang(ban, pl, tol=DP_TOL, can=R_XOAY_CAN, doi_max=DOI_MAX):
+    """02/11 18:09: duong goc pl -> cac dinh (x, y) cua duong doan thang. (1) Douglas-Peucker tol; doan nao cat o do thi giu
+    them diem goc o giua. (2) Dinh re >= GOC_XOAY ma cach o do <= can thi doi toi diem tren pl (trong doi_max m) gan nhat
+    du cho xoay, mien hai doan moi khong gan vat hon duong goc doan do (tru hao 3 cm, chong cat cheo hanh lang).
+    Tra (dinh, canh_bao): canh_bao = cac dinh re khong doi duoc (giu nguyen cho cu)."""
+    idx = douglas_peucker(pl, tol)
+    k = 0
+    while k < len(idx) - 1:                          # doan cat o do (lech toi 5 cm co the cham goc tuong): chen diem goc
+        a, b = idx[k], idx[k + 1]
+        if b - a > 1 and not doan_hop_le(ban, pl[a], pl[b]):
+            idx.insert(k + 1, (a + b) // 2)
+            continue
+        k += 1
+    cum = [0.0]
+    for i in range(1, len(pl)):
+        cum.append(cum[-1] + math.hypot(pl[i][0] - pl[i - 1][0], pl[i][1] - pl[i - 1][1]))
+    dinh = [tuple(pl[i]) for i in idx]
+    canh_bao = []
+    for j in range(1, len(dinh) - 1):
+        if goc_re(dinh[j - 1], dinh[j], dinh[j + 1]) < GOC_XOAY or cach_do(ban, *dinh[j]) > can:
+            continue
+        i0 = idx[j]
+        san = min(cach_do(ban, *q) for q in pl[idx[j - 1]:idx[j + 1] + 1]) - 0.03   # duong goc qua doan nay gan vat nhat bay nhieu
+        ung = sorted((i for i in range(len(pl)) if abs(cum[i] - cum[i0]) <= doi_max), key=lambda i: abs(cum[i] - cum[i0]))
+        moi = next((tuple(pl[i]) for i in ung if cach_do(ban, *pl[i]) > can
+                    and doan_hop_le(ban, dinh[j - 1], pl[i]) and doan_hop_le(ban, pl[i], dinh[j + 1])
+                    and min(cach_do_doan(ban, dinh[j - 1], pl[i]), cach_do_doan(ban, pl[i], dinh[j + 1])) >= san), None)
+        if moi is None:
+            canh_bao.append((dinh[j][0], dinh[j][1], cach_do(ban, *dinh[j])))
+        else:
+            dinh[j] = moi
+    return dinh, canh_bao
+
+
+def lam_day_doan(dinh, buoc=BUOC_DAY, yaw_cuoi=None):
+    """Cac dinh -> diem cach <= buoc m tren tung doan thang; goc moi diem = huong doan chua no (dinh thuoc doan ra)."""
+    ra = []
+    for j in range(len(dinh) - 1):
+        (x0, y0), (x1, y1) = dinh[j], dinh[j + 1]
+        L = math.hypot(x1 - x0, y1 - y0)
+        if L < 1e-9:
+            continue
+        yaw = math.atan2(y1 - y0, x1 - x0)
+        n = max(1, int(math.ceil(L / buoc)))
+        ra += [(x0 + (x1 - x0) * k / n, y0 + (y1 - y0) * k / n, yaw) for k in range(n)]
+    x, y = dinh[-1]
+    ra.append((x, y, yaw_cuoi if yaw_cuoi is not None else (ra[-1][2] if ra else 0.0)))
+    return ra
+
+
+def tinh_duong(ban, dau, cuoi, tuyen, buoc=BUOC_DAY, yaw_cuoi=None, kieu='doan', canh_bao=None):
     """Viec 109a: duong day tu dau (x, y) toi cuoi (x, y) theo tuyen 1 | 2 (vung CAM), cung gia va luat nhu bang xs.
-    O cam cach dau < R_THA_CAM van duoc di (xe co the dang dung trong vung cam). Loi => KhongCoDuong."""
+    O cam cach dau < R_THA_CAM van duoc di (xe co the dang dung trong vung cam). Loi => KhongCoDuong.
+    kieu 'doan' (mac dinh tu 02/11 18:09): doan thang, dinh re dat cho du cho xoay (doan_thang); 'muot': tiep tuyen nhu 109a.
+    canh_bao (list) neu co: them cac dinh re khong doi duoc toi cho du cho xoay."""
     o_dau, o_cuoi = ban.o(*dau), ban.o(*cuoi)
     if o_dau not in ban.v or o_cuoi not in ban.v:
         raise KhongCoDuong('diem dau hoac dich nam ngoai costmap')
@@ -201,7 +301,12 @@ def tinh_duong(ban, dau, cuoi, tuyen, buoc=BUOC_DAY, yaw_cuoi=None):
         return x0 <= cx <= x1 and y0 <= cy <= y1 and math.hypot(cx - dau[0], cy - dau[1]) > R_THA_CAM
     duong = dijkstra(ban, o_dau, o_cuoi, cam)
     pl = [tuple(dau)] + [ban.tam(k) for k in duong[1:-1]] + [tuple(cuoi)]
-    return lam_day(pl, buoc, yaw_cuoi=yaw_cuoi)
+    if kieu == 'muot':
+        return lam_day(pl, buoc, yaw_cuoi=yaw_cuoi)
+    dinh, cb = doan_thang(ban, pl)
+    if canh_bao is not None:
+        canh_bao += cb
+    return lam_day_doan(dinh, buoc, yaw_cuoi=yaw_cuoi)
 
 
 def so(v, n):

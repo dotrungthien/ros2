@@ -113,7 +113,7 @@ controller_server:
       allow_reversing: false
       use_rotate_to_heading: true
       rotate_to_heading_angular_vel: 1.0
-      rotate_to_heading_min_angle: 0.785
+      rotate_to_heading_min_angle: 0.35   # 02/11 18:09: 0.785 -> 0.35 (~20 do): re tu 20 do thi xoay tai cho o dinh, khong cua rong (banh khong cham hon ~0,092 m/s); duong lui: 0.785
       max_angular_accel: 3.2
       use_regulated_linear_velocity_scaling: true
       use_cost_regulated_linear_velocity_scaling: true

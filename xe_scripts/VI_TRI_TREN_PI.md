@@ -201,3 +201,15 @@ Ca cũ đổi theo luật mới (không phải lỗi): `test_01` của `test_sep
 | `kiem_xe.sh` mã thoát | `bat_xe.sh` B3 (`KQ`) | 0 đạt / 1 không đạt | không đổi; `BO_QUA` không làm `KQ=1` |
 
 **Chưa giả lập cả hệ thống.**
+
+## Đối chiếu luật G — (A) xoay tại chỗ từ 20°, (B) đường đoạn thẳng (02/11 18:2x; `test_gui_duong.py` 17/17; CHƯA chạy trên Pi)
+
+Gốc lỗi xe 17:57: đường dày rẽ 52° ở (1,26; 0,06); RPP hạ tốc ở khúc cua nhưng bánh không chạy chậm hơn ~0,092 m/s nên xe cua rộng ra ngoài rồi kẹt. Xe đồ chơi trong `test_17` (pure pursuit + hạ tốc như RPP + mỗi bánh ≥ 0,092 m/s; **không phải RPP**) tái hiện: cách cũ (đường mượt, 0,785) lệch 20 cm, chỉ còn cách ô đỏ 5 cm; cách mới (đoạn thẳng, 0,35) lệch 5,6 cm, cách ô đỏ 15,8 cm. Ghi chú thật thà: trong xe đồ chơi, riêng (A) (đường mượt + 0,35) cũng cho lệch 4,6 cm; (B) chủ yếu để đỉnh rẽ (chỗ xe xoay) nằm nơi đủ chỗ. **Chưa giả lập cả hệ thống.**
+
+| Bên ghi | Bên đọc | Tên/giá trị phải khớp | Khớp? |
+|---|---|---|---|
+| `nav2_params_cho.yaml` `rotate_to_heading_min_angle: 0.35` | RPP; `tinh_tuyen.GOC_XOAY` (đỉnh rẽ từ ngưỡng này phải đủ chỗ xoay) | 0,35 rad ở cả hai | khớp (`test_15` đọc yaml so với `GOC_XOAY`); `gia_lap/bat_gia.sh` chép tệp này nên cũng 0,35; `config/nav2_params.yaml` của kho vẫn 0,785 (đường lui) |
+| `lai_xe_lidar.R_XOAY` (18,56 cm) | `tinh_tuyen.R_XOAY_CAN` = R_XOAY + 5 cm | cùng số | khớp (`test_15`); hằng số chép lại trong `tinh_tuyen.py` để chạy PC không cần `lai_xe_lidar` |
+| `tinh_tuyen.tinh_duong` (mặc định `kieu='doan'`) | `gui_duong.py` → `/follow_path`, `/duong_day` | điểm cách ≤ 5 cm, góc = hướng đoạn | khớp; rclpy thật + thế giới giả: ca thẳng và ca hỏng lần đầu vẫn `DEN_NOI`, `/duong_day` 2 lần/giây |
+| `tinh_tuyen.doan_thang` cảnh báo | `gui_duong.py` in `CANH BAO: dinh re … chi cach o do …` | — | trên `costmap_v3_020`: khe trên (tuyến 2) có đỉnh (0,41; 0,76) rẽ 49°, cách ô đỏ 0,224 m < 0,236 (vẫn > R_XOAY 0,186): **không dời** vì mọi chỗ dời đều làm đường cắt chéo khe gần vật hơn; tuyến 1 không có cảnh báo |
+| `tinh_tuyen.main()` (bảng `xs` in trên PC) | `chuyen.sh` bảng `xs` | 4 dòng `xs:` | khớp từng dòng (`test_11`, so với đầu ra gốc) |

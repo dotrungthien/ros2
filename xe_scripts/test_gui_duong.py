@@ -183,7 +183,7 @@ def test_11_main_van_in_dung_bang_xs_cua_chuyen_sh():
 def test_12_duong_day_va_vung_cam():
     for huong, dau, cuoi in (('di_B', T.A, T.B), ('ve_A', T.B, T.A)):
         for tuyen in (1, 2):
-            d = T.tinh_duong(BAN, dau, cuoi, tuyen)
+            d = T.tinh_duong(BAN, dau, cuoi, tuyen, kieu='muot')                # duong muot 109a: 6 diem xs nam tren duong
             kc = [math.hypot(d[k][0] - d[k - 1][0], d[k][1] - d[k - 1][1]) for k in range(1, len(d))]
             assert max(kc) <= 0.0501 and not any(BAN.do(BAN.o(x, y)) for x, y, _ in d)
             m = re.search(r'xs:%s:%d\) WP=\((.*)\) ;;' % (huong, tuyen), open(os.path.join(DAY, 'chuyen.sh')).read()).group(1)
@@ -219,6 +219,107 @@ def test_14_dung_huy_dich_dang_chay_ca_hai_bang():
     assert 'huy_nav' in ts                                             # DUNG truoc khi gui cung huy dich con sot
     io = IOGia([('SUCCEEDED', 60, Bp)], lenh=lambda t: ('DUNG', 'x') if t >= 5 else None)
     assert G.chay(io, 'di_B', 1, CFG) == 4 and io.da_huy >= 1 and io.dang is None   # BANG=day: huy /follow_path
+
+
+def _wrap(a):
+    return math.atan2(math.sin(a), math.cos(a))
+
+
+def _dinh(d):
+    """Cac dinh re (x, y, goc re do) cua duong day doan thang."""
+    return [(d[k][0], d[k][1], math.degrees(abs(_wrap(d[k][2] - d[k - 1][2])))) for k in range(1, len(d) - 1) if abs(_wrap(d[k][2] - d[k - 1][2])) > 1e-6]
+
+
+def test_15_duong_doan_thang_tren_xuong():
+    import lai_xe_lidar as L
+    assert abs(T.R_XOAY_CAN - (L.R_XOAY + 0.05)) < 1e-3                # cung R_XOAY voi phu lai
+    y = open(os.path.join(DAY, 'nav2_params_cho.yaml')).read()
+    assert float(re.search(r'rotate_to_heading_min_angle:\s*([0-9.]+)', y).group(1)) == T.GOC_XOAY   # nguong dinh re = nguong xoay cua RPP
+    for huong, dau, cuoi in (('di_B', T.A, T.B), ('ve_A', T.B, T.A)):
+        for tuyen in (1, 2):
+            cb = []
+            d = T.tinh_duong(BAN, dau, cuoi, tuyen, canh_bao=cb)
+            assert not any(BAN.do(BAN.o(x, y)) for x, y, _ in d)
+            assert (not cb) if tuyen == 1 else [(round(x, 2), round(y, 2)) for x, y, _ in cb] == [(0.41, 0.76)]   # khe tren: 1 dinh thieu 1,2 cm
+            assert all(L.R_XOAY < c <= T.R_XOAY_CAN for _, _, c in cb)      # dinh canh bao van xoay duoc (> R_XOAY), chi thieu 5 cm du phong
+            kc = [math.hypot(d[k][0] - d[k - 1][0], d[k][1] - d[k - 1][1]) for k in range(1, len(d))]
+            assert max(kc) <= 0.0501
+            for x, y, g in _dinh(d):
+                assert g < 20 or T.cach_do(BAN, x, y) > T.R_XOAY_CAN or (x, y) in [(a, b) for a, b, _ in cb], (huong, tuyen, x, y, g)
+            m = re.search(r'xs:%s:%d\) WP=\((.*)\) ;;' % (huong, tuyen), open(os.path.join(DAY, 'chuyen.sh')).read()).group(1)
+            xs = [tuple(map(float, q.split()[:2])) for q in re.findall(r'"([^"]+)"', m)]
+            assert max(min(math.hypot(x - a, y - b) for a, b, _ in d) for x, y in xs) < 0.06   # Douglas-Peucker 5 cm
+    re52 = [v for v in _dinh(T.tinh_duong(BAN, T.A, T.B, 1)) if abs(v[0] - 1.26) < 0.03 and abs(v[1] - 0.06) < 0.03]
+    assert re52 and 45 <= re52[0][2] <= 60                             # dung khuc re 52 do thay tren xe 17:57
+
+
+def _ban_phong(do_o):
+    """Ban 40 x 30 o (5 cm), trong tru cac o (i, j) trong do_o (do)."""
+    data = [0] * (40 * 30)
+    for i, j in do_o:
+        data[j * 40 + i] = 100
+    return T.Ban.tu_luoi(40, 30, 0.05, 0.0, 0.0, data)
+
+
+def test_16_doi_dinh_re_toi_cho_du_cho_xoay():
+    b = _ban_phong([(i, j) for i in range(21, 24) for j in range(0, 2)])     # khoi do o x 1,05..1,20 y 0..0,10 sat goc re
+    pl = [(0.20 + 0.05 * k, 0.20) for k in range(17)] + [(1.00, 0.25 + 0.05 * k) for k in range(16)]   # re 90 do tai (1,00; 0,20)
+    assert T.cach_do(b, 1.00, 0.20) <= T.R_XOAY_CAN
+    dinh, cb = T.doan_thang(b, pl)
+    assert len(dinh) == 3 and not cb
+    v = dinh[1]
+    assert v != (1.00, 0.20) and T.cach_do(b, *v) > T.R_XOAY_CAN and T.doan_hop_le(b, dinh[0], v) and T.doan_hop_le(b, v, dinh[2])
+    b2 = _ban_phong([(i, j) for i in range(12, 28) for j in range(0, 2)] + [(i, 8) for i in range(12, 19)] + [(23, j) for j in range(3, 20)])
+    dinh2, cb2 = T.doan_thang(b2, pl)                                  # hanh lang hep quanh goc: khong cho nao du => canh bao, giu dinh
+    assert cb2 and dinh2[1] == (1.00, 0.20)
+    cb3 = []
+    T.tinh_duong(BAN, T.A, T.B, 2, canh_bao=cb3)                       # 18:2x: doi (0,41; 0,76) ve (0,21; 0,56) se cat cheo khe tren 15 cm
+    assert cb3 and all(abs(c - T.cach_do(BAN, x, y)) < 1e-9 for x, y, c in cb3)   # => khong doi, chi canh bao
+
+
+def _mo_phong_xe(duong, goc_xoay, v=0.15, L=0.30, b=0.16, s_min=0.092, dt=0.05):
+    """Xe do choi: pure pursuit, RPP ha toc khi ban kinh < 0,9 m (san 0,06 m/s), xoay tai cho khi lech carrot > goc_xoay;
+    MOI BANH khong chay cham hon s_min (0,092 m/s, nhu xe that). Chi de so sanh hai cach, KHONG phai RPP."""
+    x, y, th = duong[0][0], duong[0][1], duong[1][2]
+    pts, ra, i0 = [(p[0], p[1]) for p in duong], [], 0
+    kep = lambda s: 0.0 if abs(s) < 1e-9 else math.copysign(max(abs(s), s_min), s)
+    for _ in range(1600):
+        i0 = min(range(i0, min(i0 + 20, len(pts))), key=lambda i: math.hypot(pts[i][0] - x, pts[i][1] - y))
+        cx, cy = pts[next((k for k in range(i0, len(pts)) if math.hypot(pts[k][0] - x, pts[k][1] - y) >= L), len(pts) - 1)]
+        if math.hypot(pts[-1][0] - x, pts[-1][1] - y) < 0.05:
+            break
+        a = _wrap(math.atan2(cy - y, cx - x) - th)
+        if abs(a) > goc_xoay:
+            vc, wc = 0.0, math.copysign(1.0, a)
+        else:
+            k = 2 * math.sin(a) / L
+            vc = v if abs(k) < 1 / 0.9 else max(0.06, v / (abs(k) * 0.9))
+            wc = vc * k
+        vl, vr = kep(vc - wc * b / 2), kep(vc + wc * b / 2)
+        x, y, th = x + (vl + vr) / 2 * math.cos(th) * dt, y + (vl + vr) / 2 * math.sin(th) * dt, th + (vr - vl) / b * dt
+        ra.append((x, y))
+    return ra
+
+
+def test_17_khuc_re_52_do_xe_toi_thieu_0092():
+    doan, muot = T.tinh_duong(BAN, T.A, T.B, 1), T.tinh_duong(BAN, T.A, T.B, 1, kieu='muot')
+    ref = [(p[0], p[1]) for p in doan]
+
+    def lech(p):
+        best = 1e9
+        for k in range(len(ref) - 1):
+            (ax, ay), (cx, cy) = ref[k], ref[k + 1]
+            L2 = (cx - ax) ** 2 + (cy - ay) ** 2
+            t = 0 if L2 == 0 else max(0, min(1, ((p[0] - ax) * (cx - ax) + (p[1] - ay) * (cy - ay)) / L2))
+            best = min(best, math.hypot(p[0] - ax - t * (cx - ax), p[1] - ay - t * (cy - ay)))
+        return best
+    kq = {}
+    for ten, d, g in (('cu', muot, 0.785), ('moi', doan, 0.35)):
+        tr = _mo_phong_xe(d, g)
+        gan = [p for p in tr if math.hypot(p[0] - 1.26, p[1] - 0.06) < 0.45]
+        kq[ten] = (max(lech(p) for p in gan), min(T.cach_do(BAN, *p) for p in gan), math.hypot(tr[-1][0] - 1.6, tr[-1][1] - 0.82))
+    assert kq['cu'][0] > 0.10 and kq['cu'][1] < 0.10                  # cach cu: cua rong, sat o do (giong 17:57)
+    assert kq['moi'][0] < 0.08 and kq['moi'][1] > 0.12 and kq['moi'][2] < 0.06, kq   # cach moi: lech nho, con cho, van toi B
 
 
 if __name__ == '__main__':

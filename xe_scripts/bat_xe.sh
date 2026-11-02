@@ -51,7 +51,7 @@ liet_ke() {
 # viec 101: tien trinh ROS ngoai NODES (chay tay, lenh ros2, daemon); phai tat het truoc khi don /dev/shm
 # chuong trinh chay tay: chi khop tien trinh python3 co dung ten tep (khong khop vo "bash -c" co chu do, bai hoc 303)
 mau_py() { printf '%s' "^([^ ]*/)?python3[^ ]*( [^ ]+)*[ /]($1)\\.py( |\$)"; }
-TAY="$(mau_py '[s]ep|[l]ai_xe_lidar|[t]heo_doi')"
+TAY="$(mau_py '[s]ep|[l]ai_xe_lidar|[t]heo_doi|[g]ui_duong')"   # 109a: them gui_duong (chuyen.sh BANG=day) de "tat" huy ca no
 TAY_SEP="$(mau_py '[s]ep')"                    # viec 110: tung tien trinh phu, cung khuon voi TAY
 TAY_LAI="$(mau_py '[l]ai_xe_lidar')"
 ROS_KHAC="[_]ros2_daemon|[r]os2 (bag|topic|action|param|run|service|node|launch)|$TAY"

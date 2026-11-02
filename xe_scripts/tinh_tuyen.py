@@ -10,6 +10,8 @@ Moi tuyen chia 6 diem cach deu theo chieu dai (diem 6 = dich); goc = tiep tuyen 
 tren duong); rieng diem cuoi di_B giu 0 do nhu bang tt.
 In 4 dong san dan vao case cua chuyen.sh, roi cac dong kiem (bat dau bang #); luu du_lieu_0111/tuyen_xs.png.
 Chay: python3 tinh_tuyen.py
+Viec 109a (02/11): them ham dung lai duoc tren Pi: Ban.tu_luoi (tu OccupancyGrid /global_costmap/costmap) va
+tinh_duong (duong day ~5 cm tu vi tri xe toi dich, theo tuyen 1/2). Che do in tren PC giu nguyen tung dong.
 """
 import heapq
 import math
@@ -30,6 +32,12 @@ CAM = {                # tuyen -> (x0, x1, y0, y1) vung cam (m)
     2: (0.30, 1.20, -1e9, 0.40),
 }
 HUONG8 = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+BUOC_DAY = 0.05        # m, khoang cach hai diem cua duong day (bang do phan giai costmap)
+R_THA_CAM = 0.25       # m, o trong vung cam ma cach diem dau duoi so nay thi duoc di (xe dang dung trong vung cam sau khi thoat)
+
+
+class KhongCoDuong(Exception):
+    """Dijkstra khong toi duoc dich (main() doi thanh SystemExit nhu ban cu)."""
 
 
 def doc_yaml(p):
@@ -69,8 +77,22 @@ class Ban:
         pgm, self.res, self.ox, self.oy = doc_yaml(yaml_path)
         self.w, self.h, px = doc_pgm(pgm)
         self.v = {(i, j): px[(self.h - 1 - j) * self.w + i] for i in range(self.w) for j in range(self.h)}
+        self._khoang_cach()
+
+    @classmethod
+    def tu_luoi(cls, w, h, res, ox, oy, data):
+        """Tu OccupancyGrid (data hang-chinh, hang 0 o duoi; -1 = chua biet; 0..100). Doi ra 3 mau nhu map_saver
+        trinary voi occupied_thresh 0.98 / free_thresh 0.3 cua costmap_v3_020.yaml: >= 98 do (0), < 30 xanh (254),
+        con lai va -1 vang (205). Duong chi phu thuoc o do / khong do."""
+        self = cls.__new__(cls)
+        self.w, self.h, self.res, self.ox, self.oy = w, h, res, ox, oy
+        self.v = {(i, j): pixel_tu_chi_phi(data[j * w + i]) for i in range(w) for j in range(h)}
+        self._khoang_cach()
+        return self
+
+    def _khoang_cach(self):
         do = [k for k, v in self.v.items() if v == 0]
-        self.d = {k: (0.0 if v == 0 else min(math.hypot(k[0] - a, k[1] - b) for a, b in do)) for k, v in self.v.items()}
+        self.d = {k: (0.0 if v == 0 else min((math.hypot(k[0] - a, k[1] - b) for a, b in do), default=1e9)) for k, v in self.v.items()}
 
     def o(self, x, y):
         return int(math.floor((x - self.ox) / self.res)), int(math.floor((y - self.oy) / self.res))
@@ -80,6 +102,14 @@ class Ban:
 
     def do(self, k):
         return self.v.get(k, 0) == 0          # ngoai ban do cung coi la do
+
+
+def pixel_tu_chi_phi(c):
+    if c < 0:
+        return 205
+    if c >= 98:
+        return 0
+    return 254 if c < 30 else 205
 
 
 def dijkstra(ban, dau, cuoi, cam):
@@ -105,7 +135,7 @@ def dijkstra(ban, dau, cuoi, cam):
                 truoc[v] = u
                 heapq.heappush(pq, (g2, v))
     if cuoi not in gia:
-        raise SystemExit('khong tim duoc duong %s -> %s' % (dau, cuoi))
+        raise KhongCoDuong('khong tim duoc duong %s -> %s' % (dau, cuoi))
     duong = [cuoi]
     while duong[-1] != dau:
         duong.append(truoc[duong[-1]])
@@ -135,6 +165,43 @@ def chia_diem(pl, n=SO_DIEM, delta=DELTA_TT):
         a, b = diem_tai(pl, cum, s - delta), diem_tai(pl, cum, s + delta)
         ra.append((x, y, math.atan2(b[1] - a[1], b[0] - a[0])))
     return ra, L
+
+
+def lam_day(pl, buoc=BUOC_DAY, delta=DELTA_TT, yaw_cuoi=None):
+    """Duong gap khuc pl -> cac diem cach deu ~buoc m (dau, cuoi giu nguyen), moi diem kem goc tiep tuyen (rad).
+    yaw_cuoi khac None thi dat goc diem cuoi (di_B giu 0 do nhu bang tt/xs)."""
+    cum = [0.0]
+    for k in range(1, len(pl)):
+        cum.append(cum[-1] + math.hypot(pl[k][0] - pl[k - 1][0], pl[k][1] - pl[k - 1][1]))
+    L = cum[-1]
+    n = max(2, int(math.ceil(L / buoc)) + 1)
+    ra = []
+    for k in range(n):
+        s = L * k / (n - 1)
+        x, y = diem_tai(pl, cum, s)
+        a, b = diem_tai(pl, cum, s - delta), diem_tai(pl, cum, s + delta)
+        ra.append((x, y, math.atan2(b[1] - a[1], b[0] - a[0])))
+    if yaw_cuoi is not None:
+        ra[-1] = (ra[-1][0], ra[-1][1], yaw_cuoi)
+    return ra
+
+
+def tinh_duong(ban, dau, cuoi, tuyen, buoc=BUOC_DAY, yaw_cuoi=None):
+    """Viec 109a: duong day tu dau (x, y) toi cuoi (x, y) theo tuyen 1 | 2 (vung CAM), cung gia va luat nhu bang xs.
+    O cam cach dau < R_THA_CAM van duoc di (xe co the dang dung trong vung cam). Loi => KhongCoDuong."""
+    o_dau, o_cuoi = ban.o(*dau), ban.o(*cuoi)
+    if o_dau not in ban.v or o_cuoi not in ban.v:
+        raise KhongCoDuong('diem dau hoac dich nam ngoai costmap')
+    if ban.do(o_cuoi):
+        raise KhongCoDuong('dich nam trong o do')
+    x0, x1, y0, y1 = CAM[tuyen]
+
+    def cam(k):
+        cx, cy = ban.tam(k)
+        return x0 <= cx <= x1 and y0 <= cy <= y1 and math.hypot(cx - dau[0], cy - dau[1]) > R_THA_CAM
+    duong = dijkstra(ban, o_dau, o_cuoi, cam)
+    pl = [tuple(dau)] + [ban.tam(k) for k in duong[1:-1]] + [tuple(cuoi)]
+    return lam_day(pl, buoc, yaw_cuoi=yaw_cuoi)
 
 
 def so(v, n):
@@ -195,7 +262,10 @@ def main():
     for huong, dau, cuoi, p_dau, p_cuoi in (('di_B', oA, oB, A, B), ('ve_A', oB, oA, B, A)):
         for tuyen, (x0, x1, y0, y1) in CAM.items():
             cam = lambda k, x0=x0, x1=x1, y0=y0, y1=y1: x0 <= ban.tam(k)[0] <= x1 and y0 <= ban.tam(k)[1] <= y1
-            duong = dijkstra(ban, dau, cuoi, cam)
+            try:
+                duong = dijkstra(ban, dau, cuoi, cam)
+            except KhongCoDuong as e:
+                raise SystemExit(str(e))
             pl = [p_dau] + [ban.tam(k) for k in duong[1:-1]] + [p_cuoi]
             diem, L = chia_diem(pl)
             if huong == 'di_B':

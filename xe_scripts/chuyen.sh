@@ -6,6 +6,8 @@
 #   Muc dich: bo cac lan xoay tai cho lon o cho hep (bang cu bat xe xoay 102, 78, 175 do khi ve A).
 #   Chon bang bang bien BANG: BANG=cu (bang v3 tro ve truoc, de so sanh) | BANG=tt (tiep tuyen, MAC DINH) | BANG=xs (tinh_tuyen.py tu costmap, 01/11). Khong can sua tep.
 #   Cot 2 cua ~/ket_qua_chuyen.csv thanh "ve_A_cu" / "ve_A_tt": lenh dem x/n o Phan 2 tu tach hai bang.
+#   Viec 109a (02/11): BANG=day = DUONG DAY (gui_duong.py: tinh_tuyen tu costmap luc chay, mot dich /follow_path, het lech don
+#   15 cm/diem cua xs). chuyen.sh chi chuyen sang `python3 ~/gui_duong.py` (cung CSV, cung ma thoat); BANG=xs giu nguyen lam duong lui.
 #
 # --- noi dung v3 (giu nguyen) ---
 # v3 khac v2 o DUNG hai cho (khong doi cach xe chay):
@@ -44,7 +46,7 @@
 HUONG="$1"
 TUYEN_DAU="${2:-1}"
 BANG="${BANG:-tt}"
-case "$BANG" in tt|cu|xs) ;; *) echo "SAI BANG: '$BANG'. Dung BANG=tt, BANG=cu hoac BANG=xs"; exit 2 ;; esac
+case "$BANG" in tt|cu|xs|day) ;; *) echo "SAI BANG: '$BANG'. Dung BANG=tt, BANG=cu, BANG=xs hoac BANG=day"; exit 2 ;; esac
 NHAN="${HUONG}_${BANG}"   # nhan ghi vao cot 2 cua CSV
 TRY="${TRY:-1}"
 CHO="${CHO:-5}"
@@ -68,6 +70,13 @@ case "$TUYEN_DAU" in
   2) THU_TU="2 1" ;;
   *) echo "SAI DOI SO: tuyen_dau phai la 1 hoac 2"; exit 2 ;;
 esac
+
+# viec 109a: duong day. gui_duong.py doc cung TO, SEP_CHO_S, SEP_TUOI_MAX; ghi cung ~/ket_qua_chuyen.csv; cung ma thoat 0-4
+if [ "$BANG" = "day" ]; then
+  [ -f "$HOME/gui_duong.py" ] || { echo "LOI: khong thay ~/gui_duong.py (BANG=day). Dung BANG=xs de chay nhu cu."; exit 2; }
+  export TO SEP_CHO_S SEP_TUOI_MAX
+  exec python3 "$HOME/gui_duong.py" "$HUONG" "$TUYEN_DAU"
+fi
 
 ghi() { # $1.. = cac cot cua dong CSV (cot 6 = ket_qua, giu nguyen nhu v2)
   [ -f "$CSV" ] || echo "gio,huong,tuyen,diem,lan,ket_qua,giay,lech_kiem_m,lech_costmap_m,tuoi_costmap_s" > "$CSV"

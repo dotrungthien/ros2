@@ -610,6 +610,19 @@ def test_40_ra_thoat_het_luot_va_phu_lai_khong_lam_gi():
     assert tt['thoat'] is None and c.s.luot_thoat == 0
 
 
+
+def test_41_NGAT_dong_chuyen_chuyen_sau_dem_lai_tu_0():
+    c = Chay(vao())
+    c(csv=['2026-11-03 02:51:23,di_B_day,1,1,0,KIEM_DAT,0,-,-,-'])
+    assert c.s.chuyen == 'di_B_day'
+    c(rosout=[('lifecycle_manager_navigation', CRIT)])
+    c.s.luot_thoat = 2
+    assert c.s.nav2_lan == 1
+    _, log = c(csv=['2026-11-03 02:51:26,di_B_day,-,ngat,0,NGAT,0,-,-,-'])     # dong gui_duong.py ghi khi bi ngat
+    assert c.s.chuyen is None and co(log, 'KET_THUC') and co(log, 'NGAT')
+    _, log = c(csv=['2026-11-03 02:51:29,ve_A_day,1,1,0,KIEM_DAT,0,-,-,-'])
+    assert c.s.chuyen == 've_A_day' and c.s.nav2_lan == 0 and c.s.luot_thoat == 0 and co(log, 'BAT_DAU')
+
 if __name__ == '__main__':
     import sys
     import traceback

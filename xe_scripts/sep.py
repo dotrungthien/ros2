@@ -9,7 +9,8 @@ Chay tren Pi: python3 ~/sep.py   (can ~/lai_xe_lidar.py cung thu muc; ham thuan 
 
 Thien chot 01/11 (duyet ke hoach buoc 1):
   dich = diem cuoi cua /plan cuoi cung truoc SUCCEEDED; chuyen theo duoi ~/ket_qua_chuyen.csv (KIEM_DAT bat dau,
-  DEN_NOI / HET_DUONG ket thuc; them SAI_VI_TRI vi chuyen.sh cung thoat o do); do tin cay tren moi diem <= 3 m;
+  DEN_NOI / HET_DUONG / DUNG_SEP ket thuc; them SAI_VI_TRI vi chuyen.sh cung thoat o do; NGAT khi gui_duong.py bi ngat, 03/11);
+  do tin cay tren moi diem <= 3 m;
   nhay = do doi cua map->odom; trang thai lai_xe_lidar doc tu /rosout; /scan cu > 0,5 s thi ghi MAT_SCAN;
   "0 poses": ghi ca /plan rong va ABORTED < 2 s.
 Viec 100 (01/11 toi): bo nghe /bond (~100 tin/s) cho nhe; Nav2 song/chet suy tu /rosout + trang thai goal.
@@ -808,7 +809,7 @@ class Sep:
             self.het_luot = False
             self.thoat_khong_chay = 0
             ghi('CHUYEN', 'BAT_DAU', kiem=r['huong'], se='dem lai: Nav2 0/%d; thoat 0/%d' % (NAV2_LAN_MAX, LUOT_THOAT_MAX))
-        elif kq in ('DEN_NOI', 'HET_DUONG', 'SAI_VI_TRI', 'DUNG_SEP') and self.chuyen is not None:
+        elif kq in ('DEN_NOI', 'HET_DUONG', 'SAI_VI_TRI', 'DUNG_SEP', 'NGAT') and self.chuyen is not None:
             ghi('CHUYEN', 'KET_THUC', kiem=self.chuyen, kq=kq)
             self.chuyen = None
 

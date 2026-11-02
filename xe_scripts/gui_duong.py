@@ -16,14 +16,16 @@ Mot tien trinh rclpy, KHONG goi ros2 CLI. Chay (chuyen.sh BANG=day goi):  python
      SUCCEEDED ma xe cach dich <= TOI_SAI_SO m => DEN_NOI (ma 0). Hong => cho (>= CHO_HONG s, toi da gap doi, ton trong
      CHO/DUNG va phu lai) roi tinh lai tu vi tri hien tai. Het LUOT lan => tuyen kia. Ca hai hong => HET_DUONG (ma 1).
   CSV: ~/ket_qua_chuyen.csv cung cot va cung chu voi chuyen.sh (KIEM_DAT, SUCCEEDED, KHONG_DAT, DEN_NOI, HET_DUONG,
-  SAI_VI_TRI, DUNG_SEP); cot 2 = "<huong>_day". Ma thoat: 0 den noi, 1 het duong, 2 sai doi so, 3 sai vi tri, 4 sep bao dung.
+  SAI_VI_TRI, DUNG_SEP) va NGAT (bi ngat, dong ket thuc chuyen); cot 2 = "<huong>_day".
+  Ma thoat: 0 den noi, 1 het duong, 2 sai doi so, 3 sai vi tri, 4 sep bao dung, 130 bi ngat (NGAT).
 Bien moi truong: LUOT (3), CHO_HONG (30 s), TO (130 s/lan gui), TOI_SAI_SO (0,20 m); cung ten voi chuyen.sh: SEP_CHO_S (10 s),
   SEP_TUOI_MAX (3 s). Phu lai lai mai thi tong thoi gian cho giua hai lan gui toi da 3 x CHO_HONG.
-Dung khan: TAT CONG TAC MOTOR. Ctrl+C: huy dich dang chay roi thoat.
+Dung khan: TAT CONG TAC MOTOR. Ctrl+C / SIGTERM: huy dich dang chay (in HUY_DICH_KHI_NGAT ...), ghi dong NGAT, thoat 130.
 Phan thuan (khong ROS) o nua tren, thu bang test_gui_duong.py.
 """
 import math
 import os
+import signal
 import sys
 import time
 
@@ -158,6 +160,18 @@ def dung_sep(io, nhan, r, lan):
     return 4
 
 
+def chay_co_ngat(io, huong, tuyen_dau, cfg, bo_qua_ngat=lambda: None):
+    """chay(); bi ngat (SIGINT/SIGTERM => KeyboardInterrupt) thi huy dich dang chay, ghi dong NGAT (dong ket thuc chuyen,
+    sep.py dong chuyen), tra 130. bo_qua_ngat: tat bat tin hieu lan 2 trong luc huy (main dat SIG_IGN)."""
+    try:
+        return chay(io, huong, tuyen_dau, cfg)
+    except KeyboardInterrupt:
+        bo_qua_ngat()
+        io.bao('HUY_DICH_KHI_NGAT %s' % io.huy_khi_ngat())
+        io.ghi('%s_day' % huong, '-', 'ngat', 0, 'NGAT', 0)
+        return 130
+
+
 def cho_truoc_khi_gui(io, cfg):
     """Truoc moi lan gui: DUNG => 'DUNG'; CHO => cho cho_sep s (toi da 2 lan); phu lai dang lai / sep dang giao thoat => cho
     toi khi xong (toi da cho_hong s). Tra 'DUNG' hoac None."""
@@ -237,6 +251,7 @@ try:
     from rclpy.action import ActionClient
     from rclpy.node import Node
     from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+    from rclpy.signals import SignalHandlerOptions
     from rclpy.time import Time
     from action_msgs.msg import GoalStatus
     from geometry_msgs.msg import PoseStamped
@@ -406,20 +421,39 @@ if rclpy is not None:
                 while not fut.done() and time.monotonic() < t_het:
                     self.ngu(0.05)
 
+        def huy_khi_ngat(self):
+            """Bi ngat (SIGINT/SIGTERM): huy dich /follow_path dang chay (handle hien co) khi context con song, cho <= 2 s."""
+            if self.goal is None or self.kq is not None:
+                return 'khong_co_dich'
+            fut = self.goal.cancel_goal_async()
+            t_het = time.monotonic() + 2.0
+            while not fut.done() and time.monotonic() < t_het:
+                self.ngu(0.05)
+            return 'ok' if fut.done() else 'khong_tra_loi'
+
     def main():
         a = sys.argv[1:]
         if not a or a[0] not in DICH or (len(a) > 1 and a[1] not in ('1', '2')):
             print('SAI DOI SO. Dung: python3 ~/gui_duong.py di_B | ve_A [tuyen_dau 1|2]')
             sys.exit(2)
-        rclpy.init()
+        # 03/11 (viec 5): rclpy KHONG cai bo bat tin hieu (no tat context truoc, huy dich khong di duoc);
+        # SIGINT/SIGTERM => KeyboardInterrupt, huy dich khi context con song, roi thoat 130
+        rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
+
+        def ngat(signum, frame):
+            raise KeyboardInterrupt
+
+        signal.signal(signal.SIGINT, ngat)
+        signal.signal(signal.SIGTERM, ngat)
         node = GuiDuongNode(cau_hinh())
+
+        def bo_qua_ngat():                                   # khong ngat lan 2 trong luc huy
+            signal.signal(signal.SIGINT, signal.SIG_IGN)
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
+
         ma = 1
         try:
-            ma = chay(node, a[0], int(a[1]) if len(a) > 1 else 1, node.cfg)
-        except KeyboardInterrupt:
-            node.bao('Ctrl+C: huy dich dang chay.')
-            node.huy()
-            ma = 130
+            ma = chay_co_ngat(node, a[0], int(a[1]) if len(a) > 1 else 1, node.cfg, bo_qua_ngat)
         finally:
             node.destroy_node()
             if rclpy.ok():

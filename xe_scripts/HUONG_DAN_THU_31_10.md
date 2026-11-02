@@ -94,7 +94,7 @@ bash ~/chuyen.sh ve_A
 Đạt khi: 9/10 vòng về tới A, không có lần xe quay hoặc lùi vô định. Làm theo lô 3 vòng (lô 1 gõ `BANG=cu bash ~/chuyen.sh ve_A`, lô 2 gõ `bash ~/chuyen.sh ve_A`, xem "Bảng điểm tuyến TIẾP TUYẾN" bên dưới): lô nào dưới 2/3 thì DỪNG, `bash ~/ghi_bag.sh tat`, giữ dữ liệu, không đổi gì thêm. Sau bài, đếm:
 
 ```
-awk -F, '$6=="DEN_NOI"||$6=="HET_DUONG"||$6=="SAI_VI_TRI"{t[$2]++; if($6=="DEN_NOI") ok[$2]++} END{for(k in t) print k": "ok[k]+0"/"t[k]" chuyen"}' ~/ket_qua_chuyen.csv
+awk -F, '$6=="DEN_NOI"||$6=="HET_DUONG"||$6=="SAI_VI_TRI"||$6=="DUNG_SEP"{t[$2]++; if($6=="DEN_NOI") ok[$2]++} $6=="NGAT"{ng++} END{for(k in t) print k": "ok[k]+0"/"t[k]" chuyen"; print "ngat: "ng+0}' ~/ket_qua_chuyen.csv
 ```
 
 **Bài 2: chặn hành lang dưới (giữa K4 và H0) bằng tấm foam cao 30 cm, rộng ≥ 56 cm.** Có hai cách đặt, làm riêng:

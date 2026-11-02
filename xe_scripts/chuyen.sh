@@ -35,8 +35,9 @@
 #   4. Muc B: truoc moi lan gui va sau moi KHONG_DAT hoi sep: CHO -> dung yen SEP_CHO_S giay roi gui lai cung diem
 #      (khong tinh TRY, toi da 2 lan moi diem; qua thi chay nhu cu); DUNG -> ghi DUNG_SEP, dung (ma 4).
 #   Moi buoc ghi mot dong vao ~/ket_qua_chuyen.csv de dem x/n.
-# Ma thoat: 0 den noi; 1 het duong; 2 sai doi so; 3 Nav2 thay sai vi tri xe (khong gui them lenh nao); 4 sep bao DUNG.
-# Dung khan: TAT CONG TAC MOTOR (Ctrl+C chua chac huy muc tieu dang chay trong Nav2).
+# Ma thoat: 0 den noi; 1 het duong; 2 sai doi so; 3 Nav2 thay sai vi tri xe (khong gui them lenh nao); 4 sep bao DUNG;
+#   130 = bi ngat (NGAT): BANG=day, gui_duong.py huy dich, ghi dong NGAT vao CSV.
+# Dung khan: TAT CONG TAC MOTOR (BANG=day: Ctrl+C/SIGTERM huy dich, ma 130; BANG=tt/cu/xs: Ctrl+C chua chac huy muc tieu).
 #
 # Toa do (map, goc A = tam xe o vach A; doc tu ban do map_xuong_v2, sai so ~ +-5 cm):
 #   Hanh lang 1 (duoi, giua K4 va H0): tam y ~ 0.09, rong ~ 0.50 m, x 0.40..1.04

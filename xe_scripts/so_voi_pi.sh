@@ -31,6 +31,7 @@ chon_b_v4.html|~/cau_noi/chon_b.html
 lai_xe_lidar.py|~/lai_xe_lidar.py
 sep.py|~/sep.py
 gui_duong.py|~/gui_duong.py
+dung_xe.py|~/dung_xe.py|tuychon
 tinh_tuyen.py|~/tinh_tuyen.py
 du_lieu_0111/slam_dinh_vi_xuong.yaml|~/slam_dinh_vi_xuong.yaml
 du_lieu_0111/map_xuong_v3_pg.posegraph|~/map_xuong_v3_pg.posegraph

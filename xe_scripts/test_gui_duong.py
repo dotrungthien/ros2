@@ -437,6 +437,32 @@ def test_21_costmap_toi_sau_3_s_di_ngay_khong_lan_2():
     assert not any('khong co' in c for c in io.cau)
 
 
+
+class _NgatGiua(IOGia):
+    """Bi ngat (KeyboardInterrupt nhu SIGINT/SIGTERM trong main) luc t >= 5 s khi dich dang chay."""
+
+    def ngu(self, s):
+        IOGia.ngu(self, s)
+        if self.t >= 5 and not getattr(self, 'da_ngat', False):
+            self.da_ngat = True
+            raise KeyboardInterrupt
+
+    def huy_khi_ngat(self):
+        self.huy_ngat = getattr(self, 'huy_ngat', 0) + 1
+        return 'ok' if self.dang else 'khong_co_dich'
+
+
+def test_22_bi_ngat_huy_dich_ghi_NGAT_ma_130():
+    io = _NgatGiua([('SUCCEEDED', 60, Bp)])
+    bo = []
+    assert G.chay_co_ngat(io, 'di_B', 1, CFG, lambda: bo.append(1)) == 130
+    assert bo == [1] and io.huy_ngat == 1 and 'HUY_DICH_KHI_NGAT ok' in io.cau
+    assert CUA(io.rows) == ['KIEM_DAT', 'NGAT'] and io.rows[-1] == ['di_B_day', '-', 'ngat', '0', 'NGAT', '0']
+    assert "'NGAT'" in open(os.path.join(DAY, 'sep.py')).read()     # luat G: sep.py _csv dong chuyen khi NGAT
+    assert '130 = bi ngat (NGAT)' in open(os.path.join(DAY, 'chuyen.sh')).read()
+    io2 = IOGia([('SUCCEEDED', 20, Bp)])                              # khong bi ngat: nhu chay()
+    assert G.chay_co_ngat(io2, 'di_B', 1, CFG) == 0 and CUA(io2.rows)[-1] == 'DEN_NOI'
+
 if __name__ == '__main__':
     import sys
     import traceback

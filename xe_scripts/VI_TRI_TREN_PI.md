@@ -125,3 +125,19 @@ c3 = sau RA (kể cả `RA XONG DU_CHO_XOAY 0 cm`), pha XOAY tại chỗ về h�
 | Tệp đổi đã vào `so_voi_pi.sh` chưa? | `lai_xe_lidar.py` đã có; không tệp mới | `bash xe_scripts/so_voi_pi.sh --nhac` | đã vào; tự nhắc 0 dòng |
 
 Điều rút ra từ ca thử: hướng đích **không phải lúc nào cũng là hướng P**. Khi vật trước mũi che P (ca "P +40°"), hướng chọn thành 80°; khi P sau tường, chọn 130° (thoáng 0,50 m so với 0,22 m ở hướng P). Dải bám đường dùng bề rộng quét của thân xe (rộng hơn 16 cm khi chéo), nên chéo gần vật hay bị coi là bị chắn. Dừng cách hướng đích tới 20° (`xoay_den_deg`); phần còn lại để RPP (xoay tự khi lệch > 45°).
+
+## Đối chiếu luật G — việc 110 rút gọn (02/11; `bash -n`, thử `bat_xe.sh` với `ros2` giả và HOME giả; CHƯA chạy trên Pi)
+
+Đổi: `nav2_params_cho.yaml` `inflation_radius` 0,25 → 0,20 (global và local); `bat_xe.sh` đọc `NAV_PARAMS` từ `~/cau_noi/cau_noi.env` khi chưa đặt, bật nền `sep.py` và `lai_xe_lidar.py` sau khi Nav2 active, chỉ in `SAN SANG` khi cả hai còn sống sau 5 s. **Chưa giả lập cả hệ thống:** thử giả chỉ có `bat_xe.sh` + `ros2` giả + `sep.py`/`lai_xe_lidar.py` giả (ngủ), không có Nav2, SLAM, `sep.py` thật.
+
+| Bên ghi | Bên đọc | Tên/đường dẫn phải khớp | Khớp? |
+|---|---|---|---|
+| `bat_xe.sh` `-p ra_lenh:= -p ra_thoat:=` | `sep.py` `declare_parameter('ra_lenh', False)` / `('ra_thoat', False)` | tên tham số | khớp (đọc mã); giá trị chỉ `true`/`false`, kiểm trước khi bật gì |
+| `bat_xe.sh` `-p phat_lenh:=` | `lai_xe_lidar.py` `declare_parameter('phat_lenh', False)` | tên tham số | khớp (đọc mã) |
+| người gõ / `cau_noi.env` đặt `SEP_RA_LENH`, `SEP_RA_THOAT`, `PHU_LAI_PHAT_LENH` | `bat_xe.sh` | ba tên biến môi trường; mặc định false | chưa ai đặt: `cai_cau_noi.sh` chỉ tạo dòng `NAV_PARAMS`; nút kết nối truyền biến cho `bat_xe.sh` qua kế thừa môi trường (`Popen` không đặt `env`) [đọc mã, chưa thử] |
+| `bat_xe.sh` → `~/log_sep.txt`, `~/log_phu_lai.txt` (bản cũ `.cu`) | chưa có chương trình đọc | đường dẫn | không có bên đọc (`cau_noi_xe.py` chỉ đọc `log_cau_noi.txt`, `log_bat_xe_nav.txt`) |
+| `cai_cau_noi.sh` ghi `~/cau_noi/cau_noi.env` (`NAV_PARAMS=/home/$ME/nav2_params_cho.yaml`) | `bat_xe.sh` (`sed -n 's/^NAV_PARAMS=//p'`, bỏ dấu nháy và CR; không `source`) | dòng `NAV_PARAMS=`; tệp tham số phải tồn tại | khớp (thử giả cả dạng có nháy và CRLF). **Đổi hành vi:** bật bằng `ssh` không `export NAV_PARAMS` trước đây chạy cây hành vi mặc định (có quay và lùi), nay mặc định dùng `bt_cho` |
+| `bat_xe.sh` mẫu `TAY_SEP`, `TAY_LAI` (python3 + tên tệp) | `bat_xe.sh` `tat`, chốt "không bật hai bản" (`con_chay_tat`) | cùng khuôn với `TAY` | khớp: chuỗi `TAY` sau khi tách `mau_py` giống từng ký tự bản cũ; thử giả `tat` tắt cả hai; `bash -c`, `test_sep.py`, `sep.pyc`, `ssh … sep.py` không bị khớp |
+| `cau_noi_xe.py` `CHINH` (12 tên) | trạng thái `on` của nút kết nối | tên tiến trình | **không có `sep`, `lai_xe_lidar`**: phụ trợ chết sau khi bật thì nút vẫn báo `on`; lúc bật thiếu thì `bat_xe.sh` ra mã 1 nên nút báo `fail`. Không đổi `CHINH` (theo lệnh Thiên) |
+| `nav2_params_cho.yaml` 0,20 | `gia_lap/bat_gia.sh` (`INFLATION` mặc định 0,20, `sed` đè dòng) ; `config/nav2_params.yaml` của kho (0,25) | giá trị | giả lập khớp; bản của kho còn 0,25 (đường lui: bản cũ trong git) |
+| Tệp đổi đã vào `so_voi_pi.sh` chưa? | `bat_xe.sh`, `nav2_params_cho.yaml` đã có; không tệp mới | `bash xe_scripts/so_voi_pi.sh --nhac` | đã vào; tự nhắc 0 dòng. Hai tệp sẽ ra `KHAC` tới khi chép lên Pi (nhớ giữ dòng `ACCESS` của Pi) |

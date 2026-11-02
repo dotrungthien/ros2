@@ -16,6 +16,10 @@
 # Ma thoat: 0 = san sang, vi tri dat; 1 = loi hoac vi tri khong dat;
 #           2 = da bat xong nhung chua tu kiem duoc (thieu ~/kiem_xe.sh), phai doc tay.
 #
+# Viec 110 rut gon (02/11): (1) NAV_PARAMS chua dat thi doc ~/cau_noi/cau_noi.env; (2) sau khi Nav2 active bat nen
+#   sep.py (SEP_RA_LENH, SEP_RA_THOAT) va lai_xe_lidar.py (PHU_LAI_PHAT_LENH), mac dinh false; log ~/log_sep.txt, ~/log_phu_lai.txt;
+#   chi in SAN SANG khi ca hai con song. "tat" tat ca hai (mau TAY). CHUA CHAY TREN PI THAT.
+#
 # Ban 30/10/2026 (sua tai truong): danh sach NODES them planner_server, controller_server,
 # behavior_server, velocity_smoother, lifecycle_manager (Ctrl+C hay de sot cac tien trinh Nav2).
 # Ban 30/10 toi: them bien NAV_PARAMS (xem B2). CHUA CHAY TREN PI THAT.
@@ -46,7 +50,10 @@ liet_ke() {
 
 # viec 101: tien trinh ROS ngoai NODES (chay tay, lenh ros2, daemon); phai tat het truoc khi don /dev/shm
 # chuong trinh chay tay: chi khop tien trinh python3 co dung ten tep (khong khop vo "bash -c" co chu do, bai hoc 303)
-TAY='^([^ ]*/)?python3[^ ]*( [^ ]+)*[ /]([s]ep|[l]ai_xe_lidar|[t]heo_doi)\.py( |$)'
+mau_py() { printf '%s' "^([^ ]*/)?python3[^ ]*( [^ ]+)*[ /]($1)\\.py( |\$)"; }
+TAY="$(mau_py '[s]ep|[l]ai_xe_lidar|[t]heo_doi')"
+TAY_SEP="$(mau_py '[s]ep')"                    # viec 110: tung tien trinh phu, cung khuon voi TAY
+TAY_LAI="$(mau_py '[l]ai_xe_lidar')"
 ROS_KHAC="[_]ros2_daemon|[r]os2 (bag|topic|action|param|run|service|node|launch)|$TAY"
 
 # nhu con_chay, them cac chuong trinh chay tay (chi dung trong "tat"; phan bat van dung con_chay)
@@ -144,12 +151,18 @@ if [ -n "$1" ] && ! printf '%s' "$1" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-
 fi
 
 # ---------- khong bat hai ban ----------
-if con_chay; then
-  echo "KHONG BAT: van con he thong hoac tien trinh sot dang chay:"
+if con_chay_tat; then
+  echo "KHONG BAT: van con he thong, sep / phu lai hoac tien trinh sot dang chay:"
   liet_ke
+  pgrep -af "$TAY"
   echo "Chay: bash ~/bat_xe.sh tat   roi chay lai."
   exit 1
 fi
+
+# viec 110: kiem 3 bien bat phu tro (mac dinh false) TRUOC khi bat gi, de khong bo lai he thong nua chung
+bool_ok() { case "$2" in true|false) ;; *) echo "LOI: $1='$2' (chi true hoac false)"; exit 1 ;; esac; }
+SEP_RA_LENH="${SEP_RA_LENH:-false}"; SEP_RA_THOAT="${SEP_RA_THOAT:-false}"; PHU_LAI_PHAT_LENH="${PHU_LAI_PHAT_LENH:-false}"
+bool_ok SEP_RA_LENH "$SEP_RA_LENH"; bool_ok SEP_RA_THOAT "$SEP_RA_THOAT"; bool_ok PHU_LAI_PHAT_LENH "$PHU_LAI_PHAT_LENH"
 
 # ---------- chinh gio ----------
 if [ -n "$1" ]; then
@@ -215,6 +228,14 @@ fi
 echo "== B2: bat Nav2 =="
 [ -f "$LOG2" ] && mv -f "$LOG2" "$LOG2.cu"
 # NAV_PARAMS (tuy chon): duong dan tep tham so Nav2, vi du /home/project1/nav2_params_cho.yaml (cay hanh vi cho, khong quay/lui)
+# viec 110: chua dat thi doc dong NAV_PARAMS=... trong ~/cau_noi/cau_noi.env (cai_cau_noi.sh tao; chi doc, khong source)
+if [ -z "$NAV_PARAMS" ] && [ -f "$HOME/cau_noi/cau_noi.env" ]; then
+  NAV_PARAMS=$(sed -n 's/^NAV_PARAMS=//p' "$HOME/cau_noi/cau_noi.env" | tail -1 | tr -d '\r"'"'"'')
+  if [ -n "$NAV_PARAMS" ]; then
+    echo "NAV_PARAMS lay tu ~/cau_noi/cau_noi.env: $NAV_PARAMS"
+    [ -f "$NAV_PARAMS" ] || { echo "LOI: khong thay tep tham so Nav2 $NAV_PARAMS (dong NAV_PARAMS trong ~/cau_noi/cau_noi.env)"; exit 1; }
+  fi
+fi
 if [ -n "$NAV_PARAMS" ]; then
   echo "Nav2 dung tham so: $NAV_PARAMS"
   setsid nohup ros2 launch my_bot navigation_my_bot.launch.py params_file:="$NAV_PARAMS" > "$LOG2" 2>&1 < /dev/null &
@@ -236,6 +257,27 @@ else
   tail -10 "$LOG2"
   echo "Thu: bash ~/bat_xe.sh tat   roi chay lai."
   exit 1
+fi
+
+# ---------- B2b: sep va phu lai (viec 110), bat nen sau khi Nav2 active ----------
+cd ~ || exit 1                                    # sep.py import lai_xe_lidar.py cung thu muc (~)
+echo "== B2b: bat sep (ra_lenh=$SEP_RA_LENH ra_thoat=$SEP_RA_THOAT) va phu lai (phat_lenh=$PHU_LAI_PHAT_LENH) =="
+[ -f ~/log_sep.txt ] && mv -f ~/log_sep.txt ~/log_sep.txt.cu
+[ -f ~/log_phu_lai.txt ] && mv -f ~/log_phu_lai.txt ~/log_phu_lai.txt.cu
+setsid nohup python3 ~/sep.py --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" > ~/log_sep.txt 2>&1 < /dev/null &
+setsid nohup python3 ~/lai_xe_lidar.py --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" > ~/log_phu_lai.txt 2>&1 < /dev/null &
+sleep 5
+
+# in tung dong THIEU cho phu tro khong con song; tra 0 neu du ca hai
+phu_thieu() {
+  local n=0
+  pgrep -f "$TAY_SEP" > /dev/null || { echo "THIEU sep.py (xem ~/log_sep.txt)"; n=1; }
+  pgrep -f "$TAY_LAI" > /dev/null || { echo "THIEU lai_xe_lidar.py (xem ~/log_phu_lai.txt)"; n=1; }
+  [ "$n" -eq 0 ]
+}
+if ! phu_thieu; then
+  echo "3 dong cuoi cua log phu tro:"
+  tail -3 ~/log_sep.txt ~/log_phu_lai.txt 2>/dev/null
 fi
 
 # ---------- B3 ----------
@@ -281,9 +323,16 @@ fi
 
 # ---------- ket ----------
 echo "=========="
+PHU_LOI=$(phu_thieu)
+if [ -n "$PHU_LOI" ]; then
+  echo "$PHU_LOI"
+  [ "$KQ" -eq 0 ] && KQ=1
+fi
 CON=$((T0 + HAN - $(date +%s)))
 HAN_GIO=$(date -d "@$((T0 + HAN))" +%T)
-if [ "$KQ" -eq 1 ]; then
+if [ -n "$PHU_LOI" ]; then
+  echo "CHUA SAN SANG: sep / phu lai khong chay (xem dong THIEU o tren). bash ~/bat_xe.sh tat roi bat lai."
+elif [ "$KQ" -eq 1 ]; then
   echo "CHUA SAN SANG -> bash ~/bat_xe.sh tat, dat lai xe o vach A, chay lai."
 elif [ "$CON" -le 0 ]; then
   echo "QUA 8 PHUT ke tu luc lay so 0 (con quay da troi): bash ~/bat_xe.sh tat, roi bat lai."

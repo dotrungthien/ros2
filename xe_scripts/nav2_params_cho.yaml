@@ -155,7 +155,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
-        inflation_radius: 0.25
+        inflation_radius: 0.20     # 02/11: 0.25 -> 0.20 (khop hieu chuan 01/11 va gia_lap/bat_gia.sh INFLATION); duong lui: 0.25
       always_send_full_costmap: true
 
 global_costmap:
@@ -190,7 +190,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
-        inflation_radius: 0.25
+        inflation_radius: 0.20     # 02/11: 0.25 -> 0.20 (khop hieu chuan 01/11 va gia_lap/bat_gia.sh INFLATION); duong lui: 0.25
       always_send_full_costmap: true
 
 planner_server:

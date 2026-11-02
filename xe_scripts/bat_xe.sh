@@ -255,6 +255,20 @@ else
   fi
   echo "10 dong cuoi cua log:"
   tail -10 "$LOG2"
+  # viec 114: het T2 giay ma Nav2 chua len -> tu tat roi bat lai DUNG 1 lan (BAT_LAI_LAN=2 qua exec, giu moi bien
+  # moi truong; khong truyen lai doi so gio). Nav2 thoat som (R=2) van dung nhu cu.
+  if [ "$R" -eq 1 ] && [ -z "$BAT_LAI_LAN" ]; then
+    LOG2_LOI="$HOME/log_bat_xe_nav_loi_$(date +%H%M%S).txt"
+    cp -f "$LOG2" "$LOG2_LOI"
+    echo "TU_BAT_LAI lan 2/2: Nav2 khong len sau ${T2} s -> tat roi bat lai"
+    echo "Log Nav2 lan 1 giu o $LOG2_LOI"
+    if ! bash "$0" tat; then
+      echo "LOI: tat chua sach, khong bat lai"
+      exit 1
+    fi
+    BAT_LAI_LAN=2 exec bash "$0"
+  fi
+  [ "$BAT_LAI_LAN" = 2 ] && echo "LOI lan 2/2, khong bat lai nua"
   echo "Thu: bash ~/bat_xe.sh tat   roi chay lai."
   exit 1
 fi

@@ -542,6 +542,8 @@ if rclpy is not None:
             self.declare_parameter('dung_ban_do', True)       # phan biet dia hinh (co trong ban do) voi vat la
             self.declare_parameter('tf_tuoi_toi_da', 1.0)     # s, vi tri xe cu hon so nay thi khong tin (coi la vat la)
             self.declare_parameter('tep_thoat', os.path.expanduser('~/sep_thoat'))   # viec 109c-c1: chi doc va in, khong phat toc do
+            self.declare_parameter('nghe_follow_path', True)  # viec 109b: false = "co dich" chi theo /navigate_to_pose nhu cu
+            self.goal_kenh = {'nav': False, 'fp': False}      # co dich theo tung kenh trang thai
             self.ma_thoat_cu = None
             self.thoat_p = None                              # c3: P cua lan ~/sep_thoat moi nhat
             self.yaw_odom, self.yaw_odom_t = None, 0.0
@@ -556,6 +558,7 @@ if rclpy is not None:
             self.create_subscription(LaserScan, '/scan', self._on_scan, qos_profile_sensor_data)
             st_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL)
             self.create_subscription(GoalStatusArray, '/navigate_to_pose/_action/status', self._on_status, st_qos)
+            self.create_subscription(GoalStatusArray, '/follow_path/_action/status', self._on_status_fp, st_qos)   # viec 109b (BANG=day)
             self.grid = None
             self.tf_buf = tf2_ros.Buffer()
             self.tf_listener = tf2_ros.TransformListener(self.tf_buf, self)
@@ -616,13 +619,17 @@ if rclpy is not None:
             self.nav_cmd, self.nav_time = (msg.linear.x, msg.angular.z), time.monotonic()
 
         def _on_status(self, msg):
-            self.goal_active = any(s.status in (1, 2) for s in msg.status_list)   # ACCEPTED, EXECUTING
+            self.goal_kenh['nav'] = any(s.status in (1, 2) for s in msg.status_list)   # ACCEPTED, EXECUTING
+
+        def _on_status_fp(self, msg):
+            self.goal_kenh['fp'] = any(s.status in (1, 2) for s in msg.status_list)
 
         def _tick(self):
             if not self.get_parameter('enabled').value:
                 return
             now = time.monotonic()
             phat = self.get_parameter('phat_lenh').value
+            self.goal_active = self.goal_kenh['nav'] or (self.goal_kenh['fp'] and self.get_parameter('nghe_follow_path').value)
             for k in DEFAULT:
                 self.brain.p[k] = self.get_parameter(k).value
             if self.scan is None or now - self.scan_time > self.get_parameter('scan_timeout').value:

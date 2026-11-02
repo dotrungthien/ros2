@@ -490,6 +490,57 @@ def test_34_luat_G_cau_log_XOAY_cua_lai_xe_lidar():
     assert c.s.luot_thoat == 0 and c.s.l1 == 'XOAY_XONG'              # XOAY_* khong bat dau bang THOAT: khong cong luot
 
 
+def test_35_hai_kenh_dich_gop_theo_tung_kenh():
+    c = Chay(vao())
+    c(goals=[[(b'n0', 4)]])                                           # tin dau kenh nav: dich cu da xong => bo qua
+    _, log = c(goals_fp=[[(b'f0', 4)]])                               # tin dau kenh fp: cung bo qua (tung kenh rieng)
+    assert not co(log, ',SUCCEEDED')
+    c(goals=[[(b'n1', 2)]])
+    assert c.s.goal_active
+    c(goals_fp=[[(b'f1', 2)]])
+    c(goals=[[(b'n1', 4)]])                                           # nav xong nhung fp con chay: van co dich
+    assert c.s.goal_active and c.s.goal_kenh == {'nav': False, 'fp': True}
+    _, log = c(goals_fp=[[(b'f1', 6)]])
+    assert not c.s.goal_active and co(log, ',ABORTED,') and not co(log, 'ABORT_NHANH')   # fp: ABORT som khong phai "0 poses"
+    _, log = c(goals=[[(b'n2', 2)]])
+    _, log = c(goals=[[(b'n2', 6)]])
+    assert co(log, 'ABORT_NHANH')                                     # nav: van nhu cu
+
+
+def test_36_duong_day_dich_va_P_phia_truoc():
+    assert S.diem_truoc([(0, 0), (0.1, 0), (0.2, 0), (0.5, 0)]) == (0.4, 0.0)
+    assert S.diem_truoc([(0, 0), (0.1, 0)]) == (0.1, 0)
+    xe = (0.60, 0.02, -math.pi / 2)
+    day = [(0.60, 0.02), (0.60, 0.10), (0.70, 0.15), (1.05, 0.10), (1.60, 0.82)]
+    c = Chay(vao(pose=xe))
+    _, log = c(goals_fp=[[(b'f', 2)]], duong_day=[day])
+    assert c.s.dich == (1.60, 0.82) and not c.s.plan_sai and not co(log, 'PLAN_LECH')   # dau duong canh xe: khong bao lech
+    th = []
+    for _ in range(110):
+        tt, l = c(duong_day=[day])
+        th.append(tt['thoat'])
+    t = next(t for t in th if t)
+    assert t['p'] == tuple(round(v, 2) for v in S.diem_truoc(day)) and t['p'] != (1.60, 0.82)   # P tren duong day, khong phai dich
+    s = S.Sep()
+    s.dich, s.day_pts, s.day_t = (1.60, 0.82), day, 0.0
+    assert s._p_thoat('TIN', 1.0) == t['p'] and s._p_thoat('TIN', 5.0) == (1.6, 0.82)   # /duong_day cu > 3 s: ve diem cuoi nhu c1
+    assert s._p_thoat('KHONG_TIN', 1.0) is None
+
+
+def test_37_luat_G_kenh_109b():
+    sp = open(os.path.join(DAY, 'sep.py')).read()
+    lx = open(os.path.join(DAY, 'lai_xe_lidar.py')).read()
+    gd = open(os.path.join(DAY, 'gui_duong.py')).read()
+    bag = open(os.path.join(DAY, 'ghi_bag.sh')).read()
+    st = "'/follow_path/_action/status'"
+    assert st in sp and st in lx and "'/navigate_to_pose/_action/status'" in sp and "'/navigate_to_pose/_action/status'" in lx
+    assert "'/duong_day'" in sp and "create_publisher(Path, '/duong_day'" in gd and "'/plan'" in sp
+    assert "declare_parameter('nghe_follow_path', True)" in sp and "declare_parameter('nghe_follow_path', True)" in lx
+    for t in ('/duong_day', '/sep/trang_thai', '/cmd_vel_nav', '/cmd_vel_avoid', '/rosout', '/follow_path/_action/status', '/navigate_to_pose/_action/status'):
+        assert ' %s ' % t in bag.replace('\\\n', ' ') or ' %s >' % t in bag, t
+    assert "create_publisher(String, '/sep/trang_thai'" in sp
+
+
 if __name__ == '__main__':
     import sys
     import traceback

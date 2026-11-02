@@ -57,6 +57,8 @@ SUC_LECH, SUC_LECH_MAX, SUC_NHANH = 0.15, 0.20, 0.05   # m, m, s (#15, muc 5 don
 NHAY_M, NHAY_DEG, NHAY_DT = 0.10, 5.0, 1.0             # nhay vi tri giua chuyen (muc 4) [de xuat]
 NAV2_LAN_MAX = 2                 # lan khoi dong lai Nav2 moi chuyen (#8)
 LUOT_THOAT_MAX = 3               # luot thoat moi chuyen (muc 7)
+DAY_TUOI = 3.0                   # s, viec 109b: /duong_day cu hon so nay thi P lay lai diem cuoi /plan nhu c1
+P_DAY_XA = 0.40                  # m, viec 109b: P = diem tren /duong_day cach dau duong (canh xe) bay nhieu [de xuat]
 KHE_TANG, KHE_CUA_SO = 0.02, 3.0 # m, s: khe phia truoc rong them it nhat bay nhieu trong cua so (#12) [de xuat]
 NHIN_XA = 0.6                    # m dau cua /plan dat len LiDAR (muc 4 buoc D) [de xuat]
 XA_TRUOC = 0.15                  # m tu mep mui: vat trong dai nay la "vat phia truoc" (vung vang cua lai_xe_lidar, #20)
@@ -342,6 +344,19 @@ def di_hay_khong(bt):
     return 'DI', ''
 
 
+def diem_truoc(pts, dai=P_DAY_XA):
+    """Diem (x, y) tren duong gap khuc pts cach diem dau `dai` m theo chieu dai duong; duong ngan hon thi diem cuoi."""
+    di = 0.0
+    for k in range(1, len(pts)):
+        (x0, y0), (x1, y1) = pts[k - 1][:2], pts[k][:2]
+        d = math.hypot(x1 - x0, y1 - y0)
+        if d > 0 and di + d >= dai:
+            t = (dai - di) / d
+            return x0 + t * (x1 - x0), y0 + t * (y1 - y0)
+        di += d
+    return tuple(pts[-1][:2])
+
+
 def ly_thoat(thoat):
     """Phan sau chu THOAT trong ~/sep_thoat: '<xP|-> <yP|-> <luot> <ma>' (lai_xe_lidar.doc_sep_thoat doc lai dung khuon nay)."""
     p = thoat['p']
@@ -451,7 +466,9 @@ class Sep:
         self.l1_ket = False
         self.goals = {}
         self.xong = deque(maxlen=200)
-        self.status_dau = True
+        self.kenh_da_thay = set()      # viec 109b: kenh trang thai dich da nhan ban tin dau (nav | fp)
+        self.goal_kenh = {}             # kenh -> co dich dang chay; goal_active = co it nhat mot kenh
+        self.day_pts, self.day_t = None, None   # /duong_day moi nhat (gui_duong.py) va luc nhan
         self.goal_active = False
         self.plan_cuoi = None
         self.dich = None
@@ -501,6 +518,12 @@ class Sep:
             self._plan(plan, pose, ghi, now)
         for ds in v.get('goals', ()):
             self._goals(ds, now, pose, ghi)
+        for ds in v.get('goals_fp', ()):                 # viec 109b: /follow_path/_action/status (BANG=day)
+            self._goals(ds, now, pose, ghi, 'fp')
+        for d in v.get('duong_day', ()):                 # viec 109b: /duong_day = phan con lai cua duong day
+            if d:
+                self.day_pts, self.day_t = d, now
+                self._plan(d, pose, ghi, now)
         moc('su_kien')
 
         # ---- B. tong hop ----
@@ -588,7 +611,7 @@ class Sep:
                     pass                                         # dang bat: khong cong, khong in luot moi
                 elif self._luot_moi():
                     self.thoat_ma, self.thoat_luot = int(now * 10), self.luot_thoat
-                    p_thoat = self._p_thoat(mt)
+                    p_thoat = self._p_thoat(mt, now)
                     se_kep = 'THOAT luot %d/%d, huong thoang nhat %s, phia ket %s, P=%s' % (
                         self.luot_thoat, LUOT_THOAT_MAX, huong_thoang(pts), phia,
                         '-' if p_thoat is None else '(%.2f;%.2f)' % p_thoat)
@@ -600,7 +623,7 @@ class Sep:
             self.thoat_ma = None
         thoat = None             # viec 109c-c1: cho node ghi ~/sep_thoat (chi khi dot ket con mo va con luot)
         if kep == 'KET_SAT_VAT' and self.thoat_ma is not None and not self.het_luot:
-            thoat = dict(luot=self.thoat_luot, ma=self.thoat_ma, p=self._p_thoat(mt))
+            thoat = dict(luot=self.thoat_luot, ma=self.thoat_ma, p=self._p_thoat(mt, now))
         dung_txt = 'co dich; tam xe dich %s cm trong %ds' % ('-' if dich is None else '%.1f' % (dich * 100), p['t_dung'])
         self._co('KET_SAT_VAT', kep == 'KET_SAT_VAT', ghi, 'than xe sat vat', '%s; %s' % (kep_ly, dung_txt), se_kep)
         self._co('DUNG_YEN_KHONG_RO', kep == 'DUNG_YEN_KHONG_RO', ghi, 'chua ro (Nav2 dung?)',
@@ -654,9 +677,15 @@ class Sep:
             vat_truoc=vat, t_cho=round(t_cho), nhin_xa=_r(nx), kep=kep, chuyen=self.diem_txt, thoat=thoat)
         return trang_thai, log
 
-    def _p_thoat(self, mt):
-        """Diem P = diem cuoi /plan (diem xs ke tiep Nav2 dang di toi), hoac None neu chua co hoac vi tri khong TIN (#16, #19)."""
-        if self.dich is None or mt != 'TIN':
+    def _p_thoat(self, mt, now=None):
+        """Diem P: co /duong_day moi (<= DAY_TUOI s) thi diem tren duong cach dau duong P_DAY_XA m (viec 109b); khong thi
+        diem cuoi /plan (diem xs ke tiep, c1). None neu chua co hoac vi tri khong TIN (#16, #19)."""
+        if mt != 'TIN':
+            return None
+        if self.day_pts and now is not None and now - self.day_t <= DAY_TUOI:
+            x, y = diem_truoc(self.day_pts)
+            return round(x, 2), round(y, 2)
+        if self.dich is None:
             return None
         return round(self.dich[0], 2), round(self.dich[1], 2)
 
@@ -738,13 +767,17 @@ class Sep:
             ghi('TRUY_VET', 'PLAN_SAI', kq='HET', kiem='lech %s m' % _r(d))
         self.plan_sai = vuot
 
-    def _goals(self, ds, now, pose, ghi):
-        self.nav2_co_tin = True                 # bt_navigator con phat trang thai
-        self.goal_active = any(s in (1, 2) for _, s in ds)
+    def _goals(self, ds, now, pose, ghi, kenh='nav'):
+        """kenh 'nav' = /navigate_to_pose (BANG=xs), 'fp' = /follow_path (BANG=day). "Co dich" gop theo tung kenh."""
+        self.nav2_co_tin = True                 # bt_navigator / controller_server con phat trang thai
+        self.goal_kenh[kenh] = any(s in (1, 2) for _, s in ds)
+        self.goal_active = any(self.goal_kenh.values())
+        dau = kenh not in self.kenh_da_thay
+        self.kenh_da_thay.add(kenh)
         for gid, s in ds:
             if gid in self.xong:
                 continue
-            if s in (4, 5, 6) and self.status_dau:
+            if s in (4, 5, 6) and dau:
                 self.xong.append(gid)        # dich da xong truoc khi sep chay: bo qua
                 continue
             t0 = self.goals.setdefault(gid, now)
@@ -757,12 +790,11 @@ class Sep:
                 self._succeeded(t_chay, pose, ghi)
             elif s == 6:
                 ghi('NAV2', 'ABORTED', kiem='sau %.1f s' % t_chay)
-                if t_chay < ABORT_NHANH:
+                if t_chay < ABORT_NHANH and kenh == 'nav':          # fp khong co bo lap duong: ABORT som khong phai "0 poses"
                     ghi('TRUY_VET', 'ABORT_NHANH', 'bo lap duong (0 poses?)', 'ABORTED sau %.2f s' % t_chay, 'BAT', 'KHONG_DI')
                     self.t_plan_xau, self.plan_xau = now, 'ABORT_NHANH'
             else:
                 ghi('NAV2', 'CANCELED', kiem='sau %.1f s' % t_chay)
-        self.status_dau = False
 
     def _succeeded(self, t_chay, pose, ghi):
         lan = 1
@@ -807,12 +839,14 @@ if rclpy is not None:
             self.declare_parameter('tep_lenh', os.path.expanduser('~/sep_lenh'))
             self.declare_parameter('ra_thoat', False)         # viec 109c: true = ghi ~/sep_thoat cho lai_xe_lidar doc
             self.declare_parameter('tep_thoat', os.path.expanduser('~/sep_thoat'))
+            self.declare_parameter('nghe_follow_path', True)  # viec 109b: false = chi nghe /navigate_to_pose va /plan nhu cu
             for k, v in P_MAC_DINH.items():
                 self.declare_parameter(k, v)
             self.sep = Sep()
             self.scan, self.scan_t = None, None
             self.grid = None
             self.plans, self.goals, self.rosout = [], [], []
+            self.goals_fp, self.day = [], []
             self.ket, self.ket_t = False, None
             self.csv_pos = None
             self.tt_truoc, self.t_pub = None, -INF
@@ -831,6 +865,8 @@ if rclpy is not None:
             self.create_subscription(Path, '/plan', self._on_plan, 10)
             st_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL)
             self.create_subscription(GoalStatusArray, '/navigate_to_pose/_action/status', self._on_status, st_qos)
+            self.create_subscription(GoalStatusArray, '/follow_path/_action/status', self._on_status_fp, st_qos)
+            self.create_subscription(Path, '/duong_day', self._on_day, map_qos)
             self.create_subscription(Bool, '/ket', self._on_ket, 10)
             self.create_subscription(Log, '/rosout', self._on_rosout, QoSProfile(depth=100, reliability=ReliabilityPolicy.RELIABLE))
             self.tf_buf = tf2_ros.Buffer()
@@ -850,6 +886,12 @@ if rclpy is not None:
 
         def _on_status(self, msg):
             self.goals.append([(bytes(s.goal_info.goal_id.uuid), s.status) for s in msg.status_list])
+
+        def _on_status_fp(self, msg):
+            self.goals_fp.append([(bytes(s.goal_info.goal_id.uuid), s.status) for s in msg.status_list])
+
+        def _on_day(self, msg):
+            self.day.append([(q.pose.position.x, q.pose.position.y) for q in msg.poses])
 
         def _on_ket(self, msg):
             self.ket, self.ket_t = msg.data, time.monotonic()
@@ -911,11 +953,13 @@ if rclpy is not None:
             for k in P_MAC_DINH:
                 self.sep.p[k] = self.get_parameter(k).value
             ra_lenh = self.get_parameter('ra_lenh').value
+            nghe_fp = self.get_parameter('nghe_follow_path').value
             v = dict(pts=pts, scan_tuoi=st, pose=pose, tf_tuoi=tf_tuoi, mo=mo, grid=self.grid,
                      plans=self.plans, goals=self.goals, rosout=self.rosout, csv=csv,
+                     goals_fp=self.goals_fp if nghe_fp else [], duong_day=self.day if nghe_fp else [],
                      ket=self.ket and self.ket_t is not None and now - self.ket_t < 1.0,
                      do=do, gio=time.strftime('%Y-%m-%d %H:%M:%S'), ra_lenh=ra_lenh)
-            self.plans, self.goals, self.rosout = [], [], []
+            self.plans, self.goals, self.rosout, self.goals_fp, self.day = [], [], [], [], []
             tt, log = self.sep.vong(now, v)
             tep = self.get_parameter('tep_lenh').value
             if ra_lenh:

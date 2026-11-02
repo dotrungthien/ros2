@@ -417,6 +417,13 @@ check('c3 chon_huong_quanh: None khi moi huong deu < 12 cm', L.chon_huong_quanh(
 _odom_py = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dev_ws', 'src', 'my_bot', 'scripts', 'odom_tu_lenh.py')).read()
 check("luat G: lai_xe_lidar nghe '/odom' (Odometry) do odom_tu_lenh.py phat; yaw tuong doi, khung bat ky", "create_publisher(Odometry, '/odom'" in _odom_py and "create_subscription(Odometry, '/odom'" in _src)
 
+# --- viec 109b: "co dich" gop hai kenh trang thai ---
+_tick109 = _src[_src.index('def _tick'):_src.index('def main')]
+check('109b co dich = /navigate_to_pose HOAC /follow_path (tat duoc bang nghe_follow_path)',
+      "self.goal_kenh['nav'] or (self.goal_kenh['fp'] and self.get_parameter('nghe_follow_path').value)" in _tick109
+      and "'/follow_path/_action/status', self._on_status_fp" in _src and "self.goal_kenh['fp'] = any(s.status in (1, 2)" in _src
+      and _tick109.index('self.goal_active =') < _tick109.index('self._doc_thoat('))
+
 fails = [n for n, ok in results if not ok]
 print('\nTONG: %d/%d dat' % (len(results) - len(fails), len(results)))
 sys.exit(1 if fails else 0)

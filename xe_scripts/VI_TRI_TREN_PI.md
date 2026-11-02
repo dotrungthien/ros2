@@ -160,3 +160,17 @@ c3 = sau RA (kể cả `RA XONG DU_CHO_XOAY 0 cm`), pha XOAY tại chỗ về h�
 | `chuyen.sh` `BANG=day` (export `TO`, `SEP_CHO_S`, `SEP_TUOI_MAX`) | `gui_duong.py` `cau_hinh` | tên biến dùng chung; biến riêng mới `LUOT`, `CHO_HONG`, `TOI_SAI_SO` | khớp; `BANG=xs` không đổi (đường lui) |
 | `bat_xe.sh` mẫu `TAY` (thêm `[g]ui_duong`) | `tat`, chốt "không bật hai bản" | python3 + tên tệp `gui_duong.py` | khớp: khớp `python3 …/gui_duong.py di_B 1`, không khớp `test_gui_duong.py` |
 | Pi: `~/gui_duong.py` import `~/tinh_tuyen.py`, `~/sep.py`, `~/lai_xe_lidar.py` | Python cùng thư mục | 4 tệp cùng ở `~` | `so_voi_pi.sh` có đủ 4 tệp; `tinh_tuyen.py` bỏ cờ `tuychon` (nay bắt buộc). `--nhac` nhắc `gui_duong.py` trước khi thêm, sau khi thêm 0 dòng |
+
+## Đối chiếu luật G — việc 109b, nghe trạng thái `/follow_path` (02/11; `test_sep.py` 37/37, `test_lai_xe_lidar.py` 60/60; CHƯA chạy trên Pi)
+
+**Chưa giả lập cả hệ thống.** Đã chạy `SepNode` + `LaiXeLidar` + `gui_duong.chay` thật cùng tiến trình với thế giới giả (không có `/scan`, Nav2, SLAM): sếp thấy "có đích" qua kênh `fp` 29/32 mẫu, `dich` = (1,6; 0,82) lấy từ `/duong_day`, ghi `NAV2,SUCCEEDED … lech 0 cm, DAT` từ `/follow_path/_action/status`; phụ lái cũng thấy có đích qua `fp`.
+
+| Bên ghi | Bên đọc | Tên/khuôn phải khớp | Khớp? |
+|---|---|---|---|
+| `controller_server` `/follow_path/_action/status` (`GoalStatusArray`) | `sep.py` (kênh `fp`), `lai_xe_lidar.py` (`goal_kenh['fp']`), `ghi_bag.sh` | tên topic; QoS RELIABLE + TRANSIENT_LOCAL như kênh cũ | khớp (`test_37`, ca 109b của `test_lai_xe_lidar.py`); "có đích" = OR theo từng kênh, không ghi đè lẫn nhau (`test_35`) |
+| `bt_navigator` `/navigate_to_pose/_action/status`; `planner_server` `/plan` | `sep.py`, `lai_xe_lidar.py` (`BANG=xs`) | giữ nguyên | khớp, không đổi; `ABORT_NHANH` ("0 poses") chỉ còn cho kênh `nav` (`test_35`) |
+| `gui_duong.py` `/duong_day` (`Path`, TRANSIENT_LOCAL, phần còn lại, đầu đường cạnh xe) | `sep.py` `_on_day` (TRANSIENT_LOCAL) → `_plan` (đích, lệch đầu đường) + `day_pts`; `ghi_bag.sh` | tên topic; đầu đường = cạnh xe nên `lech_dau_plan` không báo sai | khớp (`test_36`: không `PLAN_LECH` khi đầu đường cạnh xe) |
+| `sep.py` `_p_thoat` → `~/sep_thoat` cột P | `lai_xe_lidar.py` (c1–c3) | P = điểm trên `/duong_day` cách đầu đường 0,40 m khi đường mới ≤ 3 s; không thì điểm cuối `/plan` như c1 | khớp khuôn c1 (không đổi khuôn tệp); `test_36` |
+| Tham số `nghe_follow_path` (mặc định true) | `sep.py`, `lai_xe_lidar.py` | cùng tên ở hai nút | khớp (`test_37`); false = như trước 109b |
+| `ghi_bag.sh` | người phân tích bag | thêm `/duong_day`, `/sep/trang_thai`, `/cmd_vel_nav`, `/cmd_vel_avoid`, `/rosout`, `/follow_path/_action/status`, `/navigate_to_pose/_action/status` | khớp tên với bên phát (`test_37`); `/sep/trang_thai` do `sep.py` phát |
+| Tệp đổi đã vào `so_voi_pi.sh` chưa? | `sep.py`, `lai_xe_lidar.py`, `ghi_bag.sh` đã có; không tệp mới | `--nhac` | 0 dòng |

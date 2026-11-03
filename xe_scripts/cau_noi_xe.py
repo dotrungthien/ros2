@@ -353,42 +353,58 @@ def trang_thai_nut():
     }
 
 
-TRANG_NUT = """<!doctype html><html lang="vi"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Nut xe</title>
+TRANG_NUT = """<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>차량 버튼</title>
 <style>body{font-family:sans-serif;margin:16px;max-width:520px}button{font-size:20px;width:100%;padding:14px;margin:6px 0}
 #dung{background:#c00;color:#fff}.o{border:1px solid #888;padding:8px;margin:8px 0;white-space:pre-wrap;font-family:monospace;font-size:14px}
 .canh{background:#fe0;padding:8px;font-weight:bold}</style></head><body>
-<div class="canh">Dừng khẩn = công tắc motor. Nút "Dừng chuyến" chỉ huỷ đích Nav2.</div>
-<button id="bat">Bật đủ đội (mức B)</button>
-<button id="di">Đi B</button><button id="ve">Về A</button>
-<button id="dung">Dừng chuyến</button>
-<button id="tat">Tắt xe</button>
-<div class="o" id="tt">Đang hỏi trạng thái...</div>
+<div class="canh">비상 정지 = 모터 스위치. '주행 정지'는 Nav2 목표만 취소합니다.</div>
+<button id="bat">전체 시작 (B단계)</button>
+<button id="di">B로 출발</button><button id="ve">A로 복귀</button>
+<button id="dung">주행 정지</button>
+<button id="tat">차량 종료</button>
+<div class="o" id="tt">상태 확인 중...</div>
 <div class="o" id="tl"></div>
 <script>
 var pin=sessionStorage.getItem('pin')||'';
+var HUONG={di_B:'A→B',ve_A:'B→A'};
+// chi luc in: sau ma goc them (tieng Han), giu ma goc; ma dai truoc ma ngan; \\b: dau _ la chu nen DUNG khong khop trong DUNG_SEP
+var HAN=[['HUY_DICH_KHI_NGAT','목표 취소'],['DUNG_YEN_KHONG_RO','원인 불명 정지'],['KHONG_CO_DICH','목표 없음'],
+ ['NHAY_VI_TRI','위치 급변 재확인'],['VAT_LA_TRUOC','앞 장애물'],['KET_SAT_VAT','장애물에 막힘'],['TU_BAT_LAI','자동 재시작'],
+ ['HET_DUONG','경로 없음'],['KHONG_DAT','실패-재시도'],['DI_THUONG','정상 주행'],['MAT_SCAN','라이다 대기'],
+ ['KHONG BAT','이미 실행 중'],['SAN SANG','준비 완료'],['DEN_NOI','도착'],['DA_DUNG','정지 완료'],['VAT_LA','장애물 감지'],
+ ['NGAT','중단됨'],['DUNG','정지'],['CHO','대기'],['DI','진행'],['cach dich','목표까지'],['giay','초']];
+var HAN_TU={};HAN.forEach(function(x){HAN_TU[x[0]]=x[1];});
+var HAN_RE=new RegExp('\\\\b(CHUA )?('+HAN.map(function(x){return x[0];}).join('|')+')\\\\b','g');
+function han(s){
+  if(!s)return s;
+  return String(s).replace(HAN_RE,function(m,chua,ma){
+    if(chua&&ma==='SAN SANG')return m;   // CHUA SAN SANG khong phai 준비 완료
+    return (chua||'')+ma+' ('+HAN_TU[ma]+')';
+  }).replace(/\\bdi_B\\b/g,'A→B').replace(/\\bve_A\\b/g,'B→A');
+}
 function gui(lenh,hoi){
   if(hoi&&!confirm(hoi))return;
   fetch('/api/nut/'+lenh,{method:'POST',headers:{'X-Pin':pin}}).then(function(r){
-    if(r.status==401){pin=prompt('PIN')||'';sessionStorage.setItem('pin',pin);return gui(lenh);}
-    return r.json().then(function(j){document.getElementById('tl').textContent=lenh+': HTTP '+r.status+'\\n'+JSON.stringify(j,null,1);});
-  }).catch(function(e){document.getElementById('tl').textContent=lenh+': loi mang '+e;});
+    if(r.status==401){pin=prompt('PIN 입력')||'';sessionStorage.setItem('pin',pin);return gui(lenh);}
+    return r.json().then(function(j){document.getElementById('tl').textContent=(HUONG[lenh]||lenh)+': HTTP '+r.status+'\\n'+JSON.stringify(j,null,1);});
+  }).catch(function(e){document.getElementById('tl').textContent=(HUONG[lenh]||lenh)+': 네트워크 오류 '+e;});
 }
-document.getElementById('bat').onclick=function(){gui('bat','Tắt rồi bật lại cả hệ thống (mức B)? Xe ở vạch A, motor OFF.');};
-document.getElementById('di').onclick=function(){gui('di_B','Đi B? Motor ON, tay sát công tắc.');};
-document.getElementById('ve').onclick=function(){gui('ve_A','Về A? Motor ON, tay sát công tắc.');};
+document.getElementById('bat').onclick=function(){gui('bat','전체를 껐다가 다시 시작할까요 (B단계)? 차량은 A선, 모터 OFF.');};
+document.getElementById('di').onclick=function(){gui('di_B','B로 출발? 모터 ON, 손은 스위치 옆에.');};
+document.getElementById('ve').onclick=function(){gui('ve_A','A로 복귀? 모터 ON, 손은 스위치 옆에.');};
 document.getElementById('dung').onclick=function(){gui('dung');};
-document.getElementById('tat').onclick=function(){gui('tat','Tắt cả hệ thống ROS trên xe?');};
+document.getElementById('tat').onclick=function(){gui('tat','차량의 ROS 전체를 종료할까요?');};
 function hoi(){
   fetch('/api/nut/trang_thai').then(function(r){return r.json();}).then(function(s){
-    var b=s.bat,c=s.chuyen,k=s.tat,t='Việc: '+({rong:'rảnh',bat:'đang bật',chuyen:'đang chạy chuyến',tat:'đang tắt'}[s.viec])+'\\n';
-    t+='Tắt: '+(k.chay?('đang chạy '+k.giay+' s'):('mã '+(k.ma===null?'-':k.ma)))+'\\n  '+(k.dong||'')+'\\n';
-    t+='Bật: '+(b.chay?('đang chạy '+b.giay+' s'):('mã '+(b.ma===null?'-':b.ma)))+'\\n  '+(b.dong||'')+'\\n';
-    t+='Chuyến '+(c.huong||'')+': '+(c.chay?('đang chạy '+c.giay+' s'):((c.ket_qua||'-')+' mã '+(c.ma===null?'-':c.ma)))+'\\n  '+(c.dong||'')+'\\n';
-    t+='Dừng: '+(s.dung.ket_qua||'-')+(s.dung.ms!==null?(' '+s.dung.ms+' ms'):'')+(s.dung.gio?(' lúc '+s.dung.gio):'')+'\\n';
-    t+='Sếp: TU_THE '+(s.sep.tu_the||'-')+'\\n     LENH '+(s.sep.lenh||'-');
+    var b=s.bat,c=s.chuyen,k=s.tat,t='작업: '+({rong:'대기',bat:'시작 중',chuyen:'주행 중',tat:'종료 중'}[s.viec])+'\\n';
+    t+='종료: '+(k.chay?('진행 중 '+k.giay+' s'):('코드 '+(k.ma===null?'-':k.ma)))+'\\n  '+(han(k.dong)||'')+'\\n';
+    t+='시작: '+(b.chay?('진행 중 '+b.giay+' s'):('코드 '+(b.ma===null?'-':b.ma)))+'\\n  '+(han(b.dong)||'')+'\\n';
+    t+='주행 '+(HUONG[c.huong]||c.huong||'')+': '+(c.chay?('진행 중 '+c.giay+' s'):((han(c.ket_qua)||'-')+' 코드 '+(c.ma===null?'-':c.ma)))+'\\n  '+(han(c.dong)||'')+'\\n';
+    t+='정지: '+(han(s.dung.ket_qua)||'-')+(s.dung.ms!==null?(' '+s.dung.ms+' ms'):'')+(s.dung.gio?(' 시각 '+s.dung.gio):'')+'\\n';
+    t+='두뇌: TU_THE '+(han(s.sep.tu_the)||'-')+'\\n     LENH '+(han(s.sep.lenh)||'-');
     document.getElementById('tt').textContent=t;
-  }).catch(function(){document.getElementById('tt').textContent='Mất kết nối với Pi';});
+  }).catch(function(){document.getElementById('tt').textContent='Pi 연결 끊김';});
 }
 hoi();setInterval(hoi,1000);
 </script></body></html>"""

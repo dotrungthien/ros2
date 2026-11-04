@@ -382,3 +382,192 @@ Ghi lại khi commit:
 - **Khe trên trên costmap sống: tâm xe cách mép ô vật (≥ 98) 12,5 cm** tại (0,589; 0,758), cả bản cũ lẫn mới. Đây là chỗ hẹp nhất của tuyến 2, liên quan F2.
 - Tệp trong commit: tinh_tuyen.py, gui_duong.py, test_gui_duong.py (test_25, test_26), RA_SOAT_ONG_SAN.md, gia_lap/lop1_nguong.png. Bộ thử: 26/26, 44/44, 68/68.
 - Khi chép lên Pi: chép **cả** `tinh_tuyen.py` và `gui_duong.py` (so_voi_pi.sh). Đổi `inflation_radius` thì phải tính lại ngưỡng 72.
+
+---
+
+## 3c-1. Thiết kế lớp 2 (CHỈ ĐỌC, không sửa, không commit). CHƯA CHẠY TRÊN PI
+
+Thiên chốt: trước mỗi lượt mới, nếu xe đứng sát vật thì SẾP ghi THOAT RA vào ~/sep_thoat. PHỤ LÁI lùi thẳng (LiDAR kiểm phía sau ≥ 5 cm) tới khi tâm xe cách mặt vật ≥ 0,30 m hoặc đã lùi tối đa 0,30 m, rồi báo RA_XONG. gui_duong chờ RA_XONG rồi mới gửi đường.
+
+Script ở scratchpad mới: `lop2/vung.py` (LiDAR giả giống hệt xe_gia: `map_xuong_v3.png` ô chiếm p > 0,65, 500 tia, R_MIN 0,10, bước 0,01, LiDAR +0,025, cắt thêm hình tròn ống), `lop2/ve.py`. Ảnh: `gia_lap/lop2_vung.png` [tinh].
+
+### 3c-1.1 Vùng kích hoạt [tinh]
+
+Đề xuất: **hình chữ nhật khung thân xe, x từ 0,145 (mũi) tới X_XA = 0,25 m tính từ tâm, |y| ≤ W = 0,10 m (thân ±0,08 + dư 2 cm); ≥ 2 điểm LiDAR trong vùng (lọc nhiễu như `dem_diem_do` của lai_xe_lidar) thì LÙI.**
+
+Bốn ca thử (vùng đề xuất):
+
+| ca | tư thế | điểm LiDAR phía trước gần tâm nhất (khung thân) | điểm trong vùng | kết quả | mong |
+|---|---|---|---|---|---|
+| (1) 3/11 | (0,39; 0,09; 29°), ống (0,693; 0,090) r 0,09 (góc trước-phải cách ống 4,8 cm) | (0,187; −0,103) | 23 | **LÙI** | LÙI |
+| (2) thẳng | (0,415; 0,08; 0°), mũi cách ống (0,73; 0,08) 8 cm | (0,225; 0,000) | 43 | **LÙI** | LÙI |
+| (3) Q1 | 1057 tư thế dọc di_B / ve_A × khe dưới / khe trên. Đường từ tinh_tuyen MỚI trên **costmap sống** (`cm_khong_ong.json` của 3b-2), lấy mẫu 1 cm, cộng các hướng xoay tại chỗ ở mỗi đỉnh (bước 5°) và tư thế đích | gần nhất x = 0,308 tại A sau ve_A (0; 0; −101°) | 0 ở cả 1057 | **KHÔNG** | KHÔNG |
+| (4) A, B | A (0;0;0°), A giả lập (−0,04;−0,04;0°), A hướng −135°, B (1,60;0,82;0°), B tới (1,63;0,68) 0° và 85° | (0,146-0,354; …): toàn ngoài dải \|y\| ≤ 0,10 hoặc xa hơn 0,25 | 0 | **KHÔNG** | KHÔNG |
+
+Biên và độ bền:
+- Quét X_XA 0,18-0,36 × W 0,08-0,16 (bước 1 cm): **50 cặp đạt cả 4 ca**, X_XA 0,23-0,31.
+- Biên dưới do **ca 2** (điểm ở x 0,225 ⇒ X_XA ≥ 0,23). Biên trên do **ca 3**:
+  - X_XA 0,32 hỏng ở đích di_B (1,60; 0,81; 85°) và khi xoay tại (0,359; 0,758) về 185-190°;
+  - W 0,13 hỏng ở ve_A khe dưới (1,27; 0,02; −131°);
+  - A sau ve_A có tường ở x 0,301-0,308.
+- Độ bền ca 3 (mỗi tư thế lệch ngang ±4 cm × lệch hướng ±5°, 9513 tư thế), số lần kích hoạt nhầm:
+
+| (X_XA; W) | nhầm |
+|---|---|
+| (0,30; 0,12) | 38 |
+| (0,28; 0,12) | 26 |
+| (0,26; 0,10) | 6 |
+| **(0,25; 0,10)** | **4**, ví dụ ve_A khe dưới (1,30; −0,01; −126°), góc K4 |
+
+- Chọn **(0,25; 0,10)**: dư 2,5 cm ở ca 2, 5,8 cm ở ca 3.
+  - Xe dừng thẳng với mũi ≥ 10,5 cm thì KHÔNG lùi. B1′ (mũi 10,4-12,0 cm) nằm ở biên; ở các tư thế đó RPP vẫn xoay/đi được (3b-2: tâm–mặt ống ≥ 0,245 m > 0,166 + 1 ô).
+  - Mục tiêu RA "tâm cách mặt vật ≥ 0,30 m" lớn hơn X_XA 0,25, tạo khoảng trễ 5 cm: sau RA vùng chắc chắn trống.
+- **Có vùng đạt cả 4 ca.** Lưu ý: dư ở biên trên chỉ ~5 cm và vẫn có 4/9513 kích hoạt nhầm khi lệch. Kích hoạt nhầm chỉ làm xe lùi ≤ 0,30 m có kiểm LiDAR phía sau, không nguy hiểm, nhưng tốn ~3-5 s.
+
+Giới hạn:
+- Thế giới LiDAR là bản đồ tĩnh (không có lớp vật cản sống, không người).
+- Ca 3 là đường kế hoạch, chưa có sai số bám thật ngoài phép lệch ±4 cm / ±5°.
+- Chưa thử ống ở các vị trí khác ngoài 2 ca.
+
+### 3c-1.2 Luồng tin (đọc mã; [CÓ] = đã có, [THÊM] = phải thêm mã, [SỬA] = phải sửa mã có sẵn)
+
+**a) gui_duong báo "sắp gửi lượt mới" cho sếp.**
+- [CÓ] Hiện **không có kênh riêng**. Gần nhất là dòng CSV `KHONG_DAT` / `TINH_LAI` gui_duong ghi vào `~/ket_qua_chuyen.csv` ngay sau một lượt hỏng (gui_duong.py:123, :136, :147). Sếp đọc tệp này mỗi vòng 0,1 s (`_tick`, sep.py:1003, đọc `csv_chuyen` :1046).
+- Không đủ vì: (1) lượt 1 của **tuyến kia** sau KhongCoDuong (F1, `break`) được gửi **ngay**, không chờ 30 s; (2) gui_duong không biết sếp có định ra RA hay không, nên không biết phải chờ.
+- [THÊM] Đề xuất tệp bắt tay mới `~/gui_duong_luot`: gui_duong ghi `<giay BOOTTIME> SAP_GUI <huong> <tuyen> <lan>` (ghi tệp tạm rồi đổi tên như `ghi_lenh`) trước MỖI lần gửi. Sếp trả lời trong ≤ 1 s:
+  - **có** vật trong vùng thì ghi ~/sep_thoat dạng mới (xem c);
+  - **không** thì ghi một câu "KHONG_CAN" (cùng tệp, hoặc dòng `LENH` riêng; cần chốt).
+- Cách thay rẻ hơn (không tệp mới): sếp phản ứng với dòng CSV `KHONG_DAT`, còn gui_duong chờ cố định 1-2 s trước mỗi lần gửi. Có độ trễ đọc tệp và không phân biệt được "không cần" với "sếp chết". Không khuyên dùng.
+
+**b) Sếp đọc LiDAR ở đâu.**
+- [CÓ] sep.py:991 nghe `/scan` (qos sensor). `v['pts']` = `L.scan_to_xy` (khung thân xe, LIDAR_X 0,025, cùng khung với vùng ở 3c-1.1).
+- [THÊM] hàm thuần `vung_lui(pts, x_xa=0.25, w=0.10, n=2)` trong sep.py.
+- [THÊM] trạng thái "đợt RA lớp 2" tách khỏi `_dot_thoat`. `_dot_thoat` hiện chỉ mở khi phụ lái vào **CHO_SEP và đích đang chạy** (sep.py:784), và **đóng khi không có đích** (:794-795 `if not self.goal_active: self.thoat_ma = None`), mà node xoá ~/sep_thoat khi không còn đợt (:1122-1124). Giữa hai lượt không có đích, nên đường cũ không dùng được.
+
+**c) Phụ lái RA hiện có làm gì** [CÓ] (lai_xe_lidar.py:337-387):
+- `ra_bat_dau`: **từ chối khi không có đích** (`RA BO QUA: khong co dich`, :346).
+- **Tự chọn hướng** về phía thoáng hơn (`huong = 1 if ff >= fb else -1`, :358), không bắt buộc lùi.
+- **Không đi nếu mọi điểm đã cách tâm > R_XOAY 0,1856 m** (`RA XONG DU_CHO_XOAY 0 cm`, :353-355). Ca 3/11: mặt ống cách tâm 0,213 m > 0,186, nên **RA hiện có KHÔNG nhúc nhích**, dù RPP vẫn báo va chạm.
+- Trong pha RA (`_ra`, :363-387) dừng khi, theo thứ tự:
+  - `DO_PHIA_DI`: ≥ 1 điểm ≤ 0,08 m ở phía đang đi;
+  - `DU_CHO_XOAY`;
+  - `DA_DI_30CM` (quãng = max(ước theo lệnh v_esc 0,10 m/s, đo LiDAR));
+  - `QUA_10S`;
+  - `MAT_DICH` (mất đích thì dừng ngay).
+- Xong thì log `RA XONG <lý do> <cm> cm` + chuyển trạng thái `RA_LUI -> RA_XONG` trên /rosout (:385, :692-702), rồi pha XOAY_P nếu còn đích.
+- [THÊM] chế độ **"lùi thẳng lớp 2"**:
+  - luôn lùi (huong = −1), chạy được **khi không có đích**;
+  - dừng khi điểm gần nhất trong dải |y| ≤ W phía trước cách tâm ≥ **0,30 m**, hoặc đã lùi **0,30 m**, hoặc phía sau có ≥ 2 điểm ≤ **0,05 m** (Thiên chốt; RA cũ dùng 0,08 / ≥ 1 điểm), hoặc quá ~6 s (0,30 / 0,10 = 3 s + dư);
+  - không vào XOAY_P;
+  - log `RA XONG <lý do> <cm> cm` + `RA_XONG` như cũ để bên đọc không đổi.
+- [SỬA] `doc_sep_thoat` / định dạng ~/sep_thoat (`<t> THOAT <xP> <yP> <luot> <ma> [yaw]`, lai_xe_lidar.py:512) cần một chữ phân biệt "RA lớp 2". Đề xuất cột 2 = `RA_LUI` thay `THOAT`. Luật G phải sửa cùng lúc: sep `ly_thoat` / `ghi_lenh`, lai_xe_lidar `doc_sep_thoat`, gui_duong `_thoat_moi` / `sep_dang_giao_thoat`, test_sep test_32.
+
+**d) gui_duong chờ RA_XONG.**
+- [CÓ] gui_duong đã nghe /rosout của lai_xe_lidar (gui_duong.py:278, :292-298, `self.l1`).
+- `cho_truoc_khi_gui` (:175-194) đã chờ khi `phu_lai_ban()` (l1 ∈ RA_TIEN / RA_LUI / XOAY_P / THOAT*) hoặc `sep_dang_giao_thoat()`, tối đa `cho_hong` 30 s. Nhưng nó không chờ được lúc RA **chưa bắt đầu** (tranh chấp ~0,1-1 s).
+- `sep_dang_giao_thoat` coi mã mới trong ~/sep_thoat là "đang giao" cho tới khi `da_xu_ly_thoat()`, mà hàm này chỉ được gọi trong `theo_doi` khi đếm XOAY_XONG (:227-229). RA lớp 2 không có XOAY, nên gui_duong sẽ chờ tới khi tệp cũ (> 3 s) hoặc hết 30 s.
+- [THÊM] sau khi ghi `SAP_GUI`, chờ: (sếp trả "không cần") hoặc (l1 đã qua RA_LUI rồi `RA_XONG`). **Tối đa đề xuất 12 s** (RA lùi ≤ 6 s + trễ sếp 1 s + dư).
+- [SỬA] gọi `da_xu_ly_thoat()` khi thấy RA_XONG lớp 2.
+- **Hết giờ:** in `RA_HET_GIO` và gửi đường như hôm nay (không kém hơn hiện trạng). Nếu phụ lái vẫn đang RA_LUI thì `cho_truoc_khi_gui` sẵn có giữ lại tới khi xong. Không ghi CSV chữ mới (tránh luật G với sep / HUONG_DAN); cần Thiên chốt.
+
+**e) Chỗ phải THÊM / SỬA (tóm tắt).**
+- sep.py: `vung_lui`; đợt RA lớp 2 không cần đích; đọc `~/gui_duong_luot`; ghi chữ mới vào ~/sep_thoat; không xoá tệp khi chưa xong.
+- lai_xe_lidar.py: chế độ lùi thẳng lớp 2 (không cần đích, ngưỡng 0,30 m / 0,30 m / sau 0,05 m / 6 s, không XOAY); `doc_sep_thoat` đọc chữ mới.
+- gui_duong.py: ghi `~/gui_duong_luot` trước mỗi lần gửi; chờ trả lời / RA_XONG ≤ 12 s; `da_xu_ly_thoat` cho RA lớp 2.
+- Bài thử: test_sep, test_lai_xe_lidar, test_gui_duong (bắt tay, hết giờ, ca 3/11). Luật G cho tên tệp mới, chữ mới, mã.
+- Không cần sửa: cau_noi_xe.py (đọc kết quả chuyến, không đổi), chuyen.sh, Nav2 yaml.
+
+---
+
+## 3c-2. Viết lớp 2: lùi ra trước lượt mới. KHÔNG push. CHƯA CHẠY TRÊN PI. Giả lập CHƯA HIỆU CHUẨN
+
+Thiên chốt:
+- vùng: x 0,145-0,25 m, |y| ≤ 0,10 m, ≥ 2 điểm;
+- lùi tới khi tâm cách mặt vật ≥ 0,30 m, hoặc đã lùi tối đa 0,30 m; dừng khi phía sau thoáng < 5 cm; tối đa 6 s;
+- gui_duong chờ RA_XONG tối đa 12 s; hết giờ thì in RA_HET_GIO rồi gửi như cũ;
+- bổ sung 05/11: "Dừng chuyến" (SIGINT gui_duong) thì phụ lái ngừng lùi trong ≤ 1 s.
+
+Không sửa cau_noi_xe.py.
+
+### 3c-2.1 Mã (git diff: lai_xe_lidar.py, sep.py, gui_duong.py + 3 tệp test)
+
+Chuỗi: gui_duong ghi `~/gui_duong_luot` `<t> SAP_GUI <huong> <tuyen> <lan> <ma>` trước MỖI lần gửi → sếp, **chỉ khi thấy SAP_GUI mới**, xét vùng (`L.vung_lui`) và trả lời trong `~/sep_thoat`:
+- `<t> RA_LUI <ma_luot> <ma>` khi có vật trong vùng và ra_lenh = true;
+- `<t> KHONG_CAN <ma_luot> <lý do>` cho các trường hợp còn lại (`ra_lenh=false`, `mat_scan`, `vung_trong`).
+
+Bên phụ lái và gui_duong:
+- Phụ lái nhận mã RA_LUI mới thì vào trạng thái RA2: lùi thẳng `-v_esc`, tên đầu ra `RA_LUI`, không cần đích, không XOAY. Dừng theo thứ tự: `CHI_NHIN`, `HUY`, `SAU_5CM`, `CACH_30CM`, `DA_LUI_30CM`, `QUA_6S`. Xong thì log `RA XONG <lý do> <cm> cm` và chuyển `RA_LUI -> RA_XONG`.
+- gui_duong (`cho_lop2`) xử lý câu trả lời:
+  - KHONG_CAN thì gửi ngay;
+  - RA_LUI thì chờ số lần RA_XONG tăng (≤ 12 s);
+  - sếp không trả lời trong 2 s, hoặc hết 12 s, thì in `RA_HET_GIO` rồi gửi như cũ.
+
+Bổ sung 05/11 (HUY):
+- `chay_co_ngat`: khi bị ngắt, **trước tiên** ghi `<t> HUY` vào ~/gui_duong_luot (`huy_luot`), rồi mới hủy đích (chờ ≤ 2 s).
+- Phụ lái `_doc_huy`: mỗi nhịp 0,1 s, nếu đang RA2 mà tệp là HUY hoặc tệp mất, thì bước kế tiếp phát **một lệnh 0** và log `RA XONG HUY <cm> cm`.
+- Mã RA_LUI cũ đã được ghi nhớ (`ma_ra2_cu`), nên phụ lái không tự lùi lại.
+
+Test: test_lai_xe_lidar 80/80, test_sep 45/45, test_gui_duong 29/29.
+
+### 3c-2.2 Kiểm tích hợp
+
+| bên ghi | bên đọc | chữ/tên phải khớp | khớp? |
+|---|---|---|---|
+| gui_duong `dong_sap_gui` → ~/gui_duong_luot (tệp tạm + đổi tên) | sep `doc_sap_gui` (tuổi ≤ 3 s), param `tep_luot` | `<t> SAP_GUI <huong> <tuyen> <lan> <ma>`, đường dẫn ~/gui_duong_luot | khớp (test_29 luật G) |
+| gui_duong `dong_huy` → ~/gui_duong_luot | phụ lái `luot_huy` (param `tep_luot`); sep `doc_sap_gui` trả None | `<t> HUY`; mất tệp = HUY | khớp (test_29, bài HUY trong test_lai_xe_lidar) |
+| sep `dong_ra2` + `ghi_lenh` → ~/sep_thoat | phụ lái `doc_sep_ra2`; gui_duong `tra_lop2` (= `L.doc_sep_ra2`) | `RA_LUI <ma_luot> <ma>` / `KHONG_CAN <ma_luot> <lý do>` | khớp (test_29) |
+| cùng tệp ~/sep_thoat | phụ lái `doc_sep_thoat`; gui_duong `_thoat_moi` / `sep_dang_giao_thoat` | hai chữ mới phải bị **bỏ qua** | khớp: `doc_sep_thoat` trả None (test_29), nên không cần sửa `da_xu_ly_thoat` (3c-1 [SỬA] bỏ) |
+| sep ghi ~/sep_thoat cả khi ra_thoat = false (câu KHONG_CAN) | phụ lái chỉ lùi khi RA_LUI (sếp chỉ ghi RA_LUI khi ra_lenh = true) | — | khớp; ra_lenh = false thì 0 lần lùi (test_45) |
+| phụ lái /rosout `RA_LUI -> RA_XONG` | gui_duong `_on_rosout` (`n_ra_xong`); sep vòng rosout (`t_ra_xong`, LOP2 RA_XONG DONG) | tên trạng thái `RA_LUI`, `RA_XONG` (tên cũ) | khớp; `RA_LUI` ∈ gui_duong `PHU_LAI_BAN` và sep `DANG_LAM`; sep chỉ đếm lượt thoát khi `thoat_ma` mở (giữa hai lượt là None) |
+| sep `ghi('LOP2', ...)` → ~/sep_nhat_ky.csv | cau_noi_xe `doc_sep` (chỉ TU_THE / LENH) | loại mới `LOP2` | khớp (cau_noi bỏ qua) |
+| gui_duong in `   lop 2: ...`, `   RA_HET_GIO: ...` (thụt đầu dòng) | cau_noi `DONG_CHUYEN` `^(DEN_NOI\|HET_DUONG\|...\|HUY_DICH_KHI_NGAT\|...)` | không được khớp nhầm | khớp (thụt lề; HUY ghi tệp, không in) |
+| cau_noi nút "Dừng" → SIGINT `pid_gui_duong` | gui_duong `chay_co_ngat` → HUY → phụ lái | luật tìm PID (python3 + gui_duong.py) | khớp: B3 dùng đúng luật này, 3/3 dừng ≤ 0,1 s |
+| bat_xe.sh `tat`: `pkill -INT` mẫu TAY (sep, lai_xe_lidar, theo_doi, gui_duong) | — | tên tiến trình | khớp, không đổi; ghi chú: tắt cả bộ thì phụ lái cũng thoát cùng lúc (như mọi chế độ trước đây) |
+| chuyen.sh `exec python3 ~/gui_duong.py` | — | chỉ đọc ~/sep_lenh | không đổi |
+| so_voi_pi.sh | chép lên Pi | sep.py, lai_xe_lidar.py, gui_duong.py đã có trong danh sách | khớp; phải chép **cả ba** tệp cùng lúc (luật G) |
+
+Rủi ro đã biết: nếu sếp không chạy, mỗi lần gửi chậm thêm 2 s (RA_HET_GIO). ~/gui_duong_luot không bị xoá lúc bật; điều đó an toàn vì sếp coi dòng cũ hơn 3 s là hết hạn.
+
+### 3c-2.3 Giả lập (chưa hiệu chuẩn; HOME giả riêng mỗi lần, domain 87, bat_gia mức B)
+
+Script trong scratchpad `l2sim/`: vong2.sh, ngat_ra2.py (B3), theo_lop2.py (B4), dat_ong.py, canh_ong.py, phan_tich2.py. Bản cũ là `git archive dc9b379`.
+
+Sự cố trong lúc chạy:
+- Mình sửa vong2.sh khi bash nền đang đọc nó, nên moi_b2_3 hỏng (không tắt) và kéo cu_b2_1 hỏng theo. Đã dừng, dọn sạch, chạy lại cả hai.
+- Một lần moi_b2_3 khác hỏng vì Nav2 không lên trong 90 s, lỗi khởi động lẻ; đã chạy lại.
+
+| ca | bản | x/n DEN_NOI | mã thoát | lùi lớp 2 (RA2) | RA_XONG lớp 2 / RA_HET_GIO | ghi chú |
+|---|---|---|---|---|---|---|
+| Q1 (3 vòng di_B + ve_A) | dc9b379 (3b) | 6/6, lượt 1 | 0 ×6 | — | — | di_B 32-33 s, ve_A 25-29 s |
+| Q1 lần 1 (mã trước HUY) | mới | 6/6, lượt 1 | 0 ×6 | **0** | 0 / 0 | di_B 31-32 s, ve_A 27-30 s; sếp chỉ trả KHONG_CAN vung_trong; avoid 0 |
+| Q1 lần 2 (mã cuối) | mới | 6/6, lượt 1 | 0 ×6 | **0** | 0 / 0 | di_B 32-33 s, ve_A 27-30 s; avoid 0 |
+| B1 (ống đặt sẵn) | dc9b379 (3b) | 1/3 | 1, 0, 1 | — | — | |
+| B1 | mới | 2/3 | 0, 1, 0 | 0 | 0 / 0 | xe không dừng sát ống (thân → ống ≥ 48 cm), nên khác biệt là nhiễu F2, không do lớp 2 |
+| B2 (ống đặt lúc chạy, để luôn) | dc9b379 | 3/3 t2 | 0 ×3 | — | — | 85, 82, 84 s; mũi → ống min 9,9 / 10,5 / 9,0 cm |
+| B2 | mới | 3/3 t2 | 0 ×3 | **2/3** (b2_2 vật 0,22 m, lùi 9 cm; b2_3 vật 0,24 m, lùi 7 cm) | 2 / 0 | 71, 83, 57 s; mũi min 9,6 / 8,7 / 10,0 cm |
+| B3 (ống tâm (0,27; 0) lúc xuất phát, SIGINT 0,40-0,41 s sau RA2) | mới | — (ngắt) | 130 ×3, CSV NGAT | 3 → `RA XONG HUY 5 cm` ×3 | — | **SIGINT → /cmd_vel_avoid = 0: 0,089 / 0,099 / 0,099 s; trôi thêm 1,0 / 1,0 / 1,0 cm; lùi lại 0** (theo dõi ≥ 10 s); sếp LOP2 RA_XONG DONG ×3; tệp còn `HUY`. **3/3 đạt (≤ 1 s)** |
+| B4 (cảnh B3, không ngắt) | mới | 2/3 t2 | 1, 0, 0 | 3 → `RA XONG CACH_30CM 13 cm` ×3 | 3 / 0 | chuỗi đủ 3/3 (xem dưới) |
+
+B4: mốc thời gian tính từ SAP_GUI, theo /rosout, ~/sep_thoat, /follow_path status và /odom.
+
+| lần | RA_LUI (sep_thoat) | phụ lái RA2 | RA_XONG | gửi /follow_path | lùi (odom) | thời gian lùi | gửi trong lúc RA2 | kết quả chuyến |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 0,08 s | 0,18 s | 1,48 s | 1,76 s | 13,0 cm | 1,30 s | 0 | HET_DUONG, mã 1, 84 s (t1 KhongCoDuong; t2 ABORTED ×3 cách đích 0,89 m) |
+| 2 | 0,08 s | 0,08 s | 1,38 s | 1,50 s | 13,0 cm | 1,30 s | 0 | DEN_NOI t2, mã 0, 31 s |
+| 3 | 0,09 s | 0,09 s | 1,39 s | 1,66 s | 13,0 cm | 1,30 s | 0 | DEN_NOI t2, mã 0, 35 s |
+
+- 3/3 có đủ chuỗi SAP_GUI → RA_LUI → lùi → RA_XONG → gửi đường, và RA_XONG trước khi gửi. Không có RA_HET_GIO. gui_duong in `lop 2: RA_XONG sau 1.4-1.5 s.`
+- Lần 1 HET_DUONG ở lượt sau: ống vẫn để nguyên sát điểm A, tuyến 2 ABORTED ở đoạn sau. Đây không phải lỗi chuỗi lớp 2.
+
+Câu Thiên yêu cầu ghi: "B2 gia lap khong kich lop 2 vi mui dung 10,4-12 cm, xe that ~8 cm se kich; chuoi lop 2 chi duoc thu bang canh dung san B3/B4".
+- **Đính chính theo số liệu lần này:** B2 mới **có kích 2/3** (moi_b2_2, moi_b2_3).
+  - Ở lượt sau ABORTED, sếp thấy vật 0,22 m và 0,24 m từ tâm, tức 7,5 và 9,5 cm từ mũi, vẫn nằm trong vùng.
+  - Phụ lái lùi 9 và 7 cm, RA_XONG sau 1,0 và 0,9 s, rồi DEN_NOI tuyến 2.
+- Mép vùng là 0,25 − 0,145 = **10,5 cm từ mũi**, nên mũi dừng ở 10,4 cm cũng kích. Kích hay không phụ thuộc chỗ xe dừng ở lượt đó (moi_b2_1 không kích).
+- Vậy B2 có thử được chuỗi lớp 2, nhưng không ổn định. B3/B4 là cảnh dựng sẵn để chắc chắn có chuỗi.
+
+### 3c-2.4 Kết luận
+- 2) khớp hết.
+- 3) Q1 không kém: 12/12 DEN_NOI lượt 1, 0 lần lùi, thời gian như dc9b379.
+- B3 3/3 ≤ 0,1 s. B4 3/3 đủ chuỗi, RA_XONG trước khi gửi.
+- Đủ điều kiện commit theo luật (một lần, "lop 2: lui ra truoc luot moi"). Không push.

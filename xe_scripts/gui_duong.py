@@ -20,7 +20,10 @@ Mot tien trinh rclpy, KHONG goi ros2 CLI. Chay (chuyen.sh BANG=day goi):  python
   Ma thoat: 0 den noi, 1 het duong, 2 sai doi so, 3 sai vi tri, 4 sep bao dung, 130 bi ngat (NGAT).
 Bien moi truong: LUOT (3), CHO_HONG (30 s), TO (130 s/lan gui), TOI_SAI_SO (0,20 m); cung ten voi chuyen.sh: SEP_CHO_S (10 s),
   SEP_TUOI_MAX (3 s). Phu lai lai mai thi tong thoi gian cho giua hai lan gui toi da 3 x CHO_HONG.
-Dung khan: TAT CONG TAC MOTOR. Ctrl+C / SIGTERM: huy dich dang chay (in HUY_DICH_KHI_NGAT ...), ghi dong NGAT, thoat 130.
+04/11 lop 2: truoc MOI lan gui ghi ~/gui_duong_luot (SAP_GUI); sep tra loi trong ~/sep_thoat: KHONG_CAN => gui; RA_LUI => cho phu
+  lai lui thang va bao RA_XONG (toi da 12 s); sep khong tra loi 2 s / het 12 s => in RA_HET_GIO roi gui nhu cu.
+Dung khan: TAT CONG TAC MOTOR. Ctrl+C / SIGTERM: ghi HUY vao ~/gui_duong_luot (phu lai dung lui lop 2),
+  huy dich dang chay (in HUY_DICH_KHI_NGAT ...), ghi dong NGAT, thoat 130.
 Phan thuan (khong ROS) o nua tren, thu bang test_gui_duong.py.
 """
 import math
@@ -39,7 +42,8 @@ PHU_LAI_BAN = ('RA_TIEN', 'RA_LUI', 'XOAY_P')           # ten trang thai lai_xe_
 def cau_hinh(env=os.environ):
     f = lambda k, d: float(env.get(k, d))
     return dict(luot=int(env.get('LUOT', 3)), cho_hong=f('CHO_HONG', 30.0), to=f('TO', 130.0), cho_sep=f('SEP_CHO_S', 10.0),
-                toi_sai_so=f('TOI_SAI_SO', 0.20), sep_tuoi=f('SEP_TUOI_MAX', 3.0), tf_tuoi=1.0)
+                toi_sai_so=f('TOI_SAI_SO', 0.20), sep_tuoi=f('SEP_TUOI_MAX', 3.0), tf_tuoi=1.0,
+                lop2_cho=12.0, lop2_tra=2.0)      # 04/11 lop 2: cho RA_XONG toi da / cho sep tra loi SAP_GUI toi da (s)
 
 
 def doc_sep_lenh(dong, t_now, tuoi_max=3.0):
@@ -106,7 +110,7 @@ def chay(io, huong, tuyen_dau, cfg):
         lan = tinh_lai = 0
         while lan < cfg['luot']:
             lan += 1
-            if cho_truoc_khi_gui(io, cfg) == 'DUNG':
+            if cho_truoc_khi_gui(io, cfg) == 'DUNG' or cho_lop2(io, cfg, huong, r, lan) == 'DUNG':
                 return dung_sep(io, nhan, r, lan)
             pose, ban = io.cho_san_sang()                 # 18:2x: doi toi 15 s (khong tinh la hong), chi bao khi qua han
             if pose is None or ban is None:
@@ -167,6 +171,7 @@ def chay_co_ngat(io, huong, tuyen_dau, cfg, bo_qua_ngat=lambda: None):
         return chay(io, huong, tuyen_dau, cfg)
     except KeyboardInterrupt:
         bo_qua_ngat()
+        io.huy_luot()                      # 05/11 lop 2: ghi HUY vao ~/gui_duong_luot truoc (phu lai dung lui lop 2 <= 1 s)
         io.bao('HUY_DICH_KHI_NGAT %s' % io.huy_khi_ngat())
         io.ghi('%s_day' % huong, '-', 'ngat', 0, 'NGAT', 0)
         return 130
@@ -192,6 +197,45 @@ def cho_truoc_khi_gui(io, cfg):
                 return 'DUNG'
             continue
         return None
+
+
+def dong_sap_gui(t, huong, tuyen, lan, ma):
+    """04/11 lop 2: dong ~/gui_duong_luot (sep.doc_sap_gui doc lai dung khuon nay)."""
+    return '%.2f SAP_GUI %s %d %d %d' % (t, huong, tuyen, lan, ma)
+
+
+def dong_huy(t):
+    """05/11 lop 2: dong ~/gui_duong_luot khi bi ngat (lai_xe_lidar.luot_huy doc; sep.doc_sap_gui bo qua)."""
+    return '%.2f HUY' % t
+
+
+def cho_lop2(io, cfg, huong, r, lan):
+    """04/11 lop 2, truoc moi lan gui: ghi SAP_GUI, cho sep tra loi (~/sep_thoat). KHONG_CAN => gui ngay. RA_LUI => cho phu lai
+    bao RA_XONG (toi da lop2_cho s tinh tu SAP_GUI). RA_XONG moi sau SAP_GUI cung tinh (phu lai co the xong truoc khi doc RA_LUI).
+    Sep khong tra loi sau lop2_tra s hoac het lop2_cho s => in RA_HET_GIO, gui nhu cu. ~/sep_lenh DUNG => 'DUNG'.
+    Tra 'KHONG_CAN' | 'RA_XONG' | 'RA_HET_GIO' | 'DUNG'."""
+    ma = io.gui_sap_gui(huong, r, lan)
+    n0, t0, ra = io.so_lan_ra_xong(), io.now(), False
+    while True:
+        tra = io.tra_lop2()
+        if tra is not None and tra['ma_luot'] == ma:
+            if tra['chu'] == 'KHONG_CAN':
+                return 'KHONG_CAN'
+            if not ra:
+                ra = True
+                io.bao('   lop 2: sep bao RA_LUI (vat sat mui): cho phu lai lui ra, toi da %d s.' % cfg['lop2_cho'])
+        if io.so_lan_ra_xong() != n0:
+            io.bao('   lop 2: RA_XONG sau %.1f s.' % (io.now() - t0))
+            return 'RA_XONG'
+        lenh = io.lenh_sep()
+        if lenh and lenh[0] == 'DUNG':
+            return 'DUNG'
+        da = io.now() - t0
+        if (not ra and da >= cfg['lop2_tra']) or da >= cfg['lop2_cho']:
+            io.bao('   RA_HET_GIO: %s; gui nhu cu.' % (('sep khong tra loi sau %d s' % cfg['lop2_tra']) if not ra else
+                                                     ('khong thay RA_XONG sau %d s' % cfg['lop2_cho'])))
+            return 'RA_HET_GIO'
+        io.ngu(0.1)
 
 
 def cho_sau_hong(io, cfg):
@@ -280,6 +324,8 @@ if rclpy is not None:
             self.ac = ActionClient(self, FollowPath, 'follow_path')
             self.cm, self.cm_ban, self.l1 = None, None, ''
             self.n_xong, self.ma_xu_ly = 0, None       # 18:09: so lan phu lai XOAY xong; ma ~/sep_thoat da xu ly
+            self.n_ra_xong = 0                         # 04/11 lop 2: so lan phu lai vao RA_XONG
+            self.tep_luot = os.path.expanduser('~/gui_duong_luot')
             self.goal, self.kq = None, None
             self.tep_lenh = os.path.expanduser('~/sep_lenh')
             self.tep_thoat = os.path.expanduser('~/sep_thoat')
@@ -295,6 +341,8 @@ if rclpy is not None:
                 if e and e[0] == 'L1':
                     if e[1] == 'XOAY_XONG' and self.l1 != 'XOAY_XONG':
                         self.n_xong += 1
+                    if e[1] == 'RA_XONG' and self.l1 != 'RA_XONG':
+                        self.n_ra_xong += 1
                     self.l1 = e[1]
 
         # --- io cho chay() ---
@@ -369,6 +417,34 @@ if rclpy is not None:
 
         def so_lan_phu_lai_xong(self):
             return self.n_xong
+
+        def gui_sap_gui(self, huong, r, lan):
+            """04/11 lop 2: ghi ~/gui_duong_luot (tep tam roi doi ten, nhu sep.ghi_lenh). Tra ma."""
+            t = time.clock_gettime(time.CLOCK_BOOTTIME)
+            ma = int(t * 10)
+            with open(self.tep_luot + '.tam', 'w') as f:
+                f.write(dong_sap_gui(t, huong, r, lan, ma) + '\n')
+            os.replace(self.tep_luot + '.tam', self.tep_luot)
+            return ma
+
+        def huy_luot(self):
+            """05/11 lop 2: bi ngat => ghi HUY vao ~/gui_duong_luot (phu lai dang lui lop 2 thi dung)."""
+            try:
+                with open(self.tep_luot + '.tam', 'w') as f:
+                    f.write(dong_huy(time.clock_gettime(time.CLOCK_BOOTTIME)) + '\n')
+                os.replace(self.tep_luot + '.tam', self.tep_luot)
+            except OSError:
+                pass
+
+        def tra_lop2(self):
+            try:
+                with open(self.tep_thoat) as f:
+                    return L.doc_sep_ra2(f.readline(), time.clock_gettime(time.CLOCK_BOOTTIME))
+            except OSError:
+                return None
+
+        def so_lan_ra_xong(self):
+            return self.n_ra_xong
 
         def phu_lai_ban(self):
             return phu_lai_ban(self.l1)

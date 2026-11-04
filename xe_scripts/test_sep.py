@@ -717,6 +717,37 @@ def test_44_F4_tai_B_chi_khi_vat_gan_dich_chuyen():
     gan_a = [(0.20, -0.02), (0.20, 0.02)]                             # xe (0,30; 0) quay ve A: vat o x = 0,10
     assert S.vat_gan_dich(gan_a, (0.30, 0.0, math.pi), S.A_XY) and not S.vat_gan_dich(gan_a, (0.30, 0.0, math.pi), S.B_XY)
 
+
+# ---------- 04/11 lop 2: sep chi xet vung khi nhan SAP_GUI (~/gui_duong_luot), tra loi trong ~/sep_thoat ----------
+def test_45_lop2_sap_gui_ra_lui_khong_can():
+    import gui_duong as G
+    c = Chay(vao(pose=XE_ONG, them=[ONG_8CM], ra_lenh=True))       # ong cach mui 8 cm
+    tt, log = c()
+    assert tt['ra2'] is None and not co(log, 'LOP2')                   # khong co SAP_GUI: khong xet vung
+    luot = S.doc_sap_gui(G.dong_sap_gui(50.0, 'di_B', 1, 2, 55), 50.2)
+    tt, log = c(luot=luot)
+    assert tt['ra2']['chu'] == 'RA_LUI' and tt['ra2']['ma_luot'] == 55 and co(log, ',LOP2,RA_LUI,')
+    ma = tt['ra2']['ma']
+    tt, log = c(luot=luot)                                             # cung ma: khong xet lai
+    assert tt['ra2']['ma'] == ma and not co(log, 'LOP2')
+    assert S.dong_ra2(tt['ra2']) == ('RA_LUI', '55 %d' % ma)
+    tt, log = c(rosout=[('lai_xe_lidar', 'RA_LUI -> RA_XONG () | x')])
+    assert tt['ra2'] is None and co(log, ',LOP2,RA_XONG,')
+    tt, log = c(luot=dict(luot, ma=56), ra_lenh=False)                 # ra_lenh = false: khong lui
+    assert tt['ra2']['chu'] == 'KHONG_CAN' and tt['ra2']['ly'] == 'ra_lenh=false'
+    assert S.dong_ra2(tt['ra2']) == ('KHONG_CAN', '56 ra_lenh=false')
+    tt, _ = dung_n_giay(c, 3.2)
+    assert tt['ra2'] is None                                           # KHONG_CAN giu T_RA2_TRA s
+    tt, log = c(luot=dict(luot, ma=57))
+    assert tt['ra2']['chu'] == 'RA_LUI'
+    tt, moi = dung_n_giay(c, 12.2)                                     # khong thay RA_XONG
+    assert tt['ra2'] is None and co(moi, ',LOP2,HET_GIO,')
+    c2 = Chay(vao(ra_lenh=True))                                       # xe o A, khong vat: vung trong
+    tt, _ = c2(luot=dict(luot, ma=58))
+    assert tt['ra2']['chu'] == 'KHONG_CAN' and tt['ra2']['ly'] == 'vung_trong'
+    tt, _ = c2(luot=dict(luot, ma=59), scan_tuoi=2.0)
+    assert tt['ra2']['ly'] == 'mat_scan'
+
 if __name__ == '__main__':
     import sys
     import traceback

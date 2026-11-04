@@ -61,6 +61,13 @@ DEFAULT = dict(
     tu_thoat_max=3,          # 02/11 17:33: so lan tu THOAT (phan xa) toi da moi dich; het thi dung yen (CHO_SEP) cho sep giao RA
     sep_ra_thoat=False,      # 02/11 18:09: true khi sep ra_thoat=true (bat_xe.sh dat cung SEP_RA_THOAT): ket hinh hoc va xoay bi chan
                              #   qua lau KHONG tu THOAT (tat THOAT_CUNG cu) ma vao CHO_SEP kem ly do de sep giao ~/sep_thoat ngay
+    # 04/11 lop 2 (Thien chot): truoc luot moi sep giao RA_LUI (~/sep_thoat) khi co vat trong vung truoc mui; phu lai lui thang
+    lop2_x_xa=0.25,          # m tu tam: vung kich hoat X_MUI <= x <= lop2_x_xa
+    lop2_w=0.10,             # m: |y| <= lop2_w (than +-0,08 + du 2 cm)
+    ra2_cach=0.30,           # m: lui toi khi tam xe cach diem gan nhat phia truoc (dai |y| <= lop2_w) >= so nay
+    ra2_di_max=0.30,         # m: lui toi da
+    ra2_sau=0.05,            # m: phia sau co >= dem_diem_do diem trong so nay tu duoi xe thi dung
+    ra2_t_max=6.0,           # s: lui qua lau thi dung
 )
 
 
@@ -215,6 +222,7 @@ class NguoiLai:
         self.xoay = None         # pha XOAY dang chay (dict) hoac None
         self.xoay_xong = ''      # cau 'XOAY XONG <ly do> <do>' hoac 'XOAY KHONG: ...' cho nut ghi log mot lan
         self.n_tu_thoat = 0      # so lan tu THOAT trong dich hien tai (02/11 17:33: da lap THOAT_CUNG -> BO_CUOC_HET_GIO 5 lan)
+        self.ra2 = None          # 04/11 lop 2: pha lui thang dang chay (dict) hoac None
 
     def phan_tich(self, pts):
         """Tra (tt, red). tt: ff, fb = quang duong thoang di thang tien/lui (dai rong bang than xe), dl, dr = khoang cach
@@ -270,6 +278,8 @@ class NguoiLai:
         p = self.p
         tt, red = self.phan_tich(pts)
         self.n_do = self.n_do + 1 if red else 0
+        if self.state == 'RA2':                          # 04/11 lop 2: chay ca khi khong co dich (giua hai luot)
+            return self._ra2(pts, now)
         if self.state == 'XOAY':
             return self._xoay(pts, now, goal_active, yaw)
         if self.xoay_cho and self.state == 'BINH_THUONG':
@@ -385,6 +395,48 @@ class NguoiLai:
         self.ra, self.ra_xong = None, 'RA XONG %s %d cm' % (ly, round(di * 100))
         self.xoay_cho = ly != 'MAT_DICH'
         return self._ket_thuc(now, 'RA_XONG', p['t_nghi_sau_xong'])
+
+    def ra2_bat_dau(self, pts, now, chi_nhin=False):
+        """04/11 lop 2: sep giao RA_LUI truoc luot moi (KHONG can dich): lui thang toi khi tam xe cach vat phia truoc >= ra2_cach,
+        hoac da lui ra2_di_max, hoac phia sau con < ra2_sau, hoac qua ra2_t_max s; xong bao RA_XONG (khong XOAY).
+        chi_nhin (phat_lenh tat): xong ngay 0 cm. Dang RA / XOAY / THOAT / RA2 thi bo qua. Tra (bat_dau, cau_log)."""
+        if self.state in ('RA', 'XOAY', 'THOAT', 'RA2'):
+            return False, 'RA2 BO QUA: dang %s' % self.state
+        c0 = cach_truoc(pts, self.p['lop2_w'])
+        self.state, self.trigger, self.xoay_cho = 'RA2', set(), False
+        self.ra2 = dict(t0=now, t_truoc=now, di=0.0, c0=c0, chi_nhin=chi_nhin)
+        return True, 'RA2 BAT DAU LUI (truoc %.2f m, sau %.2f m)%s' % (min(c0, 9.99), thoang(pts, math.pi), ' [chi nhin]' if chi_nhin else '')
+
+    def _ra2(self, pts, now):
+        """Pha lui thang lop 2. Dung khi (theo thu tu): chi nhin; sau co diem trong ra2_sau; truoc >= ra2_cach; da lui
+        ra2_di_max (max(uoc theo lenh, do bang LiDAR)); qua ra2_t_max s. 05/11: sau chi nhin, HUY (ra2_huy) dung truoc het."""
+        r, p = self.ra2, self.p
+        r['di'] += abs(p['v_esc']) * min(max(now - r['t_truoc'], 0.0), 0.2)
+        r['t_truoc'] = now
+        c = cach_truoc(pts, p['lop2_w'])
+        di = max(r['di'], c - r['c0'] if c < INF and r['c0'] < INF else 0.0)
+        if r['chi_nhin']:
+            ly, di = 'CHI_NHIN', 0.0
+        elif r.get('huy'):
+            ly = 'HUY'
+        elif thoang_dem(pts, math.pi, p['ra2_sau'])[1] >= p['dem_diem_do']:
+            ly = 'SAU_%dCM' % round(p['ra2_sau'] * 100)
+        elif c >= p['ra2_cach']:
+            ly = 'CACH_%dCM' % round(p['ra2_cach'] * 100)
+        elif di >= p['ra2_di_max']:
+            ly = 'DA_LUI_%dCM' % round(p['ra2_di_max'] * 100)
+        elif now - r['t0'] > p['ra2_t_max']:
+            ly = 'QUA_%dS' % round(p['ra2_t_max'])
+        else:
+            return -abs(p['v_esc']), 0.0, 'RA_LUI'
+        self.ra2, self.ra_xong = None, 'RA XONG %s %d cm' % (ly, round(di * 100))
+        _, _, ten = self._ket_thuc(now, 'RA_XONG', p['t_nghi_sau_xong'])
+        return (0.0, 0.0, ten) if ly == 'HUY' else (None, None, ten)     # 05/11: HUY => gui mot lenh 0 ngay
+
+    def ra2_huy(self):
+        """05/11 lop 2: gui_duong bi ngat (~/gui_duong_luot HUY hoac mat tep) => buoc sau _ra2 dung, ly HUY."""
+        if self.state == 'RA2':
+            self.ra2['huy'] = True
 
     def _xoay_khong(self, now, ly):
         self.xoay_cho = False
@@ -527,6 +579,40 @@ def doc_sep_thoat(dong, t_now, tuoi_max=3.0):
     return dict(luot=luot, ma=ma, p=p) if len(o) == 6 else dict(luot=luot, ma=ma, p=p, yaw=yaw)
 
 
+def vung_lui(pts, x_xa=DEFAULT['lop2_x_xa'], w=DEFAULT['lop2_w'], n=DEFAULT['dem_diem_do']):
+    """04/11 lop 2: >= n diem LiDAR trong chu nhat truoc mui X_MUI <= x <= x_xa, |y| <= w (khung than xe)."""
+    return sum(1 for x, y in pts if X_MUI <= x <= x_xa and abs(y) <= w) >= n
+
+
+def cach_truoc(pts, w=DEFAULT['lop2_w']):
+    """Khoang cach (m) tu tam xe toi diem LiDAR gan nhat phia truoc mui trong dai |y| <= w; INF neu khong co."""
+    return min((math.hypot(x, y) for x, y in pts if x >= X_MUI and abs(y) <= w), default=INF)
+
+
+def doc_sep_ra2(dong, t_now, tuoi_max=3.0):
+    """04/11 lop 2: dong ~/sep_thoat '<giay BOOTTIME> RA_LUI <ma_luot> <ma>' | '<giay> KHONG_CAN <ma_luot> <ly do>' (sep.py
+    dong_ra2) -> dict(chu, ma_luot, ma | ly) neu hop le va tuoi <= tuoi_max s, nguoc lai None. doc_sep_thoat bo qua hai chu nay."""
+    o = (dong or '').split()
+    if len(o) < 4 or o[1] not in ('RA_LUI', 'KHONG_CAN'):
+        return None
+    try:
+        t, ma_luot = float(o[0]), int(o[2])
+        ma = int(o[3]) if o[1] == 'RA_LUI' else None
+    except ValueError:
+        return None
+    if not -1.0 <= t_now - t <= tuoi_max:
+        return None
+    return dict(chu='RA_LUI', ma_luot=ma_luot, ma=ma) if o[1] == 'RA_LUI' else dict(chu='KHONG_CAN', ma_luot=ma_luot, ly=' '.join(o[3:]))
+
+
+def luot_huy(dong):
+    """05/11 lop 2: dong ~/gui_duong_luot (None = khong doc duoc tep) -> True neu gui_duong da bi ngat (HUY) hoac mat tep."""
+    if dong is None:
+        return True
+    o = dong.split()
+    return len(o) >= 2 and o[1] == 'HUY'
+
+
 def goc_toi_diem(pose, p):
     """Huong tu xe toi P trong khung than xe (rad, 0 = mui, + = trai); None neu thieu vi tri xe hoac P."""
     if pose is None or p is None:
@@ -581,9 +667,11 @@ if rclpy is not None:
             self.declare_parameter('dung_ban_do', True)       # phan biet dia hinh (co trong ban do) voi vat la
             self.declare_parameter('tf_tuoi_toi_da', 1.0)     # s, vi tri xe cu hon so nay thi khong tin (coi la vat la)
             self.declare_parameter('tep_thoat', os.path.expanduser('~/sep_thoat'))   # viec 109c-c1: chi doc va in, khong phat toc do
+            self.declare_parameter('tep_luot', os.path.expanduser('~/gui_duong_luot'))   # 05/11 lop 2: HUY / mat tep => dung RA2
             self.declare_parameter('nghe_follow_path', True)  # viec 109b: false = "co dich" chi theo /navigate_to_pose nhu cu
             self.goal_kenh = {'nav': False, 'fp': False}      # co dich theo tung kenh trang thai
             self.ma_thoat_cu = None
+            self.ma_ra2_cu = None                            # 04/11 lop 2: ma RA_LUI da nhan
             self.thoat_p = None                              # c3: P cua lan ~/sep_thoat moi nhat
             self.thoat_yaw = None                            # 18:09: huong doan duong toi P (neu sep ghi)
             self.yaw_odom, self.yaw_odom_t = None, 0.0
@@ -650,6 +738,32 @@ if rclpy is not None:
                 _, cau = self.brain.ra_bat_dau(pts, now, self.goal_active)
                 self.get_logger().info(cau)
 
+        def _doc_ra2(self, pts, now, phat):
+            """04/11 lop 2: ~/sep_thoat 'RA_LUI <ma_luot> <ma>' ma moi => giao lui thang cho bo nao (phat = False: chi nhin, xong ngay 0 cm). Khong phat toc do o day."""
+            try:
+                with open(self.get_parameter('tep_thoat').value, 'r') as f:
+                    dong = f.readline()
+            except OSError:
+                return
+            t = doc_sep_ra2(dong, time.clock_gettime(time.CLOCK_BOOTTIME))
+            if t is None or t['chu'] != 'RA_LUI' or t['ma'] == self.ma_ra2_cu:
+                return
+            self.ma_ra2_cu = t['ma']
+            _, cau = self.brain.ra2_bat_dau(pts, now, chi_nhin=not phat)
+            self.get_logger().info(cau)
+
+        def _doc_huy(self):
+            """05/11 lop 2: dang RA2 ma ~/gui_duong_luot la HUY hoac mat tep => bo nao dung RA2 o buoc nay (gui lenh 0)."""
+            if self.brain.state != 'RA2':
+                return
+            try:
+                with open(self.get_parameter('tep_luot').value, 'r') as f:
+                    dong = f.readline()
+            except OSError:
+                dong = None
+            if luot_huy(dong):
+                self.brain.ra2_huy()
+
         def _on_odom(self, msg):
             q = msg.pose.pose.orientation
             self.yaw_odom = math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
@@ -680,6 +794,8 @@ if rclpy is not None:
                 return
             pts = scan_to_xy(self.scan, math.radians(self.get_parameter('lidar_angle_offset_deg').value))
             self._doc_thoat(pts, now, phat)
+            self._doc_ra2(pts, now, phat)
+            self._doc_huy()
             phan_loai = None
             if self.get_parameter('dung_ban_do').value:
                 phan_loai = lambda diem: la_dia_hinh(diem, self._pose_ban_do(), self.grid)   # chi tinh khi can

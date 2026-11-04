@@ -459,6 +459,67 @@ check('18:09 XOAY ve huong doan (co yaw) hoac ve P (khong yaw)', abs(L.goc_xoay_
 _tick18 = _src[_src.index('def _tick'):_src.index('def main')]
 check("18:09 cau doi trang thai in ly do ca khi CHO_SEP (sep bat qua /rosout)", "self.brain.state in ('THOAT', 'CHO_SEP')" in _tick18)
 
+
+# --- 04/11 lop 2: vung kich hoat va lui thang (khong can dich) ---
+def ra2_chay(world, pose, giay=8.0, chi_nhin=False, dt=0.1, **kw):
+    """Giao RA2 luc t = 0 (khong co dich), chay toi RA_XONG. Tra (ten cac buoc, cau ra_xong, tu the cuoi, cham?)."""
+    b = L.NguoiLai(**kw)
+    ok, _ = b.ra2_bat_dau(L.scan_to_xy(make_scan(world, pose)), 0.0, chi_nhin)
+    t, ten = 0.0, []
+    while t < giay:
+        v, w, n = b.step(L.scan_to_xy(make_scan(world, pose)), t, False)
+        ten.append(n)
+        if v is not None:
+            x, y, th = pose
+            pose = (x + v * math.cos(th) * dt, y + v * math.sin(th) * dt, th + w * dt)
+        if collides(world, pose):
+            return ten, b.ra_xong, pose, True
+        if n == 'RA_XONG':
+            return ten, b.ra_xong, pose, False
+        t += dt
+    return ten, b.ra_xong, pose, False
+
+
+_ong8 = [(0.225, 0.405, -0.09, 0.09)]                                  # vat vuong 18 cm, mat cach mui 8 cm (tam xe o 0)
+_pv = L.scan_to_xy(make_scan(hanh_lang(_ong8), (0, 0, 0)))
+check('lop2 vung_lui: vat 8 cm truoc mui => co; hanh lang trong => khong', L.vung_lui(_pv) and not L.vung_lui(L.scan_to_xy(make_scan(hanh_lang(), (0, 0, 0)))))
+check('lop2 cach_truoc: mat vat 0,225 m tu tam', abs(L.cach_truoc(_pv) - 0.225) < 0.02, '%.3f' % L.cach_truoc(_pv))
+_t2, _x2, _p2, _c2 = ra2_chay(hanh_lang(_ong8), (0, 0, 0))
+check('lop2 lui thang toi tam cach vat >= 0,30 m (khong can dich), khong cham, khong xoay',
+      _x2.startswith('RA XONG CACH_30CM') and not _c2 and abs(_p2[1]) < 1e-9 and abs(_p2[2]) < 1e-9 and 0.06 <= -_p2[0] <= 0.12
+      and set(_t2[:-1]) == {'RA_LUI'}, '%s %s' % (_x2, _p2))
+_t3, _x3, _p3, _c3 = ra2_chay(hanh_lang(_ong8 + [(-0.20, -0.14, -0.10, 0.10)]), (0, 0, 0))    # sau con 3,5 cm
+check('lop2 sau < 5 cm: xong ngay, khong lui', _x3 == 'RA XONG SAU_5CM 0 cm' and _p3 == (0, 0, 0) and not _c3, _x3)
+_t4, _x4, _p4, _c4 = ra2_chay(hanh_lang([(0.20, 0.40, -0.09, 0.09)]), (0, 0, 0), ra2_cach=0.60)   # muc tieu xa: dung o 0,30 m
+check('lop2 lui toi da 0,30 m', _x4.startswith('RA XONG DA_LUI_30CM') and 0.29 <= -_p4[0] <= 0.32 and not _c4, '%s %s' % (_x4, _p4))
+_t5, _x5, _p5, _ = ra2_chay(hanh_lang(_ong8), (0, 0, 0), ra2_cach=0.60, ra2_di_max=9.0, v_esc=0.02)
+check('lop2 qua 6 s thi dung', _x5.startswith('RA XONG QUA_6S'), _x5)
+_t6, _x6, _p6, _ = ra2_chay(hanh_lang(_ong8), (0, 0, 0), chi_nhin=True)
+check('lop2 chi nhin (phat_lenh tat): xong ngay 0 cm', _x6 == 'RA XONG CHI_NHIN 0 cm' and _p6 == (0, 0, 0) and _t6 == ['RA_XONG'], _x6)
+_b7 = L.NguoiLai()
+_b7.state = 'THOAT'
+check('lop2 dang THOAT thi bo qua RA2', _b7.ra2_bat_dau(_pv, 0.0) == (False, 'RA2 BO QUA: dang THOAT'))
+check('lop2 doc_sep_ra2: RA_LUI / KHONG_CAN / cu / sai', L.doc_sep_ra2('100.00 RA_LUI 55 900', 100.5) == dict(chu='RA_LUI', ma_luot=55, ma=900)
+      and L.doc_sep_ra2('100.00 KHONG_CAN 55 vung_trong', 100.5) == dict(chu='KHONG_CAN', ma_luot=55, ly='vung_trong')
+      and L.doc_sep_ra2('100.00 RA_LUI 55 900', 104.0) is None and L.doc_sep_ra2('100.00 THOAT 1.26 0.06 1 16', 100.5) is None
+      and L.doc_sep_thoat('100.00 RA_LUI 55 900', 100.5) is None)
+_b8 = L.NguoiLai()
+_b8.ra2_bat_dau(_pv, 0.0)
+_r8 = [_b8.step(_pv, 0.1 * i, False) for i in range(1, 6)]                      # dang lui 0,5 s
+_b8.ra2_huy()
+_h8 = _b8.step(_pv, 0.6, False)
+_s8 = [_b8.step(_pv, 0.6 + 0.1 * i, False)[0] for i in range(1, 40)]            # 4 s sau, cung vat sat mui
+check('lop2 HUY (gui_duong bi ngat): buoc ke tiep gui 0 va RA_XONG, sau do khong tu lui lai',
+      all(r[2] == 'RA_LUI' and r[0] < 0 for r in _r8) and _h8 == (0.0, 0.0, 'RA_XONG') and _b8.ra_xong.startswith('RA XONG HUY')
+      and _b8.state == 'BINH_THUONG' and all(v is None or v >= 0 for v in _s8), '%s %s' % (_h8, _b8.ra_xong))
+_b9 = L.NguoiLai()
+_b9.ra2_huy()
+check('lop2 ra2_huy ngoai RA2 khong lam gi; luot_huy: HUY / mat tep => co, SAP_GUI => khong',
+      _b9.state == 'BINH_THUONG' and _b9.ra2 is None and L.luot_huy('12.30 HUY') and L.luot_huy(None)
+      and not L.luot_huy('12.30 SAP_GUI di_B 1 1 123') and not L.luot_huy(''))
+_khoi2 = _src[_src.index('def _doc_ra2'):_src.index('def _on_odom')]
+check('lop2 _doc_ra2 khong phat toc do', not any(k in _khoi2 for k in ('publish', 'Twist', 'self.pub', 'phat_lenh')))
+
 fails = [n for n, ok in results if not ok]
 print('\nTONG: %d/%d dat' % (len(results) - len(fails), len(results)))
 sys.exit(1 if fails else 0)

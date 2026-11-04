@@ -96,7 +96,7 @@ def chay(io, huong, tuyen_dau, cfg):
     t_chuyen = io.now()
 
     pose, ban = io.cho_san_sang()
-    if pose is None or ban is None or ban.do(ban.o(pose[0], pose[1])):
+    if pose is None or ban is None or ban.vat(ban.o(pose[0], pose[1])):      # 04/11: o CO VAT (khong phai dai cam lop 1)
         ly = ('khong co %s sau 15 s' % thieu_gi(pose, ban)) if pose is None or ban is None else 'xe nam trong o do cua costmap'
         io.bao('DUNG: SAI_VI_TRI (%s). KHONG gui lenh nao.' % ly)
         io.ghi(nhan, '-', 1, 0, 'SAI_VI_TRI', 0)

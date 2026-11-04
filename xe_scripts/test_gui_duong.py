@@ -542,6 +542,68 @@ def test_24_G3_ong_khong_di_het_luot_het_duong_khong_dam_khong_lui():
     assert any(y > 0.5 and 0.3 <= x <= 1.2 for x, y, _ in io.gui_ds[3][1])   # tuyen 2 di khe tren (nhu test_03)
 
 
+# ---------- 04/11 lop 1: OccupancyGrid >= 72 cam khi tim duong; luat dinh re va SAI_VI_TRI do toi o CO VAT (>= 98) ----------
+def luoi_nav2(w, h, vat, res=0.05):
+    """OccupancyGrid (hang 0 o duoi) tu tap o vat theo InflationLayer + bang chuyen cua Nav2 Humble 1.1.20
+    (inflation 0,20, scaling 3,0, inscribed 0,08 nhu nav2_params_cho.yaml)."""
+    data = []
+    for j in range(h):
+        for i in range(w):
+            dc = min((math.hypot(i - a, j - b) for a, b in vat), default=1e9)
+            if dc == 0:
+                c = 254
+            elif dc * res <= 0.08:
+                c = 253
+            elif dc * res <= 0.20 + 1e-9:
+                c = int(252 * math.exp(-3.0 * (dc * res - 0.08)))
+            else:
+                c = 0
+            data.append({254: 100, 253: 99}.get(c, 0 if c == 0 else 1 + (97 * (c - 1)) // 251))
+    return data
+
+
+def test_25_lop1_nguong_72_va_luat_dinh_re_do_toi_o_vat():
+    w, h = 40, 24                                                     # 2,0 x 1,2 m, tuong o hang 0 va 23
+    vat = [(i, 0) for i in range(w)] + [(i, h - 1) for i in range(w)]
+    data = luoi_nav2(w, h, vat)
+    b = T.Ban.tu_luoi(w, h, 0.05, 0.0, 0.0, data)
+    o = lambda j: data[j * w + 20]
+    assert (o(1), o(2), o(3), o(4)) == (99, 92, 79, 68)               # tam cach vat 0,05 / 0,10 / 0,15 / 0,20 m
+    assert b.vat((20, 1)) and not b.vat((20, 2)) and b.do((20, 2)) and not b.vat((20, 3)) and b.do((20, 3)) and not b.do((20, 4))
+    assert T.NGUONG_CAM == 72 and T.NGUONG_VAT == 98
+    assert abs(T.cach_do(b, *b.tam((20, 6))) - 0.25) < 1e-9          # do toi o CO VAT >= 98 (hang 1), khong toi dai cam (hang 3)
+    d = T.tinh_duong(b, b.tam((2, 3)), b.tam((37, 8)), 1)             # xe dung trong dai cam (0,15 m tu tuong): van ra duoc
+    assert all(not b.vat(b.o(x, y)) for x, y, _ in d)
+    xa = [(x, y) for x, y, _ in d if math.hypot(x - b.tam((2, 3))[0], y - b.tam((2, 3))[1]) > T.R_THA_CAM]
+    assert xa and all(not b.do(b.o(x, y)) for x, y in xa)             # ngoai R_THA_CAM: khong vao o >= 72
+    pgm = copy.copy(b)                                                # cung luoi, khong co dai cam (nhu ban PGM)
+    pgm.cam = set()
+    pgm._khoang_cach()
+    khoi = vat + [(i, j) for i in range(8, 21) for j in range(7, 10)]  # khe hang 1..6 duoi khoi: tam giua cach vat 0,15 m
+    b2 = T.Ban.tu_luoi(w, h, 0.05, 0.0, 0.0, luoi_nav2(w, h, khoi))
+    p2 = copy.copy(b2)
+    p2.cam = set()
+    p2._khoang_cach()
+    dau, cuoi = (0.15, 0.45), (1.80, 0.45)
+    assert T.tinh_duong(p2, dau, cuoi, 1)                              # nguong cu: lach qua khe
+    try:
+        T.tinh_duong(b2, dau, cuoi, 1)
+        assert False, 'nguong 72 phai dong khe'
+    except T.KhongCoDuong:
+        pass
+
+
+def test_26_lop1_xe_trong_dai_cam_khong_phai_SAI_VI_TRI():
+    w, h = 40, 24
+    vat = [(i, 0) for i in range(w)] + [(i, h - 1) for i in range(w)]
+    b = T.Ban.tu_luoi(w, h, 0.05, 0.0, 0.0, luoi_nav2(w, h, vat))
+    xe = (b.tam((2, 3))[0], b.tam((2, 3))[1], 0.0)                     # o 79: cam khi tim duong, khong co vat
+    io = IOGia([('SUCCEEDED', 20, (1.60, 0.82, 0.0))], pose=xe, ban=b)
+    assert G.chay(io, 'di_B', 1, CFG) == 0 and CUA(io.rows) == ['KIEM_DAT', 'SUCCEEDED', 'DEN_NOI']
+    io = IOGia([], pose=(b.tam((2, 1))[0], b.tam((2, 1))[1], 0.0), ban=b)   # o 99 (co vat): nhu cu
+    assert G.chay(io, 'di_B', 1, CFG) == 3 and CUA(io.rows) == ['SAI_VI_TRI']
+
+
 if __name__ == '__main__':
     import sys
     import traceback

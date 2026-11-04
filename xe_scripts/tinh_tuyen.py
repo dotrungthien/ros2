@@ -37,7 +37,10 @@ R_THA_CAM = 0.25       # m, o trong vung cam ma cach diem dau duoi so nay thi du
 # 02/11 18:09 (xe 17:57: duong day re 52 do, xe cua rong ra ngoai 12 cm vi banh khong chay cham hon ~0,092 m/s):
 DP_TOL = 0.05          # m, Douglas-Peucker: gop duong thanh doan thang, lech duong goc <= so nay
 GOC_XOAY = 0.35        # rad (~20 do) = rotate_to_heading_min_angle cua RPP: dinh re tu so nay tro len thi xe xoay tai cho
-R_XOAY_CAN = 0.1856 + 0.05   # m, dinh re phai cach o do > R_XOAY (lai_xe_lidar, 18,56 cm) + 5 cm
+R_XOAY_CAN = 0.1856 + 0.05   # m, dinh re phai cach o CO VAT > R_XOAY (lai_xe_lidar, 18,56 cm) + 5 cm
+# 04/11 lop 1 (Thien chot >= 72): OccupancyGrid >= NGUONG_CAM la CAM khi tim duong (tam xe cach o vat < 0,20 m tam o, Nav2
+# inflation 0,20 / scaling 3,0 / o 5 cm); >= NGUONG_VAT la o CO VAT (vat + inscribed 8 cm, nhu cu) - luat dinh re do toi day.
+NGUONG_CAM, NGUONG_VAT = 72, 98
 DOI_MAX = 0.30         # m, tim cho dat dinh moi trong khoang nay (theo chieu dai duong goc) quanh dinh cu
 
 
@@ -82,22 +85,28 @@ class Ban:
         pgm, self.res, self.ox, self.oy = doc_yaml(yaml_path)
         self.w, self.h, px = doc_pgm(pgm)
         self.v = {(i, j): px[(self.h - 1 - j) * self.w + i] for i in range(self.w) for j in range(self.h)}
+        self.cam = set()                      # PGM trinary khong giu gia tri trung gian: chi co o vat (cam = vat)
         self._khoang_cach()
 
     @classmethod
     def tu_luoi(cls, w, h, res, ox, oy, data):
         """Tu OccupancyGrid (data hang-chinh, hang 0 o duoi; -1 = chua biet; 0..100). Doi ra 3 mau nhu map_saver
         trinary voi occupied_thresh 0.98 / free_thresh 0.3 cua costmap_v3_020.yaml: >= 98 do (0), < 30 xanh (254),
-        con lai va -1 vang (205). Duong chi phu thuoc o do / khong do."""
+        con lai va -1 vang (205). 04/11 lop 1: them self.cam = o >= NGUONG_CAM (cam khi tim duong, ca o vat)."""
         self = cls.__new__(cls)
         self.w, self.h, self.res, self.ox, self.oy = w, h, res, ox, oy
         self.v = {(i, j): pixel_tu_chi_phi(data[j * w + i]) for i in range(w) for j in range(h)}
+        self.cam = {(i, j) for i in range(w) for j in range(h) if data[j * w + i] >= NGUONG_CAM}
         self._khoang_cach()
         return self
 
     def _khoang_cach(self):
-        do = [k for k, v in self.v.items() if v == 0]
-        self.d = {k: (0.0 if v == 0 else min((math.hypot(k[0] - a, k[1] - b) for a, b in do), default=1e9)) for k, v in self.v.items()}
+        """d: khoang cach (o) toi o cam gan nhat (gia Dijkstra); d_vat: toi o CO VAT gan nhat (luat dinh re, cach_do)."""
+        def kc(tap):
+            return {k: (0.0 if k in tap else min((math.hypot(k[0] - a, k[1] - b) for a, b in tap), default=1e9)) for k in self.v}
+        vat = {k for k, v in self.v.items() if v == 0}
+        self.d_vat = kc(vat)
+        self.d = self.d_vat if self.cam <= vat else kc(vat | self.cam)
 
     def o(self, x, y):
         return int(math.floor((x - self.ox) / self.res)), int(math.floor((y - self.oy) / self.res))
@@ -106,7 +115,12 @@ class Ban:
         return self.ox + (k[0] + 0.5) * self.res, self.oy + (k[1] + 0.5) * self.res
 
     def do(self, k):
-        return self.v.get(k, 0) == 0          # ngoai ban do cung coi la do
+        """Cam khi tim duong: o CO VAT hoac o >= NGUONG_CAM (lop 1). Ngoai ban do cung coi la do."""
+        return self.v.get(k, 0) == 0 or k in self.cam
+
+    def vat(self, k):
+        """O CO VAT (>= NGUONG_VAT, nghia cu cua 'do'). Ngoai ban do cung coi la vat."""
+        return self.v.get(k, 0) == 0
 
 
 def pixel_tu_chi_phi(c):
@@ -117,8 +131,10 @@ def pixel_tu_chi_phi(c):
     return 254 if c < 30 else 205
 
 
-def dijkstra(ban, dau, cuoi, cam):
-    """Duong (danh sach o) tu o dau toi o cuoi; cam(o) = True thi khong vao."""
+def dijkstra(ban, dau, cuoi, cam, tha=lambda k: False):
+    """Duong (danh sach o) tu o dau toi o cuoi; cam(o) = True thi khong vao. tha(o) = True: o lop 1 (do ma khong co vat)
+    van vao duoc (xe dang dung trong dai cam); o co vat thi khong bao gio."""
+    chan = lambda k: ban.vat(k) or (ban.do(k) and not tha(k))
     gia = {dau: 0.0}
     truoc = {}
     pq = [(0.0, dau)]
@@ -130,11 +146,11 @@ def dijkstra(ban, dau, cuoi, cam):
             continue
         for di, dj in HUONG8:
             v = (u[0] + di, u[1] + dj)
-            if ban.do(v) or cam(v):
+            if chan(v) or cam(v):
                 continue
-            if di and dj and (ban.do((u[0] + di, u[1])) or ban.do((u[0], u[1] + dj))):
+            if di and dj and (chan((u[0] + di, u[1])) or chan((u[0], u[1] + dj))):
                 continue
-            g2 = g + math.hypot(di, dj) * (1.0 + K_GIA / ban.d[v] ** 3)
+            g2 = g + math.hypot(di, dj) * (1.0 + K_GIA / max(ban.d[v], 0.5) ** 3)   # o tha (d = 0): gia cao, khong chia 0
             if g2 < gia.get(v, math.inf):
                 gia[v] = g2
                 truoc[v] = u
@@ -224,8 +240,8 @@ def cach_do_doan(ban, p, q, buoc=0.02):
 
 
 def cach_do(ban, x, y):
-    """Khoang cach (m) tu o chua (x, y) toi o do gan nhat (tam o toi tam o)."""
-    return ban.d.get(ban.o(x, y), 0.0) * ban.res
+    """Khoang cach (m) tu o chua (x, y) toi o CO VAT gan nhat (tam o toi tam o). 04/11: khong do toi dai cam lop 1."""
+    return ban.d_vat.get(ban.o(x, y), 0.0) * ban.res
 
 
 def goc_re(a, b, c):
@@ -286,7 +302,8 @@ def lam_day_doan(dinh, buoc=BUOC_DAY, yaw_cuoi=None):
 
 def tinh_duong(ban, dau, cuoi, tuyen, buoc=BUOC_DAY, yaw_cuoi=None, kieu='doan', canh_bao=None):
     """Viec 109a: duong day tu dau (x, y) toi cuoi (x, y) theo tuyen 1 | 2 (vung CAM), cung gia va luat nhu bang xs.
-    O cam cach dau < R_THA_CAM van duoc di (xe co the dang dung trong vung cam). Loi => KhongCoDuong.
+    O cam cach dau < R_THA_CAM van duoc di (xe co the dang dung trong vung cam); 04/11: cung ban kinh do, o lop 1 (>= NGUONG_CAM,
+    khong co vat) cung duoc di. Loi => KhongCoDuong.
     kieu 'doan' (mac dinh tu 02/11 18:09): doan thang, dinh re dat cho du cho xoay (doan_thang); 'muot': tiep tuyen nhu 109a.
     canh_bao (list) neu co: them cac dinh re khong doi duoc toi cho du cho xoay."""
     o_dau, o_cuoi = ban.o(*dau), ban.o(*cuoi)
@@ -299,7 +316,8 @@ def tinh_duong(ban, dau, cuoi, tuyen, buoc=BUOC_DAY, yaw_cuoi=None, kieu='doan',
     def cam(k):
         cx, cy = ban.tam(k)
         return x0 <= cx <= x1 and y0 <= cy <= y1 and math.hypot(cx - dau[0], cy - dau[1]) > R_THA_CAM
-    duong = dijkstra(ban, o_dau, o_cuoi, cam)
+    tha = lambda k: math.hypot(ban.tam(k)[0] - dau[0], ban.tam(k)[1] - dau[1]) <= R_THA_CAM
+    duong = dijkstra(ban, o_dau, o_cuoi, cam, tha)
     pl = [tuple(dau)] + [ban.tam(k) for k in duong[1:-1]] + [tuple(cuoi)]
     if kieu == 'muot':
         return lam_day(pl, buoc, yaw_cuoi=yaw_cuoi)

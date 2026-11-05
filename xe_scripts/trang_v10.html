@@ -44,7 +44,11 @@ body.bao{background:var(--bgdg)}
 <span id="chip" class="chip">연결 안 됨</span>
 </div>
 <div id="tt" style="font-size:16px;font-weight:500;margin-top:8px">연결 안 됨</div>
-<div id="sub" style="font-size:13px;color:var(--tx2);min-height:36px">-</div>
+<div id="sub" style="font-size:13px;color:var(--tx2);min-height:36px;white-space:pre-wrap">-</div>
+<canvas id="cv" width="312" height="192" style="width:100%;border-radius:8px;margin-top:6px;cursor:pointer;touch-action:manipulation"></canvas>
+<div id="bdloi" class="loi"></div>
+<div class="lg"><span><i style="background:#5F5E5A"></i>벽</span><span><i style="background:#F09595"></i>차량 중심 금지</span><span><i style="background:#FAC775"></i>주의 구역</span><span><i style="background:#C0DD97"></i>목적지 선택 가능</span></div>
+<div id="vitri" style="font-size:11px;color:var(--tx3);margin-top:2px"></div>
 <div id="ctl"></div>
 <div id="kmsg" style="font-size:13px;margin-top:8px;min-height:20px;color:var(--txwn);white-space:pre-wrap"></div>
 </div>
@@ -97,6 +101,7 @@ function ui(){
   else if(m==='TT_CAN_GIUP')h=nut([['수동 조종',"vao_lai_tay()"],['다시 시도',"lenh('thu_lai')"],['정지',"lenh('dung')",DO]]);
   else if(m==='TT_LAI_TAY')h=nut([['자동으로',"ra_lai_tay()"],['연결 해제',"lenh('tat')"]]);
   if($('ctl').getAttribute('data-h')!==h){$('ctl').innerHTML=h;$('ctl').setAttribute('data-h',h);}
+  ve();
 }
 var CHON=null;   // M3: {dich:'B'|'A', ...} sau khi cham ban do
 // M4: cung hanh dong voi /nut (cung cau hoi xac nhan); PIN nhu /nut (401 -> hoi, giu trong sessionStorage)
@@ -124,12 +129,41 @@ function lenh(x,than,da_hoi){
 function vao_lai_tay(){set('kmsg','수동 조종: 미구현');}
 function ra_lai_tay(){LOCAL=null;ui();}
 function huy_chon(){LOCAL=null;CHON=null;ui();}
+// ---- M2: ban do (/v10/ban_do: vung tu tep cua xe, khong so rieng) ----
+var BD=null,P=6,cv=document.getElementById('cv'),c=cv.getContext('2d');
+var COL=['#5F5E5A','#F09595','#FAC775','#C0DD97'];
+function tai_ban_do(){
+  fetch('/v10/ban_do',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+    if(j.loi){BD=null;set('bdloi','지도 오류: '+j.loi);setTimeout(tai_ban_do,10000);}
+    else{BD=j;set('bdloi','');cv.width=j.w*P;cv.height=j.h*P;}
+    ve();
+  }).catch(function(){setTimeout(tai_ban_do,10000);});
+}
+function tp(x,y){return [(x-BD.ox)/BD.res*P,(BD.h-(y-BD.oy)/BD.res)*P];}
+function vung_tai(x,y){if(!BD)return -1;var i=Math.floor((x-BD.ox)/BD.res),j=Math.floor((y-BD.oy)/BD.res);
+  if(i<0||j<0||i>=BD.w||j>=BD.h)return 0;return +BD.vung[j*BD.w+i];}
+function co_xe(){return S.pose&&['TT_KHONG_KET_NOI','TT_DA_NGAT','TT_DANG_NGAT'].indexOf(S.ma)<0;}
+function diem(x,y,mau,chu){var q=tp(x,y);c.fillStyle=mau;c.beginPath();c.arc(q[0],q[1],6,0,7);c.fill();c.fillStyle='#fff';c.font='11px sans-serif';c.fillText(chu,q[0]-3.5,q[1]+4);}
+function ve(){
+  if(!BD){c.clearRect(0,0,cv.width,cv.height);return;}
+  var tat=['TT_KHONG_KET_NOI','TT_DA_NGAT'].indexOf(ma())>=0;
+  for(var j=0;j<BD.h;j++)for(var i=0;i<BD.w;i++){c.fillStyle=tat?'#D3D1C7':COL[+BD.vung[j*BD.w+i]];c.fillRect(i*P,(BD.h-1-j)*P,P,P);}
+  diem(BD.A[0],BD.A[1],'#2C2C2A','A');diem(BD.B[0],BD.B[1],'#A32D2D','B');
+  if(typeof ve_them==='function')ve_them();
+  if(co_xe()){var x=S.pose.x,y=S.pose.y,th=S.pose.goc_do*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th);
+    c.fillStyle=vung_tai(x,y)===1?'#A32D2D':'#534AB7';c.beginPath();
+    BD.footprint.forEach(function(f,k){var q=tp(x+f[0]*cs-f[1]*sn,y+f[0]*sn+f[1]*cs);k?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});c.closePath();c.fill();
+    var m=tp(x,y),mx=Math.max.apply(null,BD.footprint.map(function(f){return f[0];})),n=tp(x+mx*cs,y+mx*sn);
+    c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(m[0],m[1]);c.lineTo(n[0],n[1]);c.stroke();}
+  set('vitri',S.pose?'위치 (두뇌 기록 '+S.pose.gio.slice(11)+'): x '+S.pose.x.toFixed(2)+' m, y '+S.pose.y.toFixed(2)+' m, '+Math.round(S.pose.goc_do)+'°'
+      +(vung_tai(S.pose.x,S.pose.y)===1?' · 차량 중심이 금지 구역 안':''):'위치 없음 (두뇌 기록 없음)');
+}
 function hoi(){
   fetch('/v10/trang_thai',{cache:'no-store'}).then(function(r){return r.json();}).then(function(s){S=s;
     if(LOCAL==='TT_XEM_TUYEN'&&['TT_SAN_SANG','TT_DA_DEN'].indexOf(S.ma)<0)LOCAL=null;
     ui();}).catch(function(){S={ma:'TT_KHONG_KET_NOI',loi:'Pi 연결 끊김'};ui();});
 }
-hoi();setInterval(hoi,1000);
+tai_ban_do();hoi();setInterval(hoi,1000);
 </script>
 </body>
 </html>

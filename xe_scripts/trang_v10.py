@@ -5,12 +5,18 @@ cau_noi_xe.py chi chuyen moi yeu cau /v10... sang xu_ly(); loi o day tra 500 cho
 Khong can ROS. Chi DOC tep cua xe (khong sua tep lai): ~/sep_nhat_ky.csv, ~/log_phu_lai.txt, ~/log_nut_chuyen.txt,
 ~/sep_thoat, ~/gui_duong_luot, ~/ket_qua_chuyen.csv. Nut bam goi lai DUNG ham cua /nut (bat_dau_job, bat_dau_chuyen,
 dung_chuyen, bat_dau_tat). Ma trang thai goc ASCII/tieng Viet; trang dich sang tieng Han luc in (han()).
-Manh: M1 khung + trang thai; M4 di / dung / bat / tat (goi lai H._nut cua /nut: cung PIN, cung 409).
+Manh: M1 khung + trang thai; M4 di / dung / bat / tat (goi lai H._nut cua /nut: cung PIN, cung 409);
+  M2 ban do + vung (luat 8: ban do tu tep slam_dinh_vi_xuong.yaml tro toi, footprint / inflation tu tep tham so Nav2
+  NAV_PARAMS; thieu tep => loi tren trang, khong so du phong; vung do = o tinh_tuyen cam, tinh bang chinh tinh_tuyen.Ban).
 """
 import json
+import math
 import os
 import re
+import struct
+import sys
 import time
+import zlib
 
 TEP_TRANG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'trang_v10.html')
 T_PHU_LAI_MOI = 3.0      # s: dong log phu lai cu hon so nay thi khong dung de suy trang thai (log dinh ky ~1 s)
@@ -180,7 +186,237 @@ def trang_thai(C):
         'han_s': link['han_s'], 'viec': nut['viec'], 'connect_s': link['connect_s'],
         'chuyen': nut['chuyen'], 'bat': nut['bat'], 'tat': nut['tat'], 'dung': nut['dung'],
         'pin': os.path.exists(C.CFG['pin_file']),
+        'pose': None if not sep['pose'] else dict(zip(('x', 'y', 'goc_do', 'gio'), sep['pose'])),   # M2: dong cuoi co x, y cua sep
     }
+
+
+# ---------- M2: ban do + vung ----------
+NAV2_PADDING = 0.01      # footprint_padding mac dinh cua Nav2 Humble (costmap_2d) khi tep tham so khong ghi; ghi thi dung so trong tep
+_CACHE_BAN = {'khoa': None, 'kq': None}
+
+
+class LoiBanDo(Exception):
+    pass
+
+
+def thu_muc_xe(C):
+    """Thu muc chua tinh_tuyen.py / gui_duong.py / sep.py cua xe (tren Pi: ~). CAU_NOI_THU_MUC_XE de doi (test)."""
+    return os.environ.get('CAU_NOI_THU_MUC_XE') or C.HOME
+
+
+def nap(C, ten):
+    d = thu_muc_xe(C)
+    if d not in sys.path:
+        sys.path.insert(0, d)
+    return __import__(ten)
+
+
+def doc_png(path):
+    """PNG 8 bit khong xen ke (xam, xam+alpha, RGB, RGBA) -> (w, h, list hang [tren truoc] cac gia tri xam 0..255).
+    Thuan Python (zlib) de cau noi khong can PIL."""
+    with open(path, 'rb') as f:
+        b = f.read()
+    if b[:8] != b'\x89PNG\r\n\x1a\n':
+        raise LoiBanDo('khong phai PNG: %s' % path)
+    i, idat, w = 8, b'', None
+    while i < len(b):
+        n, typ = struct.unpack('>I4s', b[i:i + 8])
+        d = b[i + 8:i + 8 + n]
+        if typ == b'IHDR':
+            w, h, bit, mau, _, _, xen = struct.unpack('>IIBBBBB', d)
+            if bit != 8 or xen != 0 or mau not in (0, 2, 4, 6):
+                raise LoiBanDo('PNG chua ho tro (bit %d, mau %d, xen ke %d): %s' % (bit, mau, xen, path))
+        elif typ == b'IDAT':
+            idat += d
+        elif typ == b'IEND':
+            break
+        i += 12 + n
+    if w is None:
+        raise LoiBanDo('PNG thieu IHDR: %s' % path)
+    kenh = {0: 1, 2: 3, 4: 2, 6: 4}[mau]
+    raw = zlib.decompress(idat)
+    st = w * kenh
+    hang, truoc = [], bytearray(st)
+    for r in range(h):
+        f = raw[r * (st + 1)]
+        cur = bytearray(raw[r * (st + 1) + 1:(r + 1) * (st + 1)])
+        for x in range(st):
+            a = cur[x - kenh] if x >= kenh else 0
+            c = truoc[x - kenh] if x >= kenh else 0
+            u = truoc[x]
+            if f == 1:
+                cur[x] = (cur[x] + a) & 255
+            elif f == 2:
+                cur[x] = (cur[x] + u) & 255
+            elif f == 3:
+                cur[x] = (cur[x] + (a + u) // 2) & 255
+            elif f == 4:
+                pa, pb, pc = abs(u - c), abs(a - c), abs(a + u - 2 * c)
+                cur[x] = (cur[x] + (a if pa <= pb and pa <= pc else (u if pb <= pc else c))) & 255
+        truoc = cur
+        if kenh in (1, 2):                           # xam(+alpha): kenh 0; RGB(A): trung binh 3 kenh dau (nhu map_server)
+            hang.append([cur[x * kenh] for x in range(w)])
+        else:
+            hang.append([(cur[x * kenh] + cur[x * kenh + 1] + cur[x * kenh + 2]) // 3 for x in range(w)])
+    return w, h, hang
+
+
+def doc_khoa(text, khoa):
+    m = re.search(r'^[ \t]*%s:[ \t]*(.+?)[ \t]*(?:#.*)?$' % re.escape(khoa), text, re.M)
+    return m.group(1).strip().strip('"\'') if m else None
+
+
+def tep_ban_do(C):
+    """slam_dinh_vi_xuong.yaml -> map_file_name -> tep .yaml anh ban do (<ten>.yaml, hoac bo duoi _pg cua posegraph)."""
+    slam = os.environ.get('CAU_NOI_SLAM') or os.path.join(C.HOME, 'slam_dinh_vi_xuong.yaml')
+    try:
+        with open(slam) as f:
+            txt = f.read()
+    except OSError:
+        raise LoiBanDo('khong doc duoc %s' % slam)
+    m = doc_khoa(txt, 'map_file_name')
+    if not m:
+        raise LoiBanDo('%s khong co map_file_name' % slam)
+    ung = [m + '.yaml'] + ([m[:-3] + '.yaml'] if m.endswith('_pg') else [])
+    for u in ung:
+        if os.path.exists(u):
+            return slam, u
+    raise LoiBanDo('khong thay anh ban do cho map_file_name %s (da tim: %s)' % (m, ', '.join(ung)))
+
+
+def doc_ban_do(map_yaml):
+    """map_server: tep yaml + anh -> (w, h, res, ox, oy, occ): occ[j*w+i] (hang 0 o duoi) = 100 vat, 0 trong, -1 chua biet."""
+    with open(map_yaml) as f:
+        txt = f.read()
+    anh = doc_khoa(txt, 'image')
+    res, org = doc_khoa(txt, 'resolution'), doc_khoa(txt, 'origin')
+    occ_t, free_t = doc_khoa(txt, 'occupied_thresh'), doc_khoa(txt, 'free_thresh')
+    neg = doc_khoa(txt, 'negate')
+    if None in (anh, res, org, occ_t, free_t):
+        raise LoiBanDo('%s thieu image / resolution / origin / occupied_thresh / free_thresh' % map_yaml)
+    res, occ_t, free_t, neg = float(res), float(occ_t), float(free_t), int(neg or 0)
+    o = [float(v) for v in org.strip('[]').split(',')]
+    p = anh if os.path.isabs(anh) else os.path.join(os.path.dirname(map_yaml), anh)
+    if p.endswith('.pgm'):
+        w, h, px = _doc_pgm(p)
+        hang = [list(px[r * w:(r + 1) * w]) for r in range(h)]
+    else:
+        w, h, hang = doc_png(p)
+    occ = []
+    for j in range(h):
+        r = hang[h - 1 - j]
+        for i in range(w):
+            v = r[i] / 255.0 if neg else (255 - r[i]) / 255.0
+            occ.append(100 if v > occ_t else (0 if v < free_t else -1))
+    return w, h, res, o[0], o[1], occ, p
+
+
+def _doc_pgm(p):
+    import tinh_tuyen as TT   # doc_pgm cua tinh_tuyen (P5)
+    return TT.doc_pgm(p)
+
+
+def tep_nav2(C):
+    """Tep tham so Nav2 nhu bat_xe.sh: bien NAV_PARAMS, chua co thi dong NAV_PARAMS= trong ~/cau_noi/cau_noi.env."""
+    p = os.environ.get('NAV_PARAMS')
+    if not p:
+        try:
+            with open(os.path.join(C.HOME, 'cau_noi', 'cau_noi.env')) as f:
+                for l in f:
+                    if l.startswith('NAV_PARAMS='):
+                        p = l.split('=', 1)[1].strip().strip('"\'')
+        except OSError:
+            pass
+    if not p:
+        raise LoiBanDo('khong biet tep tham so Nav2 (NAV_PARAMS chua dat, ~/cau_noi/cau_noi.env khong co dong NAV_PARAMS=)')
+    if not os.path.exists(p):
+        raise LoiBanDo('khong thay tep tham so Nav2 %s' % p)
+    return p
+
+
+def doc_nav2(p):
+    """Khoi global_costmap cua tep tham so Nav2: footprint, footprint_padding (neu co), inflation_radius, cost_scaling_factor."""
+    with open(p) as f:
+        txt = f.read()
+    m = re.search(r'^global_costmap:[ \t]*\n((?:[ \t].*\n|[ \t]*\n|#.*\n)*)', txt + '\n', re.M)
+    if not m:
+        raise LoiBanDo('%s khong co khoi global_costmap' % p)
+    k = m.group(1)
+    fp, inf, sc, pad = doc_khoa(k, 'footprint'), doc_khoa(k, 'inflation_radius'), doc_khoa(k, 'cost_scaling_factor'), doc_khoa(k, 'footprint_padding')
+    if fp is None or inf is None or sc is None:
+        raise LoiBanDo('%s (global_costmap) thieu footprint / inflation_radius / cost_scaling_factor' % p)
+    return {'footprint': json.loads(fp), 'inflation_radius': float(inf), 'cost_scaling_factor': float(sc),
+            'footprint_padding': NAV2_PADDING if pad is None else float(pad), 'padding_tu_tep': pad is not None}
+
+
+def ban_kinh_noi(fp, pad):
+    """Nav2: footprint nong them pad (moi dinh ra xa tam theo dau x, y), ban kinh noi tiep = khoang cach nho nhat tam -> canh."""
+    q = [(x + math.copysign(pad, x), y + math.copysign(pad, y)) for x, y in fp]
+    r = 1e9
+    for a, b in zip(q, q[1:] + q[:1]):
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        t = max(0.0, min(1.0, -(a[0] * dx + a[1] * dy) / (dx * dx + dy * dy)))
+        r = min(r, math.hypot(a[0] + t * dx, a[1] + t * dy))
+    return r
+
+
+def luoi_chi_phi(w, h, res, occ, inf_r, scale, r_noi):
+    """Costmap Nav2 (Humble 1.1.20) tu ban do tinh: 254 o vat, 253 trong ban kinh noi tiep, 252*exp(-scale*(d - r_noi))
+    toi inflation_radius (d = khoang cach tam o toi tam o vat gan nhat), doi sang OccupancyGrid nhu /global_costmap/costmap."""
+    vat = [(k % w, k // w) for k, v in enumerate(occ) if v == 100]
+    n = int(math.ceil(inf_r / res)) + 1
+    gan = {}
+    for a, b in vat:
+        for i in range(max(0, a - n), min(w, a + n + 1)):
+            for j in range(max(0, b - n), min(h, b + n + 1)):
+                d = math.hypot(i - a, j - b) * res
+                if d < gan.get((i, j), 1e9):
+                    gan[(i, j)] = d
+    out = []
+    for j in range(h):
+        for i in range(w):
+            k = j * w + i
+            if occ[k] == 100:
+                c = 254
+            else:
+                d = gan.get((i, j), 1e9)
+                c = 253 if d <= r_noi else (int(252 * math.exp(-scale * (d - r_noi))) if d <= inf_r else 0)
+                if occ[k] == -1 and c < 253:      # Nav2: o chua biet chi bi ghi de khi >= noi tiep (inflate_unknown false)
+                    c = 255
+            out.append(0 if c == 0 else (100 if c == 254 else (99 if c == 253 else (-1 if c == 255 else 1 + (97 * (c - 1)) // 251))))
+    return out
+
+
+def ban_do(C):
+    """JSON cho /v10/ban_do (cache theo mtime cac tep nguon). Loi => {'loi': ...}."""
+    try:
+        slam, my = tep_ban_do(C)
+        nv = tep_nav2(C)
+        TT = nap(C, 'tinh_tuyen')
+        anh_p = None
+        khoa = []
+        for f in (slam, my, nv, TT.__file__):
+            khoa.append((f, os.stat(f).st_mtime_ns))
+        if _CACHE_BAN['khoa'] == khoa:
+            return _CACHE_BAN['kq']
+        w, h, res, ox, oy, occ, anh_p = doc_ban_do(my)
+        n2 = doc_nav2(nv)
+        r_noi = ban_kinh_noi(n2['footprint'], n2['footprint_padding'])
+        data = luoi_chi_phi(w, h, res, occ, n2['inflation_radius'], n2['cost_scaling_factor'], r_noi)
+        ban = TT.Ban.tu_luoi(w, h, res, ox, oy, data)
+        vung = ''.join('0' if occ[j * w + i] != 0 and (occ[j * w + i] == 100 or data[j * w + i] == -1) else
+                       ('1' if ban.do((i, j)) else ('3' if data[j * w + i] == 0 else '2'))
+                       for j in range(h) for i in range(w))
+        kq = {'loi': None, 'w': w, 'h': h, 'res': res, 'ox': ox, 'oy': oy, 'vung': vung,
+              'footprint': n2['footprint'], 'inflation_radius': n2['inflation_radius'],
+              'cost_scaling_factor': n2['cost_scaling_factor'], 'footprint_padding': n2['footprint_padding'],
+              'padding_tu_tep': n2['padding_tu_tep'], 'r_noi_tiep': round(r_noi, 4), 'nguong_cam': TT.NGUONG_CAM,
+              'A': list(TT.A), 'B': list(TT.B),
+              'nguon': {'slam': slam, 'ban_do': my, 'anh': anh_p, 'nav2': nv, 'tinh_tuyen': TT.__file__}}
+        _CACHE_BAN.update(khoa=khoa, kq=kq, ban=ban, data=data)
+        return kq
+    except (LoiBanDo, OSError, ValueError, KeyError, IndexError, zlib.error) as e:
+        return {'loi': str(e)}
 
 
 # ---------- HTTP ----------
@@ -236,6 +472,9 @@ def xu_ly(h, C, method, p):
         except OSError:
             return h._gui(404, {'loi': 'khong thay tep', 'tep': 'trang_v10.html'})
         return h._gui(200, html.replace('/*HAN_JS*/', han_js(C)), 'text/html; charset=utf-8')
+    if method == 'GET' and p == '/v10/ban_do':
+        kq = ban_do(C)
+        return h._gui(200 if not kq.get('loi') else 503, kq)
     if method == 'GET' and p == '/v10/trang_thai':
         return h._gui(200, trang_thai(C))
     if method == 'POST' and p.startswith('/v10/api/'):

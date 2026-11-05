@@ -41,6 +41,13 @@ exit "${GIA_MA:-0}"
 for ten, nd in (('bat_xe.sh', BAT_XE), ('chuyen.sh', CHUYEN)):
     with open(os.path.join(TAM, ten), 'w') as f:
         f.write(nd)
+# M2: tep cua xe nhu tren Pi (slam yaml tro /home/project1/ -> doi sang du_lieu_0111, nhu gia_lap/bat_gia.sh)
+with open(os.path.join(HERE, 'du_lieu_0111', 'slam_dinh_vi_xuong.yaml')) as f:
+    SLAM_TXT = f.read().replace('/home/project1/', os.path.join(HERE, 'du_lieu_0111') + '/')
+with open(os.path.join(TAM, 'slam_dinh_vi_xuong.yaml'), 'w') as f:
+    f.write(SLAM_TXT)
+os.environ['NAV_PARAMS'] = os.path.join(HERE, 'nav2_params_cho.yaml')
+os.environ['CAU_NOI_THU_MUC_XE'] = HERE
 sys.path.insert(0, HERE)
 import cau_noi_xe as C  # noqa: E402
 import trang_v10 as V  # noqa: E402
@@ -309,6 +316,120 @@ class M4Lenh(Nen):
             self.assertIn(cau, C.TRANG_NUT)
         for x in ("lenh('bat')", "lenh('tat')", "lenh('dung')", "lenh('di')"):
             self.assertIn(x, t)
+
+
+
+# ---------------- M2 ----------------
+class M2BanDo(Nen):
+    def setUp(self):
+        super().setUp()
+        V._CACHE_BAN.update(khoa=None, kq=None)
+
+    def test_ban_do_tu_tep_cua_xe(self):
+        st, j = js(self.port, 'GET', '/v10/ban_do')
+        self.assertEqual(st, 200, j)
+        self.assertIsNone(j['loi'])
+        self.assertEqual((j['w'], j['h'], j['res'], j['ox'], j['oy']), (52, 32, 0.05, -0.566, -0.415))
+        self.assertEqual(len(j['vung']), 52 * 32)
+        self.assertEqual(j['footprint'], [[0.145, 0.08], [0.145, -0.08], [-0.105, -0.08], [-0.105, 0.08]])
+        self.assertEqual((j['inflation_radius'], j['cost_scaling_factor'], j['r_noi_tiep']), (0.2, 3.0, 0.09))
+        self.assertTrue(j['nguon']['ban_do'].endswith('du_lieu_0111/map_xuong_v3.yaml'))   # map_xuong_v3_pg -> map_xuong_v3.yaml
+        self.assertEqual((j['A'], j['B']), ([0.0, 0.0], [1.6, 0.82]))
+        # vung do = dung tap o tinh_tuyen cam (Ban.do) tren costmap dung lai; o vat = vung 0
+        TT = V.nap(C, 'tinh_tuyen')
+        ban = V._CACHE_BAN['ban']
+        for k in range(52 * 32):
+            i, jj = k % 52, k // 52
+            z = j['vung'][jj * 52 + i]
+            if z in '12' or z == '3':
+                self.assertEqual(z == '1', ban.do((i, jj)))
+        w_, h_, _, _, _, occ, _ = V.doc_ban_do(j['nguon']['ban_do'])
+        self.assertEqual(j['vung'].count('0'), sum(1 for v in occ if v != 0))     # vat + chua biet
+        za = j['vung'][ban.o(*TT.A)[1] * 52 + ban.o(*TT.A)[0]]
+        zb = j['vung'][ban.o(*TT.B)[1] * 52 + ban.o(*TT.B)[0]]
+        self.assertNotIn(zb, '01')
+        self.assertNotEqual(za, '0')
+
+    def test_doi_tep_tham_so_thi_doi_vung(self):
+        _, j1 = js(self.port, 'GET', '/v10/ban_do')
+        p = os.path.join(TAM, 'nav2_tam.yaml')
+        with open(os.environ['NAV_PARAMS']) as f:
+            t = f.read()
+        with open(p, 'w') as f:
+            f.write(t.replace('inflation_radius: 0.20 ', 'inflation_radius: 0.30 ').replace('footprint: "[[0.145, 0.08], [0.145, -0.08], [-0.105, -0.08], [-0.105, 0.08]]"',
+                    'footprint: "[[0.145, 0.10], [0.145, -0.10], [-0.105, -0.10], [-0.105, 0.10]]"'))
+        cu = os.environ['NAV_PARAMS']
+        os.environ['NAV_PARAMS'] = p
+        try:
+            _, j2 = js(self.port, 'GET', '/v10/ban_do')
+        finally:
+            os.environ['NAV_PARAMS'] = cu
+        self.assertEqual(j2['inflation_radius'], 0.3)
+        self.assertAlmostEqual(j2['r_noi_tiep'], 0.11)
+        self.assertGreater(j2['vung'].count('1'), j1['vung'].count('1'))
+        self.assertEqual(j2['vung'].count('0'), j1['vung'].count('0'))
+
+    def test_thieu_tep_bao_loi_khong_so_du_phong(self):
+        cu = os.environ.pop('NAV_PARAMS')
+        try:
+            st, j = js(self.port, 'GET', '/v10/ban_do')
+            self.assertEqual(st, 503)
+            self.assertIn('NAV_PARAMS', j['loi'])
+            self.assertNotIn('vung', j)
+            os.makedirs(os.path.join(TAM, 'cau_noi'), exist_ok=True)
+            with open(os.path.join(TAM, 'cau_noi', 'cau_noi.env'), 'w') as f:
+                f.write('NAV_PARAMS=%s\n' % cu)                 # nhu bat_xe.sh: doc dong NAV_PARAMS= trong ~/cau_noi/cau_noi.env
+            st, j = js(self.port, 'GET', '/v10/ban_do')
+            self.assertEqual((st, j['nguon']['nav2']), (200, cu))
+            os.environ['NAV_PARAMS'] = os.path.join(TAM, 'khong_co.yaml')
+            V._CACHE_BAN.update(khoa=None)
+            st, j = js(self.port, 'GET', '/v10/ban_do')
+            self.assertEqual(st, 503)
+            self.assertIn('khong thay tep tham so Nav2', j['loi'])
+        finally:
+            os.environ['NAV_PARAMS'] = cu
+            try:
+                os.remove(os.path.join(TAM, 'cau_noi', 'cau_noi.env'))
+            except OSError:
+                pass
+        slam = os.path.join(TAM, 'slam_dinh_vi_xuong.yaml')
+        with open(slam, 'w') as f:
+            f.write(SLAM_TXT.replace('map_xuong_v3_pg', 'map_khong_co_pg'))
+        try:
+            st, j = js(self.port, 'GET', '/v10/ban_do')
+            self.assertEqual(st, 503)
+            self.assertIn('map_khong_co_pg', j['loi'])
+            os.remove(slam)
+            st, j = js(self.port, 'GET', '/v10/ban_do')
+            self.assertEqual(st, 503)
+            self.assertIn('slam_dinh_vi_xuong.yaml', j['loi'])
+        finally:
+            with open(slam, 'w') as f:
+                f.write(SLAM_TXT)
+        self.assertEqual(js(self.port, 'GET', '/v10/ban_do')[0], 200)
+
+    def test_png_thuan_python_khop_pil(self):
+        try:
+            from PIL import Image
+        except ImportError:
+            self.skipTest('khong co PIL')
+        f = os.path.join(HERE, 'du_lieu_0111', 'map_xuong_v3.png')
+        w, h, hang = V.doc_png(f)
+        im = Image.open(f).convert('L')
+        self.assertEqual(hang, [[im.getpixel((x, y)) for x in range(w)] for y in range(h)])
+        for mode in ('RGB', 'RGBA', 'LA'):
+            p = os.path.join(TAM, 'thu_%s.png' % mode)
+            im.convert(mode).save(p)
+            self.assertEqual(V.doc_png(p)[2], hang, mode)
+
+    def test_vi_tri_tu_sep(self):
+        with open(os.path.join(TAM, 'sep_nhat_ky.csv'), 'w') as f:
+            f.write('gio_mono,gio,loai,dau_hieu,nguon_nghi,phep_kiem,ket_qua,se_lam,x,y,goc_do\n'
+                    '5.00,2026-11-06 03:00:00,TU_THE,DI_THUONG,,,,,0.41,0.20,15\n5.10,2026-11-06 03:00:01,VONG,x,,,,,,,\n')
+        st, j = js(self.port, 'GET', '/v10/trang_thai')
+        self.assertEqual(j['pose'], {'x': 0.41, 'y': 0.2, 'goc_do': 15.0, 'gio': '2026-11-06 03:00:00'})
+        os.remove(os.path.join(TAM, 'sep_nhat_ky.csv'))
+        self.assertIsNone(js(self.port, 'GET', '/v10/trang_thai')[1]['pose'])
 
 
 if __name__ == '__main__':

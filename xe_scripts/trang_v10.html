@@ -82,13 +82,14 @@ function chip(t,ok){var e=$('chip');e.textContent=t;e.style.background=ok?'var(-
 // M7: 정지 trong 도움이 필요해요 sau khi chuyen da ket thuc (HET_DUONG / DUNG_SEP) = da xem, ve 준비 완료 cho toi chuyen sau
 var BO_QUA=null;
 function khoa_chuyen(){var c=S.chuyen||{};return [c.huong,c.ma,c.ket_qua,c.dong].join('|');}
-function ma(){if(LOCAL)return LOCAL;if(S.ma==='TT_CAN_GIUP'&&!(S.chuyen||{}).chay&&BO_QUA===khoa_chuyen())return 'TT_SAN_SANG';return S.ma;}
+function ma(){if(LOCAL)return LOCAL;if(S.ma==='TT_CAN_GIUP'&&!(S.chuyen||{}).chay&&BO_QUA===khoa_chuyen()&&(S.ly_do||'').indexOf('LOI_THOAT')!==0)return 'TT_SAN_SANG';return S.ma;}
 function phu(m){
   var c=S.chuyen||{};
   switch(m){
   case 'TT_KHONG_KET_NOI':return S.loi?S.loi:(S.link==='fail'?'연결 실패: '+(han(S.chi_tiet)||'-'):'차량을 A 지점에 놓고 누르세요');
   case 'TT_DANG_KET_NOI':return '팀 확인 중: 차체 · Nav2 · 두뇌 · 보조 운전 ('+Math.round(S.connect_s||(S.bat&&S.bat.giay)||0)+'초)'+(S.bat&&S.bat.dong?'\n'+han(S.bat.dong):'');
-  case 'TT_SAN_SANG':return '지도에서 목적지를 누르세요'+(S.han_s!==null&&S.han_s!==undefined?' (남은 시간 '+S.han_s+'초)':'');
+  case 'TT_SAN_SANG':return '지도에서 B 또는 A를 누르세요'+(S.han_s!==null&&S.han_s!==undefined?' (남은 시간 '+S.han_s+'초)':'')
+      +(c.ket_qua&&c.ket_qua!=='NGAT'&&c.ket_qua!=='DEN_NOI'?'\n지난 주행: '+han(c.ket_qua)+' · '+(han(c.dong)||''):'');
   case 'TT_XEM_TUYEN':return CHON?(CHON.dich==='B'?'B로 출발':'A로 복귀')+' · 경로 '+CHON.tuyen+' · 길이 '+CHON.dai_m.toFixed(2)+' m · 빨간 구역까지 최소 '+Math.round(CHON.kc_do_m*100)+' cm'
       +(CHON.dau_trong_do?'\n출발점이 빨간 구역(차량 중심 금지) 안이에요':'')+(CHON.canh_bao.length?'\n회전 공간 부족 꼭짓점 '+CHON.canh_bao.length+'곳':'')
       +'\n정적 지도 기준 미리보기 · 출발하면 차량이 현재 costmap으로 다시 계산해요':'';
@@ -97,7 +98,8 @@ function phu(m){
   case 'TT_DANG_THOAT':return '보조 운전이 차량을 빼내고 있어요 ('+han(S.ly_do)+')';
   case 'TT_DANG_XOAY':return '제자리에서 회전해요 ('+han(S.ly_do)+')';
   case 'TT_DA_DEN':return '새 목적지를 고르세요\n'+(han(c.dong)||'');
-  case 'TT_CAN_GIUP':return '통로가 막혔어요. 확인 후 수동 조종하거나 다시 시도하세요 ('+han(S.ly_do)+')';
+  case 'TT_CAN_GIUP':return (S.ly_do||'').indexOf('LOI_THOAT')===0?'주행 프로그램이 오류로 끝났어요. Nav2 목표가 아직 살아 있을 수 있어요: 모터 스위치를 끄세요\n'+S.ly_do
+      :'통로가 막혔어요. 확인 후 수동 조종하거나 다시 시도하세요 ('+han(S.ly_do)+')';
   case 'TT_LAI_TAY':return '누르고 있는 동안만 움직여요';
   case 'TT_DANG_NGAT':return '모든 프로세스 종료 중';
   case 'TT_DA_NGAT':return '모든 프로세스 종료 · Pi 전원은 터미널에서\n'+(han(S.tat&&S.tat.dong)||'');

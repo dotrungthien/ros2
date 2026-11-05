@@ -131,7 +131,7 @@ def link(l='on', chi=''):
 
 def nut(chuyen_chay=False, ket_qua='', bat=False, tat=False, tat_ma=None):
     return {'tat': {'chay': tat, 'ma': tat_ma, 'dong': ''}, 'bat': {'chay': bat},
-            'chuyen': {'chay': chuyen_chay, 'ket_qua': ket_qua, 'dong': '', 'giay': 1.0}}
+            'chuyen': {'chay': chuyen_chay, 'ket_qua': ket_qua, 'dong': '', 'giay': 1.0, 'ma': None}}
 
 
 SEP0 = {'tu_the': None, 'lenh': None, 'pose': None, 'dung_va_bao': False}
@@ -152,6 +152,17 @@ class M1HamThuan(unittest.TestCase):
         self.assertEqual(f(link('on'), nut(ket_qua='DEN_NOI'), SEP0, None, None, None, now)[0], 'TT_DA_DEN')
         self.assertEqual(f(link('on'), nut(ket_qua='HET_DUONG'), SEP0, None, None, None, now)[0], 'TT_CAN_GIUP')
         self.assertEqual(f(link('on'), nut(ket_qua='DUNG_SEP'), SEP0, None, None, None, now)[0], 'TT_CAN_GIUP')
+        # gui_duong chet vi RuntimeError khi bi SIGINT (gia lap 06/11): ma 1 nhung dong khong phai HET_DUONG -> LOI_THOAT
+        n1 = nut(ket_qua='HET_DUONG')
+        n1['chuyen'].update(ma=1, dong='RuntimeError: Unable to convert call argument to Python object')
+        ma_, ly_ = f(link('on'), n1, SEP0, None, None, None, now)
+        self.assertEqual((ma_, ly_[:12]), ('TT_CAN_GIUP', 'LOI_THOAT ma'))
+        n1['chuyen'].update(dong='HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.')
+        self.assertEqual(f(link('on'), n1, SEP0, None, None, None, now), ('TT_CAN_GIUP', 'HET_DUONG'))
+        n1['chuyen'].update(ma=-9, ket_qua='LOI', dong='')
+        self.assertEqual(f(link('on'), n1, SEP0, None, None, None, now)[1][:12], 'LOI_THOAT ma')
+        n1['chuyen'].update(ma=130, ket_qua='NGAT', dong='HUY_DICH_KHI_NGAT ok')
+        self.assertEqual(f(link('on'), n1, SEP0, None, None, None, now)[0], 'TT_SAN_SANG')
         n = nut(chuyen_chay=True)
         self.assertEqual(f(link('on'), n, SEP0, None, None, None, now)[0], 'TT_DANG_DI')
         self.assertEqual(f(link('on'), n, SEP0, ('RA_LUI', '', now - 1), None, None, now)[0], 'TT_DANG_THOAT')
@@ -162,7 +173,8 @@ class M1HamThuan(unittest.TestCase):
         self.assertEqual(f(link('on'), n, SEP0, None, None, 'RA_TIEN', now)[0], 'TT_DANG_THOAT')
         self.assertEqual(f(link('on'), n, SEP0, None, 'CHO', None, now)[0], 'TT_DANG_CHO')
         self.assertEqual(f(link('on'), n, SEP0, None, 'THOAT', None, now)[0], 'TT_DANG_THOAT')
-        self.assertEqual(f(link('on'), n, dict(SEP0, tu_the=('VAT_LA_TRUOC', '', '')), None, None, None, now)[0], 'TT_DANG_CHO')
+        self.assertEqual(f(link('on'), n, dict(SEP0, tu_the=('CHO', 'KHONG_CO_DICH', '')), None, None, None, now)[0], 'TT_DANG_DI')   # sep chi nhin
+        self.assertEqual(f(link('on'), n, dict(SEP0, tu_the=('CHO', 'VAT_LA 3s', '')), None, None, None, now)[0], 'TT_DANG_DI')
         self.assertEqual(f(link('on'), n, dict(SEP0, dung_va_bao=True), ('RA_LUI', '', now), None, None, now)[0], 'TT_CAN_GIUP')
 
     def test_doc_log_that(self):
@@ -496,8 +508,9 @@ class M5Bang(Nen):
         n = V.nho_ket(d)
         self.assertTrue(all(len(x) == 3 and isinstance(x[0], float) for x in n))
         self.assertEqual(V.nho_ket(['1,g,L1,BAT_DAU_THOAT,,,,,0.50,0.10,3', '2,g,CHUYEN,BAT_DAU,,di_B_day,,,0,0,0',
-                                    '3,g,L1,BAT_DAU_THOAT,,,,,0.90,0.76,40', '4,g,TU_THE,KET_SAT_VAT,,,,,0.95,0.76,41',
-                                    '5,g,L1,BAT_DAU_THOAT,,,,,,,']), [[0.9, 0.76, 'BAT_DAU_THOAT'], [0.95, 0.76, 'KET_SAT_VAT']])
+                                    '3,g,L1,BAT_DAU_THOAT,,,,,0.90,0.76,40', '4,g,TRUY_VET,KET_SAT_VAT,n,k,BAT,,1.05,0.76,41',
+                                    '5,g,TRUY_VET,KET_SAT_VAT,n,k,HET,,1.30,0.76,41', '6,g,TRUY_VET,VAT_LA_TRUOC,n,k,BAT,,0.93,0.77,41',
+                                    '7,g,L1,BAT_DAU_THOAT,,,,,,,']), [[0.9, 0.76, 'BAT_DAU_THOAT'], [1.05, 0.76, 'KET_SAT_VAT']])
         self.assertEqual(V.dong_chuyen_co_nghia(['== cau_noi_xe 03:00:00: di_B (BANG=day) ==', '']), '')
         self.assertEqual(V.dong_chuyen_co_nghia(['== cau_noi_xe x ==', '-- tuyen 1, lan 1/3: 3 diem', '  ']), '-- tuyen 1, lan 1/3: 3 diem')
 
@@ -526,6 +539,11 @@ class M5Bang(Nen):
             self.assertEqual(tt.get('lai_xe_lidar.py'), {'phat_lenh': 'true', 'sep_ra_thoat': 'false'})
             LINK['on'] = True
             self.assertTrue(C.bat_dau_chuyen('di_B'))
+
+            def co_dong_tuyen():                                     # chuyen.sh gia ghi dong '-- tuyen' sau khi Popen tra ve
+                with open(C.CFG['log_chuyen']) as fl:
+                    return '-- tuyen 1' in fl.read()
+            self.assertTrue(cho(co_dong_tuyen))
             with open(os.path.join(TAM, 'log_phu_lai.txt'), 'w') as fh:
                 fh.write(ros(time.time(), 'XANH_VANG -> RA_LUI (vung_sau) | SAU=0.05 TRUOC=0.30') + '\n')
             st, b = http(self.port, 'GET', '/v10/trang_thai')[0::2]
@@ -732,6 +750,127 @@ class M6LaiTay(Nen):
         for x in ('aria-label="전진"', 'aria-label="후진"', 'aria-label="좌회전"', 'aria-label="우회전"', "'pointerup'", "fetch('/v10/api/lai_tay'",
                   'setInterval(function(){gui_pad(l,a);},100)'):
             self.assertIn(x, t)
+
+
+
+# ---------------- D(1): ben ghi <-> ben doc (doc nguon ben ghi; tep co dong khong duoc in: chi assertTrue + cau rieng) ----------------
+def doc(*p):
+    with open(os.path.join(HERE, *p), encoding='utf-8') as f:
+        return f.read()
+
+
+class D1KhopGhep(unittest.TestCase):
+    def test_sep_nhat_ky(self):
+        S = V.nap(C, 'sep')
+        cot = S.COT_NHAT_KY.split(',')
+        self.assertEqual((cot[1], cot[2], cot[3], cot[6], cot[8:11]), ('gio', 'loai', 'dau_hieu', 'ket_qua', ['x', 'y', 'goc_do']))
+        src = doc('sep.py')
+        for s in ("ghi('TU_THE'", "ghi('LENH'", "ghi('CHUYEN', 'BAT_DAU'", "'BAT_DAU_THOAT'", "'BAT_DAU_RA_XOAY'", "'DUNG_VA_BAO'",
+                  "os.path.expanduser('~/sep_nhat_ky.csv')"):
+            self.assertIn(s, src)
+        for ten in tuple(d for _, d in V.NHO_LOAI):
+            self.assertIn("'%s'" % ten, src, ten)
+        # moi (loai, dau_hieu) cua NHO_LOAI co that trong nhat ky xe 05/11 (khong chi la chuoi trong ma)
+        with open(os.path.join(DL, 'sep_nhat_ky.csv')) as f:
+            co = {tuple(l.split(',')[2:4]) for l in f}
+        self.assertTrue(V.NHO_LOAI - {('L1', 'BAT_DAU_RA_XOAY')} <= co, V.NHO_LOAI - co)
+        self.assertIn("ghi('L1', 'BAT_DAU_RA_XOAY'", src)
+        # TU_THE that cua sep: trang khong suy trang thai tu TU_THE (chi hien o dong 두뇌)
+        with open(os.path.join(DL, 'sep_nhat_ky.csv')) as f:
+            tu_the = {l.split(',')[3] for l in f if l.split(',')[2:3] == ['TU_THE']}
+        self.assertLessEqual({'DI_THUONG', 'CHO', 'THAN_TRONG', 'DUNG_VA_BAO', 'THOAT'}, tu_the)
+        self.assertFalse(hasattr(V, 'SEP_CHO') or hasattr(V, 'SEP_THOAT'))
+        self.assertTrue(C.CFG['sep_nhat_ky'].endswith('/sep_nhat_ky.csv'))
+
+    def test_log_phu_lai(self):
+        src = doc('lai_xe_lidar.py')
+        self.assertIn("'%s -> %s (%s)%s | %s'", src)
+        self.assertIn("'vung gan nhat: %s | dich=%s trang_thai=%s'", src)
+        self.assertIn("self.get_logger()", src)
+        for ten in V.PHU_LAI_THOAT + V.PHU_LAI_XOAY + V.PHU_LAI_CHO:
+            self.assertIn("'%s'" % ten, src, ten)
+        self.assertIn("'CHO_%d'", src)
+        L = V.nap(C, 'lai_xe_lidar')
+        self.assertEqual(set(L.TEN_VUNG.values()), set(V.VUNG_TEN))
+        bx = doc('bat_xe.sh')
+        self.assertTrue('python3 ~/lai_xe_lidar.py' in bx and '> ~/log_phu_lai.txt 2>&1' in bx, 'bat_xe.sh khong ghi ~/log_phu_lai.txt')
+        self.assertTrue('python3 ~/sep.py' in bx, 'bat_xe.sh khong chay ~/sep.py')
+        self.assertTrue("-p lidar_angle_offset_deg" not in bx, 'bat_xe.sh doi goc lech LiDAR')
+        self.assertEqual(L.scan_to_xy.__defaults__, (0.0,))
+
+    def test_log_chuyen_gui_duong(self):
+        src = doc('gui_duong.py')
+        for s in ("'-- tuyen %d, lan %d/%d:", "lop 2: sep bao %s", "'RA_TIEN', 'tien ra'", "'RA_LUI (vat sat mui)'", "sep bao CHO (%s)",
+                  "'   khong den duoc (%s%s).'", "lop 2: RA_XONG sau", "RA_HET_GIO:", "tinh lai duong tu cho xe", "'HUY_DICH_KHI_NGAT %s'",
+                  "DICH = {'di_B': (TT.B, 0.0), 've_A': (TT.A, None)}"):
+            self.assertIn(s, src, s)
+        self.assertIn('exec python3 "$HOME/gui_duong.py" "$HUONG" "$TUYEN_DAU"', doc('chuyen.sh'))
+        self.assertIn('TUYEN_DAU="${2:-1}"', doc('chuyen.sh'))           # /nut khong doi so 2 => tuyen 1 truoc (M3 cung thu tu)
+
+    def test_sep_thoat_ghi_doc(self):
+        S = V.nap(C, 'sep')
+        p = os.path.join(TAM, 'sep_thoat_thu')
+        S.ghi_lenh(p, 500.0, 'RA_TIEN', '3 7')
+        with open(p) as f:
+            self.assertEqual(V.thoat_moi(f.readline(), 501.0), 'RA_TIEN')
+        self.assertIn("declare_parameter('tep_thoat', os.path.expanduser('~/sep_thoat'))", doc('sep.py'))
+        self.assertIn('time.clock_gettime(time.CLOCK_BOOTTIME)', doc('sep.py'))     # /proc/uptime = CLOCK_BOOTTIME
+
+    def test_ma_thoat(self):
+        self.assertEqual(C.MA_CHUYEN, {0: 'DEN_NOI', 1: 'HET_DUONG', 3: 'SAI_VI_TRI', 4: 'DUNG_SEP', 130: 'NGAT'})
+        self.assertIn('Ma thoat: 0 den noi, 1 het duong, 2 sai doi so, 3 sai vi tri, 4 sep bao dung, 130 bi ngat (NGAT).', doc('gui_duong.py'))
+
+    def test_teleop_web(self):
+        src = doc('..', 'dev_ws', 'src', 'my_bot', 'scripts', 'teleop_web.py')
+        for s in ("COOKIE_NAME = 'teleop_token'", "request.form.get('code', '')", "data.get('linear', 0.0)", "data.get('angular', 0.0)",
+                  "self.declare_parameter('port', 5000)", "@app.route('/cmd', methods=['POST'])", "@app.route('/login', methods=['GET', 'POST'])",
+                  "self.declare_parameter('cmd_topic', '/cmd_vel_teleop')", "MAX_FAILS = 5"):
+            self.assertIn(s, src, s)
+        tm = doc('..', 'dev_ws', 'src', 'my_bot', 'config', 'twist_mux.yaml')
+        self.assertIn('topic: /cmd_vel_teleop', tm)
+        self.assertNotIn("'port'", doc('..', 'dev_ws', 'src', 'my_bot', 'launch', 'mapping_my_bot.launch.py'))   # launch khong doi cong 5000
+
+    def test_ten_bien_ma_giong_bat_xe(self):
+        import re
+        bx = doc('bat_xe.sh')
+        dn = {m.group(1) for m in re.finditer(r'^([A-Z_]+)="?\$\{\1:-', bx, re.M)}
+        dung = set(re.findall(r'access_code:="?\$\{?([A-Z_]+)', bx))
+        self.assertTrue(len(dung) == 1, 'bat_xe.sh: khong thay dung mot bien cho access_code')
+        self.assertTrue(V.TEN_BIEN_MA in dung and V.TEN_BIEN_MA in dn, 'ten bien ma cua cau noi khac bat_xe.sh')
+
+    def test_duong_dan_tren_pi(self):
+        import re
+        bx = doc('bat_xe.sh')
+        m = re.search(r'^SLAM="\$\{SLAM:-(\S+?)\}"', bx, re.M)
+        self.assertTrue(m is not None and m.group(1) == '/home/project1/slam_dinh_vi_xuong.yaml', 'SLAM mac dinh cua bat_xe.sh khac')
+        self.assertTrue("sed -n 's/^NAV_PARAMS=//p' \"$HOME/cau_noi/cau_noi.env\"" in bx, 'bat_xe.sh khong doc NAV_PARAMS tu cau_noi.env')
+        cai = doc('cai_cau_noi.sh')
+        self.assertIn('for f in trang_v10.py trang_v10.html; do', cai)
+        self.assertIn('NAV_PARAMS=/home/$ME/nav2_params_cho.yaml', cai)
+        self.assertIn('EnvironmentFile=-$DIR/cau_noi.env', cai)
+        self.assertEqual(C.CFG['port'], 5001)
+        self.assertEqual(C.CFG['trang_v10'], os.path.join(HERE, 'trang_v10.html'))
+
+    def test_trang_khop_api(self):
+        import re
+        t = http_tinh()
+        s = V.trang_thai(C)
+        for k in set(re.findall(r'\bS\.([a-z_]+)', t)) - {'ma', 'loi'}:      # S.loi: chi trang dat khi mat mang
+            self.assertIn(k, s, k)
+        for k in set(re.findall(r'\bb\.([a-z_]+)', t)) & {'buoc', 'ai_lai', 'ai_uu_tien', 'lan', 'vung', 'vung_tuoi_s', 'xoay', 'nho', 'code'}:
+            self.assertIn(k, s['bang'], k)
+        ma_trang = set(re.findall(r"'(TT_[A-Z_]+)'", t))
+        self.assertEqual(ma_trang, set(V.MA) | {'TT_XEM_TUYEN', 'TT_LAI_TAY'})
+        url = set(re.findall(r"fetch\('(/v10/[a-z_/]+)", t))
+        self.assertEqual(url, {'/v10/trang_thai', '/v10/ban_do', '/v10/tuyen', '/v10/anh_lidar', '/v10/api/', '/v10/api/lai_tay'})
+        lenh = set(re.findall(r"lenh\('([a-z_]+)'", t))
+        self.assertEqual(lenh, {'bat', 'tat', 'dung', 'di', 'thu_lai'})
+        self.assertEqual(set(V.LENH_NUT) | {'di', 'thu_lai', 'lai_tay'}, lenh | {'lai_tay'})
+
+
+def http_tinh():
+    with open(os.path.join(HERE, 'trang_v10.html'), encoding='utf-8') as f:
+        return f.read()
 
 
 if __name__ == '__main__':

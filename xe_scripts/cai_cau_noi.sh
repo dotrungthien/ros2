@@ -33,6 +33,14 @@ echo "[1] Da chep vao $DIR. Tep moi truong: $DIR/cau_noi.env ($(cat "$DIR/cau_no
   && echo "[2] Co ban do ~/map_xuong_v2 (.pgm hoac .png) va .yaml" \
   || echo "[2] CHUA CO ~/map_xuong_v2.png (hoac .pgm) va .yaml: trang se bao 'khong nap duoc ban do'. Chep len roi chay lai, hoac dat CAU_NOI_MAP trong $DIR/cau_noi.env (duong dan khong co duoi)."
 
+# viec 111: trang /v10 ve ban do ma slam_dinh_vi_xuong.yaml tro toi (map_file_name -> <ten>.yaml hoac bo _pg); thieu thi /v10 bao loi
+MFN=$(sed -n 's/^ *map_file_name: *//p' "$HOME/slam_dinh_vi_xuong.yaml" 2>/dev/null | head -1 | tr -d ' "\r')
+if [ -n "$MFN" ] && { [ -f "$MFN.yaml" ] || [ -f "${MFN%_pg}.yaml" ]; }; then
+  echo "[2b] /v10: co anh ban do cho map_file_name $MFN"
+else
+  echo "[2b] CANH BAO /v10: khong thay ${MFN:-(khong doc duoc map_file_name)}.yaml hoac ${MFN%_pg}.yaml: trang /v10 se bao loi ban do (chep map_xuong_v3.png + .yaml tu du_lieu_0111 vao ~)"
+fi
+
 if sudo -n true 2>/dev/null; then
   echo "[3] sudo khong can mat khau: chinh gio tu dien thoai se chay."
 else

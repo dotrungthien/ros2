@@ -41,8 +41,9 @@ MA = ('TT_KHONG_KET_NOI', 'TT_DANG_KET_NOI', 'TT_SAN_SANG', 'TT_DANG_DI', 'TT_DA
 PHU_LAI_THOAT = ('RA_TIEN', 'RA_LUI', 'THOAT_TIEN', 'THOAT_LUI', 'THOAT_XOAY', 'THOAT_CUNG')
 PHU_LAI_XOAY = ('XOAY_P',)
 PHU_LAI_CHO = ('CHO_SEP',)
-SEP_CHO = ('CHO', 'VAT_LA_TRUOC')            # TU_THE cua sep -> dang cho
-SEP_THOAT = ('KET_SAT_VAT',)
+# TU_THE cua sep (DI_THUONG / CHO / THAN_TRONG / DUNG_VA_BAO) KHONG dung de suy 대기/탈출: sep co the chi nhin (ra_lenh=false);
+# trang thai lay tu cai dang thuc thi (phu lai, gui_duong). Y nghi cua sep hien o dong 두뇌. (D(1) gia lap 06/11: TU_THE CHO
+# 'KHONG_CO_DICH' dau chuyen lam trang hien 대기 중 sai.)
 _RE_ROS = re.compile(r'^\[(\w+)\] \[(\d+(?:\.\d+)?)\] \[([^\]]+)\]: (.*)$')
 _RE_L1_DOI = re.compile(r'^(\S+) -> (\S+) \(([^)]*)\)')       # giong sep._RE_L1_DOI
 _RE_L1_DINH_KY = re.compile(r'trang_thai=(\S+)')             # giong sep._RE_L1_DINH_KY
@@ -146,12 +147,13 @@ def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch):
             return 'TT_DANG_THOAT', pl[0] if pl and pl[0] in PHU_LAI_THOAT else (thoat or 'gui_duong lop 2')
         if pl and pl[0] in PHU_LAI_XOAY:
             return 'TT_DANG_XOAY', pl[0]
-        tu_the = sep['tu_the'][0] if sep['tu_the'] else ''
-        if (pl and (pl[0] in PHU_LAI_CHO or pl[0].startswith('CHO_'))) or tu_the in SEP_CHO or chuyen_log == 'CHO':
-            return 'TT_DANG_CHO', pl[0] if pl and (pl[0] in PHU_LAI_CHO or pl[0].startswith('CHO_')) else (tu_the if tu_the in SEP_CHO else 'gui_duong cho')
-        if tu_the in SEP_THOAT:
-            return 'TT_DANG_THOAT', tu_the
+        if (pl and (pl[0] in PHU_LAI_CHO or pl[0].startswith('CHO_'))) or chuyen_log == 'CHO':
+            return 'TT_DANG_CHO', pl[0] if pl and (pl[0] in PHU_LAI_CHO or pl[0].startswith('CHO_')) else 'gui_duong cho'
         return 'TT_DANG_DI', ''
+    # D(1) gia lap 06/11 03:56: SIGINT roi vao rclpy take_message => gui_duong.py chet vi RuntimeError (ma 1, khong HUY, khong NGAT);
+    # /nut ghi HET_DUONG + DA_DUNG nhung dich FollowPath con song, xe di tiep 26 s toi B. Trang bao rieng, khong cho bo qua.
+    if c['ma'] is not None and (c['ma'] not in (0, 1, 3, 4, 130) or (c['ma'] == 1 and not (c['dong'] or '').startswith('HET_DUONG'))):
+        return 'TT_CAN_GIUP', 'LOI_THOAT ma %s: %s' % (c['ma'], (c['dong'] or '')[:120])
     if c['ket_qua'] == 'DEN_NOI':
         return 'TT_DA_DEN', c['dong']
     if c['ket_qua'] in ('HET_DUONG', 'DUNG_SEP'):
@@ -208,7 +210,8 @@ VUNG_TEN = ('TRUOC', 'TR-TRAI', 'TR-PHAI', 'TRAI', 'PHAI', 'SAU', 'SAU-TRAI', 'S
 _RE_VUNG = re.compile(r'(?<![A-Z-])([A-Z]+(?:-[A-Z]+)?)=(\d+(?:\.\d+)?)')
 _RE_LAN = re.compile(r'^-- tuyen (\d+), lan (\d+)/(\d+)')
 _RE_THAM = re.compile(r'^(phat_lenh|ra_lenh|ra_thoat|sep_ra_thoat):=(true|false|True|False)$')
-NHO_LOAI = {('L1', 'BAT_DAU_THOAT'), ('L1', 'BAT_DAU_RA_XOAY'), ('TU_THE', 'KET_SAT_VAT'), ('TU_THE', 'VAT_LA_TRUOC')}
+NHO_LOAI = {('L1', 'BAT_DAU_THOAT'), ('L1', 'BAT_DAU_RA_XOAY'), ('TRUY_VET', 'KET_SAT_VAT'), ('TRUY_VET', 'VAT_LA_TRUOC')}  # TRUY_VET: chi dong BAT
+R_GOP_NHO = 0.05         # m: cho ket cach nhau duoi so nay ve mot dau X
 
 
 def vung_phu_lai(dong):
@@ -241,11 +244,13 @@ def nho_ket(dong):
             continue
         if c[2] == 'CHUYEN' and c[3] == 'BAT_DAU':
             out = []
-        elif (c[2], c[3]) in NHO_LOAI and c[8] and c[9]:
+        elif (c[2], c[3]) in NHO_LOAI and c[8] and c[9] and (c[2] != 'TRUY_VET' or c[6] == 'BAT'):
             try:
-                out.append([float(c[8]), float(c[9]), c[3]])
+                x, y = float(c[8]), float(c[9])
             except ValueError:
-                pass
+                continue
+            if not any(math.hypot(x - a, y - b) < R_GOP_NHO for a, b, _ in out):
+                out.append([x, y, c[3]])
     return out
 
 
@@ -422,7 +427,8 @@ def doc_khoa(text, khoa):
 
 def tep_ban_do(C):
     """slam_dinh_vi_xuong.yaml -> map_file_name -> tep .yaml anh ban do (<ten>.yaml, hoac bo duoi _pg cua posegraph)."""
-    slam = os.environ.get('CAU_NOI_SLAM') or os.path.join(C.HOME, 'slam_dinh_vi_xuong.yaml')
+    # nhu bat_xe.sh: SLAM="${SLAM:-/home/project1/slam_dinh_vi_xuong.yaml}" (bien SLAM trong cau_noi.env ap cho ca hai)
+    slam = os.environ.get('CAU_NOI_SLAM') or os.environ.get('SLAM') or os.path.join(C.HOME, 'slam_dinh_vi_xuong.yaml')
     try:
         with open(slam) as f:
             txt = f.read()

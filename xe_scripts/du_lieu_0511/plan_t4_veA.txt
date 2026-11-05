@@ -1,0 +1,547 @@
+header:
+  stamp:
+    sec: 1793872207
+    nanosec: 284684986
+  frame_id: base_footprint
+poses:
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: 2.220446049250313e-16
+      y: 5.551115123125783e-17
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.047884690277755215
+      y: 0.010227816299397396
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.09576938055551043
+      y: 0.02045563259879485
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.14365407083326565
+      y: 0.030683448898192245
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.19153876111102108
+      y: 0.0409112651975897
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.23942345138877608
+      y: 0.05113908149698704
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.2873081416665315
+      y: 0.06136689779638438
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.33519283194428695
+      y: 0.07159471409578189
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.38307752222204194
+      y: 0.08182253039517917
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.4309622124997974
+      y: 0.09205034669457668
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.4788469027775524
+      y: 0.10227816299397408
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.5267315930553078
+      y: 0.11250597929337158
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.574616283333063
+      y: 0.12273379559276887
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.6225009736108182
+      y: 0.13296161189216615
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.6703856638885736
+      y: 0.14318942819156366
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.7182703541663289
+      y: 0.15341724449096106
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.7661550444440841
+      y: 0.16364506079035857
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9944699762723515
+      w: 0.10502126590776126
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.8140397347218393
+      y: 0.17387287708975585
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9662804692252919
+      w: 0.25749185383959194
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.8532246874025022
+      y: 0.19635299877016266
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9662804692252919
+      w: 0.25749185383959194
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.892409640083165
+      y: 0.21883312045056935
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9662804692252919
+      w: 0.25749185383959194
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.9315945927638279
+      y: 0.24131324213097605
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9662804692252919
+      w: 0.25749185383959194
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -0.9707795454444909
+      y: 0.26379336381138263
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9662804692252919
+      w: 0.25749185383959194
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.0099644981251537
+      y: 0.28627348549178944
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9662804692252919
+      w: 0.25749185383959194
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.0491494508058166
+      y: 0.308753607172196
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.9662804692252919
+      w: 0.25749185383959194
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.0883344034864795
+      y: 0.3312337288526028
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.1243419242577812
+      y: 0.30024336003242114
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.1603494450290834
+      y: 0.26925299121223945
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.1963569658003852
+      y: 0.23826262239205787
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.2323644865716872
+      y: 0.20727225357187617
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.2683720073429892
+      y: 0.1762818847516946
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.3043795281142911
+      y: 0.1452915159315129
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.3403870488855931
+      y: 0.11430114711133132
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.376394569656895
+      y: 0.08331077829114952
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.412402090428197
+      y: 0.052320409470968
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.448409611199499
+      y: 0.021330040650786253
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+- header:
+    stamp:
+      sec: 1793872207
+      nanosec: 284684986
+    frame_id: base_footprint
+  pose:
+    position:
+      x: -1.484417131970801
+      y: -0.009660328169395382
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.937533046098617
+      w: -0.34789623089802
+---

@@ -1,0 +1,6 @@
+== cau_noi_xe 19:02:07: ve_A (BANG=day) ==
+   tuyen 1: khong tim duoc duong (40, 23) -> (11, 8) => doi tuyen
+== Tuyen 1 hong. ==
+   CANH BAO: dinh re (0.56; 0.71) chi cach o do 0.15 m (< 0.24), khong doi duoc
+-- tuyen 2, lan 1/3: 45 diem tu (1.48; 0.74) toi (0.00; 0.00)
+DEN_NOI: ve_A xong theo tuyen 2 (cach dich 0.14 m).

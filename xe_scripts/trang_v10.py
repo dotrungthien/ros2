@@ -9,7 +9,9 @@ Manh: M1 khung + trang thai; M4 di / dung / bat / tat (goi lai H._nut cua /nut: 
   M2 ban do + vung (luat 8: ban do tu tep slam_dinh_vi_xuong.yaml tro toi, footprint / inflation tu tep tham so Nav2
   NAV_PARAMS; thieu tep => loi tren trang, khong so du phong; vung do = o tinh_tuyen cam, tinh bang chinh tinh_tuyen.Ban);
   M3 경로 확인: tinh_tuyen.tinh_duong (import, khong sua) tu vi tri xe toi dich cua gui_duong.DICH, cung thu tu tuyen voi
-  /nut (chuyen.sh khong doi so thu 2 => tuyen 1 truoc, hong thi tuyen 2). Chi B chuan va A (CHON_B_TU_DO tat: gui_duong chi nhan di_B / ve_A).
+  /nut (chuyen.sh khong doi so thu 2 => tuyen 1 truoc, hong thi tuyen 2). Chi B chuan va A (CHON_B_TU_DO tat: gui_duong chi nhan di_B / ve_A);
+  M5 dong 두뇌 + bang 7 dong: chi doc ~/sep_nhat_ky.csv, ~/log_phu_lai.txt, ~/log_nut_chuyen.txt, /proc (ten + tham so true/false
+  cua sep.py, lai_xe_lidar.py, gui_duong.py; KHONG doc tham so khac), twist_mux.yaml (uu tien), lai_xe_lidar.R_XOAY.
 """
 import json
 import math
@@ -183,13 +185,156 @@ def trang_thai(C):
     th = thoat_moi(doc_dong_dau(tep(C, 'sep_thoat')), boot_giay())
     now = time.time()
     ma, ly = suy_trang_thai(link, nut, sep, pl, cl, th, now)
+    m5 = bang_m5(C, ma, sep, nut)
     return {
         'ma': ma, 'ly_do': ly, 'link': link['link'], 'thieu': link['thieu'], 'chi_tiet': link['chi_tiet'],
         'han_s': link['han_s'], 'viec': nut['viec'], 'connect_s': link['connect_s'],
         'chuyen': nut['chuyen'], 'bat': nut['bat'], 'tat': nut['tat'], 'dung': nut['dung'],
         'pin': os.path.exists(C.CFG['pin_file']),
         'pose': None if not sep['pose'] else dict(zip(('x', 'y', 'goc_do', 'gio'), sep['pose'])),   # M2: dong cuoi co x, y cua sep
+        'bang': m5['bang'], 'nao': m5['nao'], 'nho': m5['nho'], 'uu_tien': m5['uu_tien'],                 # M5
     }
+
+
+# ---------- M5: 두뇌 + "지금 누가 무엇을 하나" (chi doc) ----------
+VUNG_TEN = ('TRUOC', 'TR-TRAI', 'TR-PHAI', 'TRAI', 'PHAI', 'SAU', 'SAU-TRAI', 'SAU-PHAI', 'TRONG')
+_RE_VUNG = re.compile(r'(?<![A-Z-])([A-Z]+(?:-[A-Z]+)?)=(\d+(?:\.\d+)?)')
+_RE_LAN = re.compile(r'^-- tuyen (\d+), lan (\d+)/(\d+)')
+_RE_THAM = re.compile(r'^(phat_lenh|ra_lenh|ra_thoat|sep_ra_thoat):=(true|false|True|False)$')
+NHO_LOAI = {('L1', 'BAT_DAU_THOAT'), ('L1', 'BAT_DAU_RA_XOAY'), ('TU_THE', 'KET_SAT_VAT'), ('TU_THE', 'VAT_LA_TRUOC')}
+
+
+def vung_phu_lai(dong):
+    """Dong log phu lai moi nhat co khoang cach vung ('TRUOC=0.27 ...'): ({vung: m}, epoch) hoac (None, None)."""
+    for l in reversed(dong):
+        m = _RE_ROS.match(l)
+        if not m or m.group(3) != 'lai_xe_lidar':
+            continue
+        v = {k: float(x) for k, x in _RE_VUNG.findall(m.group(4)) if k in VUNG_TEN}
+        if v:
+            return v, float(m.group(2))
+    return None, None
+
+
+def lan_thu(dong):
+    """Dong '-- tuyen r, lan l/L' cuoi cua gui_duong: (r, l, L) hoac None."""
+    for l in reversed(dong):
+        m = _RE_LAN.match(l.strip())
+        if m:
+            return tuple(int(x) for x in m.groups())
+    return None
+
+
+def nho_ket(dong):
+    """Cho ket / chan sep ghi tu dong CHUYEN BAT_DAU cuoi: [[x, y, loai], ...] (nhat ky co x, y)."""
+    out = []
+    for l in dong:
+        c = l.split(',')
+        if len(c) < 11:
+            continue
+        if c[2] == 'CHUYEN' and c[3] == 'BAT_DAU':
+            out = []
+        elif (c[2], c[3]) in NHO_LOAI and c[8] and c[9]:
+            try:
+                out.append([float(c[8]), float(c[9]), c[3]])
+            except ValueError:
+                pass
+    return out
+
+
+def uu_tien(C):
+    """Uu tien twist_mux tu tep cua xe (teleop / avoid / nav). Thieu tep => {'loi': ...}, khong so du phong."""
+    p = os.environ.get('CAU_NOI_TWIST_MUX') or os.path.join(C.HOME, 'ros2_ws/install/my_bot/share/my_bot/config/twist_mux.yaml')
+    try:
+        with open(p) as f:
+            txt = f.read()
+    except OSError:
+        return {'loi': 'khong doc duoc %s' % p}
+    out = {'tep': p}
+    for ten in ('teleop', 'avoid', 'nav'):
+        m = re.search(r'^([ \t]+)%s:[ \t]*\n((?:\1[ \t]+.*\n)*)' % ten, txt + '\n', re.M)
+        q = re.search(r'priority:[ \t]*(\d+)', m.group(2)) if m else None
+        out[ten] = int(q.group(1)) if q else None
+    return out
+
+
+def tien_trinh_lai():
+    """Tien trinh sep.py / lai_xe_lidar.py / gui_duong.py dang song va CHI cac tham so true/false da biet (_RE_THAM)."""
+    out = {}
+    for d in os.listdir('/proc'):
+        if not d.isdigit():
+            continue
+        try:
+            with open('/proc/%s/cmdline' % d, 'rb') as f:
+                argv = [a.decode('utf-8', 'ignore') for a in f.read().split(b'\0') if a]
+        except OSError:
+            continue
+        if not argv or not os.path.basename(argv[0]).startswith('python3'):
+            continue
+        for ten in ('sep.py', 'lai_xe_lidar.py', 'gui_duong.py'):
+            if ten in [os.path.basename(a) for a in argv[1:3]]:
+                out[ten] = {m.group(1): m.group(2).lower() for m in (_RE_THAM.match(a) for a in argv) if m}
+    return out
+
+
+def gio_tuoi(gio, now):
+    try:
+        return int(now - time.mktime(time.strptime(gio, '%Y-%m-%d %H:%M:%S')))
+    except (ValueError, OverflowError):
+        return None
+
+
+def bang_m5(C, ma, sep, nut):
+    dong_sep = doc_duoi(C.CFG['sep_nhat_ky'])
+    dong_pl = doc_duoi(tep(C, 'log_phu_lai.txt'), 65536)
+    dong_ch = doc_duoi(C.CFG['log_chuyen'], 65536)
+    ut = uu_tien(C)
+    tt = tien_trinh_lai()
+    now = time.time()
+    vung, t_vung = vung_phu_lai(dong_pl)
+    pl = phu_lai_cuoi(dong_pl)
+    ln = lan_thu(dong_ch) if nut['chuyen']['huong'] else None
+    nho = nho_ket(dong_sep)
+    xoay = None
+    if sep['pose']:
+        bd = ban_do(C)
+        if not bd.get('loi'):
+            ban, L = _CACHE_BAN['ban'], nap(C, 'lai_xe_lidar')
+            x, y = sep['pose'][0], sep['pose'][1]
+            kc = min((kc_toi_o(x, y, ban, i, j) for j in range(bd['h']) for i in range(bd['w'])
+                      if bd['vung'][j * bd['w'] + i] == '0'
+                      and abs(ban.ox + (i + .5) * ban.res - x) < 0.6 and abs(ban.oy + (j + .5) * ban.res - y) < 0.6), default=9.9)
+            xoay = {'duoc': kc > L.R_XOAY, 'kc_m': round(kc, 3), 'r_xoay_m': round(L.R_XOAY, 4),
+                    'trong_do': bool(ban.do(ban.o(x, y)))}
+    pl_lenh = tt.get('lai_xe_lidar.py', {}).get('phat_lenh')
+    if ma in ('TT_DANG_THOAT', 'TT_DANG_XOAY'):
+        ai = ('lai_xe_lidar', 'avoid') if pl_lenh == 'true' else ('lai_xe_lidar (chi nhin, phat_lenh=%s)' % pl_lenh, None)
+    elif ma in ('TT_DANG_DI', 'TT_DANG_CHO'):
+        ai = ('Nav2 (RPP)', 'nav')
+    else:
+        ai = ('', None)
+    bang = {
+        'buoc': (dong_chuyen_co_nghia(dong_ch) if nut['chuyen']['chay'] else '') or '',
+        'ai_lai': ai[0], 'ai_uu_tien': ut.get(ai[1]) if ai[1] else None,
+        'lan': list(ln) if ln else None,
+        'vung': vung, 'vung_tuoi_s': None if t_vung is None else round(now - t_vung, 1),
+        'xoay': xoay,
+        'nho': len(nho),
+        'code': tt,
+        'phu_lai': pl[0] if pl else None,
+    }
+    nao = {'tu_the': list(sep['tu_the']) if sep['tu_the'] else None, 'lenh': list(sep['lenh']) if sep['lenh'] else None,
+           'tuoi_s': gio_tuoi(sep['gio'], now) if sep['gio'] else None}
+    return {'bang': bang, 'nao': nao, 'nho': nho, 'uu_tien': ut}
+
+
+def dong_chuyen_co_nghia(dong):
+    """Dong cuoi khong rong cua log chuyen (stdout gui_duong), bo dong dau '== cau_noi_xe ...'."""
+    for l in reversed(dong):
+        s = l.strip()
+        if s and not s.startswith('== cau_noi_xe'):
+            return s[:160]
+    return ''
 
 
 # ---------- M2: ban do + vung ----------

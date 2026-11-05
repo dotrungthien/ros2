@@ -48,6 +48,7 @@ with open(os.path.join(TAM, 'slam_dinh_vi_xuong.yaml'), 'w') as f:
     f.write(SLAM_TXT)
 os.environ['NAV_PARAMS'] = os.path.join(HERE, 'nav2_params_cho.yaml')
 os.environ['CAU_NOI_THU_MUC_XE'] = HERE
+os.environ['CAU_NOI_TWIST_MUX'] = os.path.join(HERE, '..', 'dev_ws', 'src', 'my_bot', 'config', 'twist_mux.yaml')
 sys.path.insert(0, HERE)
 import cau_noi_xe as C  # noqa: E402
 import trang_v10 as V  # noqa: E402
@@ -478,6 +479,89 @@ class M3Tuyen(Nen):
         t = http(self.port, 'GET', '/v10')[2].decode()
         self.assertIn("fetch('/v10/tuyen?dich='+d", t)
         self.assertIn("var d=Math.hypot(x-BD.B[0],y-BD.B[1])<=R_CHAM?'B':Math.hypot(x-BD.A[0],y-BD.A[1])<=R_CHAM?'A':null;", t)
+
+
+
+# ---------------- M5 ----------------
+class M5Bang(Nen):
+    def test_ham_doc_log(self):
+        with open(os.path.join(DL, 'log_phu_lai.txt')) as f:
+            v, te = V.vung_phu_lai(f.read().splitlines())
+        self.assertEqual(v, {'SAU-TRAI': 0.07, 'TRAI': 0.09, 'TR-TRAI': 0.17, 'TRUOC': 0.27})
+        self.assertGreater(te, 1.79e9)
+        self.assertEqual(V.lan_thu(['-- tuyen 2, lan 1/3: 30 diem', '   lop 2: RA_XONG', '-- tuyen 2, lan 3/3: 5 diem']), (2, 3, 3))
+        self.assertIsNone(V.lan_thu(['x']))
+        with open(os.path.join(DL, 'sep_nhat_ky.csv')) as f:
+            d = f.read().splitlines()
+        n = V.nho_ket(d)
+        self.assertTrue(all(len(x) == 3 and isinstance(x[0], float) for x in n))
+        self.assertEqual(V.nho_ket(['1,g,L1,BAT_DAU_THOAT,,,,,0.50,0.10,3', '2,g,CHUYEN,BAT_DAU,,di_B_day,,,0,0,0',
+                                    '3,g,L1,BAT_DAU_THOAT,,,,,0.90,0.76,40', '4,g,TU_THE,KET_SAT_VAT,,,,,0.95,0.76,41',
+                                    '5,g,L1,BAT_DAU_THOAT,,,,,,,']), [[0.9, 0.76, 'BAT_DAU_THOAT'], [0.95, 0.76, 'KET_SAT_VAT']])
+        self.assertEqual(V.dong_chuyen_co_nghia(['== cau_noi_xe 03:00:00: di_B (BANG=day) ==', '']), '')
+        self.assertEqual(V.dong_chuyen_co_nghia(['== cau_noi_xe x ==', '-- tuyen 1, lan 1/3: 3 diem', '  ']), '-- tuyen 1, lan 1/3: 3 diem')
+
+    def test_uu_tien_tu_tep(self):
+        u = V.uu_tien(C)
+        self.assertEqual((u['teleop'], u['avoid'], u['nav']), (100, 60, 20))
+        cu = os.environ['CAU_NOI_TWIST_MUX']
+        os.environ['CAU_NOI_TWIST_MUX'] = os.path.join(TAM, 'khong_co.yaml')
+        try:
+            u = V.uu_tien(C)
+        finally:
+            os.environ['CAU_NOI_TWIST_MUX'] = cu
+        self.assertIn('loi', u)
+        self.assertNotIn('teleop', u)
+
+    def test_tien_trinh_chi_lay_tham_so_biet(self):
+        import subprocess
+        f = os.path.join(TAM, 'lai_xe_lidar.py')
+        with open(f, 'w') as fh:
+            fh.write('import time\ntime.sleep(30)\n')
+        p = subprocess.Popen([sys.executable if os.path.basename(sys.executable).startswith('python3') else 'python3', f, '--ros-args',
+                              '-p', 'phat_lenh:=true', '-p', 'ma_bi_mat:=BIMAT123', '-p', 'sep_ra_thoat:=false'])
+        try:
+            time.sleep(0.3)
+            tt = V.tien_trinh_lai()
+            self.assertEqual(tt.get('lai_xe_lidar.py'), {'phat_lenh': 'true', 'sep_ra_thoat': 'false'})
+            LINK['on'] = True
+            self.assertTrue(C.bat_dau_chuyen('di_B'))
+            with open(os.path.join(TAM, 'log_phu_lai.txt'), 'w') as fh:
+                fh.write(ros(time.time(), 'XANH_VANG -> RA_LUI (vung_sau) | SAU=0.05 TRUOC=0.30') + '\n')
+            st, b = http(self.port, 'GET', '/v10/trang_thai')[0::2]
+            self.assertNotIn(b'BIMAT123', b)
+            j = json.loads(b)
+            self.assertEqual(j['ma'], 'TT_DANG_THOAT')
+            self.assertEqual((j['bang']['ai_lai'], j['bang']['ai_uu_tien']), ('lai_xe_lidar', 60))
+            self.assertEqual(j['bang']['vung'], {'SAU': 0.05, 'TRUOC': 0.3})
+            self.assertEqual(j['bang']['lan'], [1, 1, 3])
+            self.assertEqual(j['bang']['phu_lai'], 'RA_LUI')
+        finally:
+            p.kill()
+            p.wait()
+            C.dung_chuyen()
+            cho(lambda: not C.trang_thai_nut()['chuyen']['chay'])
+
+    def test_bang_nao_xoay(self):
+        LINK['on'] = True
+        ghi_pose(0.01, 0.00)
+        with open(os.path.join(TAM, 'sep_nhat_ky.csv'), 'a') as f:
+            f.write('6.00,2026-11-06 03:00:02,LENH,DI,,,,,0.01,0.00,0\n6.10,2026-11-06 03:00:03,CHUYEN,BAT_DAU,,di_B_day,,,0.01,0.00,0\n'
+                    '6.20,2026-11-06 03:00:04,L1,BAT_DAU_THOAT,,,,,0.90,0.76,40\n')
+        st, j = js(self.port, 'GET', '/v10/trang_thai')
+        self.assertEqual(j['nao']['tu_the'][0], 'DI_THUONG')
+        self.assertEqual(j['nao']['lenh'][0], 'DI')
+        self.assertGreater(j['nao']['tuoi_s'], 0)
+        self.assertEqual(j['nho'], [[0.9, 0.76, 'BAT_DAU_THOAT']])
+        self.assertEqual(j['bang']['nho'], 1)
+        L = V.nap(C, 'lai_xe_lidar')
+        x = j['bang']['xoay']
+        self.assertEqual(x['r_xoay_m'], round(L.R_XOAY, 4))
+        self.assertEqual(x['duoc'], x['kc_m'] > L.R_XOAY)
+        self.assertEqual(j['bang']['ai_lai'], '')
+        t = http(self.port, 'GET', '/v10')[2].decode()
+        for ten in ('단계', '운전 담당', '통로 시도', '앞코 → 장애물', '제자리 회전', '두뇌 기억', '실제 코드'):
+            self.assertIn('<span>%s</span>' % ten, t)
 
 
 if __name__ == '__main__':

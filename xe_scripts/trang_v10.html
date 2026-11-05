@@ -49,11 +49,20 @@ body.bao{background:var(--bgdg)}
 <div id="bdloi" class="loi"></div>
 <div class="lg"><span><i style="background:#5F5E5A"></i>벽</span><span><i style="background:#F09595"></i>차량 중심 금지</span><span><i style="background:#FAC775"></i>주의 구역</span><span><i style="background:#C0DD97"></i>목적지 선택 가능</span></div>
 <div id="vitri" style="font-size:11px;color:var(--tx3);margin-top:2px"></div>
+<div id="brain" style="font-size:12px;color:var(--tx2);margin-top:6px;padding:6px 8px;border:0.5px solid var(--bd);border-radius:var(--r)">두뇌: -</div>
 <div id="ctl"></div>
 <div id="kmsg" style="font-size:13px;margin-top:8px;min-height:20px;color:var(--txwn);white-space:pre-wrap"></div>
 </div>
 </div>
 <div>
+<div style="font-size:14px;font-weight:500;margin-bottom:6px">지금 누가 무엇을 하나</div>
+<div class="row"><span>단계</span><span id="p0" style="text-align:right">-</span></div>
+<div class="row"><span>운전 담당</span><span id="p4" style="text-align:right">없음</span></div>
+<div class="row"><span>통로 시도</span><span id="pl" style="text-align:right">-</span></div>
+<div class="row"><span>앞코 → 장애물</span><span id="pa" style="text-align:right">-</span></div>
+<div class="row"><span>제자리 회전</span><span id="p9" style="text-align:right">-</span></div>
+<div class="row"><span>두뇌 기억</span><span id="pm" style="text-align:right">-</span></div>
+<div class="row"><span>실제 코드</span><span id="p5" style="text-align:right">-</span></div>
 <div style="font-size:12px;color:var(--tx3);margin-top:8px">비상 정지 = 모터 스위치. '정지'는 Nav2 목표만 취소합니다.</div>
 </div>
 </div>
@@ -103,7 +112,7 @@ function ui(){
   else if(m==='TT_CAN_GIUP')h=nut([['수동 조종',"vao_lai_tay()"],['다시 시도',"lenh('thu_lai')"],['정지',"lenh('dung')",DO]]);
   else if(m==='TT_LAI_TAY')h=nut([['자동으로',"ra_lai_tay()"],['연결 해제',"lenh('tat')"]]);
   if($('ctl').getAttribute('data-h')!==h){$('ctl').innerHTML=h;$('ctl').setAttribute('data-h',h);}
-  ve();
+  ve();bang();
 }
 var CHON=null;   // M3: {dich:'B'|'A', ...} sau khi cham ban do
 // M4: cung hanh dong voi /nut (cung cau hoi xac nhan); PIN nhu /nut (401 -> hoi, giu trong sessionStorage)
@@ -152,6 +161,7 @@ function ve(){
   for(var j=0;j<BD.h;j++)for(var i=0;i<BD.w;i++){c.fillStyle=tat?'#D3D1C7':COL[+BD.vung[j*BD.w+i]];c.fillRect(i*P,(BD.h-1-j)*P,P,P);}
   diem(BD.A[0],BD.A[1],'#2C2C2A','A');diem(BD.B[0],BD.B[1],'#A32D2D','B');
   if(typeof ve_them==='function')ve_them();
+  ve_nho();
   if(co_xe()){var x=S.pose.x,y=S.pose.y,th=S.pose.goc_do*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th);
     c.fillStyle=vung_tai(x,y)===1?'#A32D2D':'#534AB7';c.beginPath();
     BD.footprint.forEach(function(f,k){var q=tp(x+f[0]*cs-f[1]*sn,y+f[0]*sn+f[1]*cs);k?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});c.closePath();c.fill();
@@ -178,6 +188,30 @@ cv.onclick=function(e){
     CHON=j;LOCAL='TT_XEM_TUYEN';set('kmsg','');ui();
   }).catch(function(e){set('kmsg','경로 계산 오류 '+e);});
 };
+// ---- M5: dong 두뇌 + bang 7 dong (chi doc log cua xe) ----
+var VUNG_HAN={'TRUOC':'앞','TR-TRAI':'앞왼쪽','TR-PHAI':'앞오른쪽','TRAI':'왼쪽','PHAI':'오른쪽','SAU':'뒤','SAU-TRAI':'뒤왼쪽','SAU-PHAI':'뒤오른쪽','TRONG':'안쪽'};
+function cm(m){return Math.round(m*100)+' cm';}
+function bang(){
+  var b=S.bang||{},n=S.nao||{},u=S.uu_tien||{},m=ma();
+  set('p0',b.buoc?han(b.buoc):ten(m));
+  set('p4',m==='TT_LAI_TAY'?'사람 (teleop_web), 우선순위 '+(u.teleop===undefined||u.teleop===null?'?':u.teleop)
+      :b.ai_lai?b.ai_lai+(b.ai_uu_tien!==null&&b.ai_uu_tien!==undefined?', 우선순위 '+b.ai_uu_tien:''):m==='TT_CAN_GIUP'?'없음 (차량 정지)':'없음');
+  set('pl',b.lan?'경로 '+b.lan[0]+' · 시도 '+b.lan[1]+'/'+b.lan[2]:'-');
+  if(b.vung){var ks=Object.keys(b.vung).sort(function(a,c){return b.vung[a]-b.vung[c];});
+    set('pa',(b.vung.TRUOC!==undefined?'앞 '+cm(b.vung.TRUOC)+(b.vung.TRUOC<0.06?' (6 cm 미만!)':''):'앞: 목록 밖')+' · 가장 가까움 '+(VUNG_HAN[ks[0]]||ks[0])+' '+cm(b.vung[ks[0]])
+      +(b.vung_tuoi_s>3?' ('+Math.round(b.vung_tuoi_s)+'초 전)':''));}
+  else set('pa','-');
+  set('p9',b.xoay?(b.xoay.duoc?'가능':'불가')+' (중심~벽 '+cm(b.xoay.kc_m)+', 필요 > '+(b.xoay.r_xoay_m*100).toFixed(1)+' cm, 지도 기준)':'-');
+  set('pm',b.nho?b.nho+'곳 막힘 (지도의 빨간 X)':'-');
+  var cd=b.code||{},ds=Object.keys(cd).map(function(k){var q=Object.keys(cd[k]).map(function(x){return x+'='+cd[k][x];}).join(', ');return k+(q?' ('+q+')':'');});
+  set('p5',ds.length?ds.join(' · '):'실행 중인 코드 없음');
+  var nt='두뇌: '+(n.tu_the?han(n.tu_the[0])+(n.tu_the[1]?' ('+han(n.tu_the[1])+')':''):'-')+(n.lenh?' · 명령 '+han(n.lenh[0]):'');
+  if(n.tuoi_s!==null&&n.tuoi_s!==undefined&&n.tuoi_s>15&&S.link==='on')nt+=' · 기록 '+n.tuoi_s+'초 전 (sep.py 확인)';
+  if(b.xoay&&b.xoay.trong_do)nt+=' · 차량 중심이 금지 구역 안 (벽에 가까움)';
+  set('brain',nt);
+}
+function ve_nho(){(S.nho||[]).forEach(function(n){var q=tp(n[0],n[1]);c.strokeStyle='#A32D2D';c.lineWidth=2;c.beginPath();
+  c.moveTo(q[0]-5,q[1]-5);c.lineTo(q[0]+5,q[1]+5);c.moveTo(q[0]+5,q[1]-5);c.lineTo(q[0]-5,q[1]+5);c.stroke();});}
 function hoi(){
   fetch('/v10/trang_thai',{cache:'no-store'}).then(function(r){return r.json();}).then(function(s){S=s;
     if(LOCAL==='TT_XEM_TUYEN'&&['TT_SAN_SANG','TT_DA_DEN'].indexOf(S.ma)<0)LOCAL=null;

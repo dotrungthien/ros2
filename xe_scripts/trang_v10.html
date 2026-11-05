@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMR 제어</title>
+<!-- viec 111 /v10 (cau_noi_xe.py + trang_v10.py). CSS theo mockup v10. Khong tai thu vien ngoai mang. CHUA THU TREN XE. -->
+<style>
+:root{--bg:#f7f6f3;--s1:#efede8;--s2:#ffffff;--tx:#1f1e1c;--tx2:#5f5e5a;--tx3:#888780;--bd:#d3d1c7;--bd2:#b4b2a9;
+--bgok:#eaf3de;--txok:#27500a;--bgac:#e6f1fb;--txac:#0c447c;--bgdg:#fcebeb;--txdg:#a32d2d;--bddg:#f09595;--txwn:#854f0b;--r:8px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1c1c1b;--s1:#262624;--s2:#2c2c2a;--tx:#f1efe8;--tx2:#b4b2a9;--tx3:#888780;--bd:#444441;--bd2:#5f5e5a;
+--bgok:#173404;--txok:#c0dd97;--bgac:#042c53;--txac:#b5d4f4;--bgdg:#501313;--txdg:#f7c1c1;--bddg:#a32d2d;--txwn:#fac775}}
+:root[data-theme="dark"]{--bg:#1c1c1b;--s1:#262624;--s2:#2c2c2a;--tx:#f1efe8;--tx2:#b4b2a9;--tx3:#888780;--bd:#444441;--bd2:#5f5e5a;
+--bgok:#173404;--txok:#c0dd97;--bgac:#042c53;--txac:#b5d4f4;--bgdg:#501313;--txdg:#f7c1c1;--bddg:#a32d2d;--txwn:#fac775}
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px;line-height:1.5}
+button{font:inherit;color:var(--tx);background:var(--s2);border:0.5px solid var(--bd2);border-radius:var(--r);cursor:pointer}
+button:active{transform:scale(0.98)}
+button:disabled{color:var(--tx3);cursor:default}
+.wrap{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:16px;max-width:980px;margin:0 auto}
+@media (max-width:720px){.wrap{grid-template-columns:1fr}}
+.frame{background:var(--s1);border-radius:12px;padding:12px}
+.ph{background:var(--s2);border:0.5px solid var(--bd2);border-radius:16px;padding:12px}
+.chip{font-size:12px;padding:3px 10px;border-radius:var(--r);display:inline-block}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btns button{flex:1;min-width:84px;height:38px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.pad button{height:48px;font-size:18px;touch-action:none;user-select:none;-webkit-user-select:none}
+.pad button.on{background:var(--bgac);color:var(--txac)}
+.row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:5px 0;border-bottom:0.5px solid var(--bd)}
+.row span:first-child{color:var(--tx2);min-width:96px}
+.lg{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--tx2);margin-top:6px}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.loi{font-size:12px;color:var(--txdg);margin-top:4px}
+body.bao{background:var(--bgdg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="frame">
+<div class="ph">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:14px;font-weight:500">AMR 제어</span>
+<span id="chip" class="chip">연결 안 됨</span>
+</div>
+<div id="tt" style="font-size:16px;font-weight:500;margin-top:8px">연결 안 됨</div>
+<div id="sub" style="font-size:13px;color:var(--tx2);min-height:36px">-</div>
+<div id="ctl"></div>
+<div id="kmsg" style="font-size:13px;margin-top:8px;min-height:20px;color:var(--txwn);white-space:pre-wrap"></div>
+</div>
+</div>
+<div>
+<div style="font-size:12px;color:var(--tx3);margin-top:8px">비상 정지 = 모터 스위치. '정지'는 Nav2 목표만 취소합니다.</div>
+</div>
+</div>
+<script>
+/*HAN_JS*/
+var S={ma:'TT_KHONG_KET_NOI'},LOCAL=null,pin='';
+try{pin=sessionStorage.getItem('pin')||'';}catch(e){}
+function $(id){return document.getElementById(id);}
+function set(id,t){$(id).textContent=t;}
+function ten(ma){return HAN_TU[ma]||ma;}
+function chip(t,ok){var e=$('chip');e.textContent=t;e.style.background=ok?'var(--bgok)':'var(--s1)';e.style.color=ok?'var(--txok)':'var(--tx2)';}
+function ma(){return LOCAL||S.ma;}
+function phu(m){
+  var c=S.chuyen||{};
+  switch(m){
+  case 'TT_KHONG_KET_NOI':return S.loi?S.loi:(S.link==='fail'?'연결 실패: '+(han(S.chi_tiet)||'-'):'차량을 A 지점에 놓고 누르세요');
+  case 'TT_DANG_KET_NOI':return '팀 확인 중: 차체 · Nav2 · 두뇌 · 보조 운전 ('+Math.round(S.connect_s||(S.bat&&S.bat.giay)||0)+'초)'+(S.bat&&S.bat.dong?'\n'+han(S.bat.dong):'');
+  case 'TT_SAN_SANG':return '지도에서 목적지를 누르세요'+(S.han_s!==null&&S.han_s!==undefined?' (남은 시간 '+S.han_s+'초)':'');
+  case 'TT_XEM_TUYEN':return '파란 경로를 따라갑니다. 출발을 누르세요';
+  case 'TT_DANG_DI':return '경로를 따라가고 있어요';
+  case 'TT_DANG_CHO':return '앞이 막혔어요. 기다리는 중 ('+han(S.ly_do)+')';
+  case 'TT_DANG_THOAT':return '보조 운전이 차량을 빼내고 있어요 ('+han(S.ly_do)+')';
+  case 'TT_DANG_XOAY':return '제자리에서 회전해요 ('+han(S.ly_do)+')';
+  case 'TT_DA_DEN':return '새 목적지를 고르세요\n'+(han(c.dong)||'');
+  case 'TT_CAN_GIUP':return '통로가 막혔어요. 확인 후 수동 조종하거나 다시 시도하세요 ('+han(S.ly_do)+')';
+  case 'TT_LAI_TAY':return '누르고 있는 동안만 움직여요';
+  case 'TT_DANG_NGAT':return '모든 프로세스 종료 중';
+  case 'TT_DA_NGAT':return '모든 프로세스 종료 · Pi 전원은 터미널에서\n'+(han(S.tat&&S.tat.dong)||'');
+  }
+  return '';
+}
+function nut(ds){return '<div class="btns">'+ds.map(function(d){return '<button'+(d[1]?' onclick="'+d[1]+'"':' disabled')+(d[2]?' style="'+d[2]+'"':'')+'>'+d[0]+'</button>';}).join('')+'</div>';}
+var DO='border-color:var(--bddg);color:var(--txdg)';
+function ui(){
+  var m=ma(),h='';
+  set('tt',ten(m));set('sub',phu(m));
+  chip(m==='TT_KHONG_KET_NOI'||m==='TT_DA_NGAT'||m==='TT_DANG_NGAT'?'연결 안 됨':m==='TT_DANG_KET_NOI'?'연결 중':m==='TT_CAN_GIUP'?'도움 필요':'연결됨',
+       ['TT_KHONG_KET_NOI','TT_DA_NGAT','TT_DANG_NGAT','TT_DANG_KET_NOI','TT_CAN_GIUP'].indexOf(m)<0);
+  if(m==='TT_KHONG_KET_NOI'||m==='TT_DA_NGAT')h=nut([['차량 연결',"lenh('bat')"]]);
+  else if(m==='TT_DANG_KET_NOI')h=nut([['연결 중…']]);
+  else if(m==='TT_DANG_NGAT')h=nut([['종료 중…']]);
+  else if(m==='TT_SAN_SANG'||m==='TT_DA_DEN')h=nut([['수동 조종',"vao_lai_tay()"],['연결 해제',"lenh('tat')"]]);
+  else if(m==='TT_XEM_TUYEN')h=nut([['출발',"lenh('di')"],['취소',"huy_chon()"]]);
+  else if(['TT_DANG_DI','TT_DANG_CHO','TT_DANG_THOAT','TT_DANG_XOAY'].indexOf(m)>=0)h=nut([['정지',"lenh('dung')",DO],['수동 조종',"vao_lai_tay()"]]);
+  else if(m==='TT_CAN_GIUP')h=nut([['수동 조종',"vao_lai_tay()"],['다시 시도',"lenh('thu_lai')"],['정지',"lenh('dung')",DO]]);
+  else if(m==='TT_LAI_TAY')h=nut([['자동으로',"ra_lai_tay()"],['연결 해제',"lenh('tat')"]]);
+  if($('ctl').getAttribute('data-h')!==h){$('ctl').innerHTML=h;$('ctl').setAttribute('data-h',h);}
+}
+function lenh(x){set('kmsg',x+': 미구현');}
+function vao_lai_tay(){set('kmsg','수동 조종: 미구현');}
+function ra_lai_tay(){LOCAL=null;ui();}
+function huy_chon(){LOCAL=null;ui();}
+function hoi(){
+  fetch('/v10/trang_thai',{cache:'no-store'}).then(function(r){return r.json();}).then(function(s){S=s;
+    if(LOCAL==='TT_XEM_TUYEN'&&['TT_SAN_SANG','TT_DA_DEN'].indexOf(S.ma)<0)LOCAL=null;
+    ui();}).catch(function(){S={ma:'TT_KHONG_KET_NOI',loi:'Pi 연결 끊김'};ui();});
+}
+hoi();setInterval(hoi,1000);
+</script>
+</body>
+</html>

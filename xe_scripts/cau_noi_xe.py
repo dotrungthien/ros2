@@ -9,6 +9,7 @@ Viec no lam (chi 3 viec):
 Viec KHONG lam (chua viet): gui muc tieu, dung xe, vi tri xe (M4/M5). Cac duong do tra 501.
 Buoc 4 (03/11, them, duong cu khong doi): trang GET /nut + /api/nut/{trang_thai,bat,di_B,ve_A,dung,tat}: bat muc B,
   chay ~/chuyen.sh BANG=day, dung chuyen (SIGINT gui_duong.py). Moi luc mot viec (409). Dung khan = cong tac motor.
+Viec 111 (06/11, them, /nut va duong cu khong doi): trang GET /v10 + /v10/... (trang_v10.py, trang_v10.html cung thu muc).
 
 Trang thai ket noi (link):
   off         khong co tien trinh nao cua he thong
@@ -188,6 +189,7 @@ DONG_TAT = re.compile(r"^(DA_DON|CON_ROS_SONG|CON_CHAY)")   # bat_xe.sh tat: 0 =
 ENV_MUC_B = {"SEP_RA_LENH": "true", "SEP_RA_THOAT": "true", "PHU_LAI_PHAT_LENH": "true"}
 CFG.update(chuyen=HOME + "/chuyen.sh", log_chuyen=HOME + "/log_nut_chuyen.txt", log_tat=HOME + "/log_nut_tat.txt",
            sep_nhat_ky=HOME + "/sep_nhat_ky.csv", bat_max_s=600, dung_cho_s=3.0)
+CFG.update(trang_v10=os.environ.get("CAU_NOI_TRANG_V10", HERE + "/trang_v10.html"))   # viec 111
 
 
 def dong_khop(path, mau):
@@ -508,11 +510,15 @@ class H(BaseHTTPRequestHandler):
             self._gui(200, TRANG_NUT, "text/html; charset=utf-8")
         elif p == "/api/nut/trang_thai":
             self._gui(200, trang_thai_nut())
+        elif p == "/v10" or p.startswith("/v10/"):
+            self._v10("GET", p)
         else:
             self._gui(404, {"loi": "khong co duong nay"})
 
     def do_POST(self):
         p = self.path.split("?")[0]
+        if p.startswith("/v10/"):
+            return self._v10("POST", p)
         if p.startswith("/api/nut/"):
             return self._nut(p[len("/api/nut/"):])
         if not p.startswith("/api/b/"):
@@ -530,6 +536,14 @@ class H(BaseHTTPRequestHandler):
             return self._gui(202 if ok else 409, {"da_bat_dau": ok})
         # goal / stop / retry / manual / auto: chua viet (M4, M5)
         return self._gui(501, {"loi": "chua lam", "lenh": cmd})
+
+    def _v10(self, method, p):
+        """Viec 111: /v10 o trang_v10.py. Loi o day chi tra 500 cho /v10; /nut va duong cu khong doi."""
+        try:
+            import trang_v10
+            return trang_v10.xu_ly(self, sys.modules[__name__], method, p)
+        except Exception as e:  # noqa: BLE001
+            return self._gui(500, {"loi": "trang_v10: %s" % e})
 
     def _nut(self, cmd):
         if not pin_dung(self.headers.get("X-Pin")):

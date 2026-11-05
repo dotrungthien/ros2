@@ -17,6 +17,10 @@ command -v python3 > /dev/null || loi "khong co python3"
 mkdir -p "$DIR"
 cp -f cau_noi_xe.py "$DIR/cau_noi_xe.py"
 cp -f chon_b_v4.html "$DIR/chon_b.html"
+# viec 111: trang /v10 (thieu thi /v10 bao loi, /nut van chay)
+for f in trang_v10.py trang_v10.html; do
+  [ -f "$f" ] && cp -f "$f" "$DIR/$f" || echo "CANH BAO: thieu $f o thu muc hien tai: trang /v10 se bao loi"
+done
 # tep moi truong: doi NAV_PARAMS o day roi `sudo systemctl restart cau_noi_xe`
 if [ ! -f "$DIR/cau_noi.env" ]; then
   cat > "$DIR/cau_noi.env" <<EOT

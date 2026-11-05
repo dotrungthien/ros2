@@ -98,10 +98,32 @@ function ui(){
   else if(m==='TT_LAI_TAY')h=nut([['자동으로',"ra_lai_tay()"],['연결 해제',"lenh('tat')"]]);
   if($('ctl').getAttribute('data-h')!==h){$('ctl').innerHTML=h;$('ctl').setAttribute('data-h',h);}
 }
-function lenh(x){set('kmsg',x+': 미구현');}
+var CHON=null;   // M3: {dich:'B'|'A', ...} sau khi cham ban do
+// M4: cung hanh dong voi /nut (cung cau hoi xac nhan); PIN nhu /nut (401 -> hoi, giu trong sessionStorage)
+var HOI={bat:'전체를 껐다가 다시 시작할까요 (B단계)? 차량은 A선, 모터 OFF.',tat:'차량의 ROS 전체를 종료할까요?',
+  di_B:'B로 출발? 모터 ON, 손은 스위치 옆에.',ve_A:'A로 복귀? 모터 ON, 손은 스위치 옆에.'};
+var TEN_LENH={bat:'차량 연결',tat:'연결 해제',dung:'정지',di:'출발',thu_lai:'다시 시도'};
+function lenh(x,than,da_hoi){
+  if(x==='di'&&!than){if(!CHON){set('kmsg','목적지를 먼저 고르세요');return;}than={dich:CHON.dich};}
+  var k=x==='di'?(than.dich==='B'?'di_B':'ve_A'):x;
+  if(!da_hoi&&HOI[k]&&!confirm(HOI[k]))return;
+  var o={method:'POST',headers:{'X-Pin':pin}};
+  if(than){o.body=JSON.stringify(than);o.headers['Content-Type']='application/json';}
+  fetch('/v10/api/'+x,o).then(function(r){
+    if(r.status===401){pin=prompt('PIN 입력')||'';try{sessionStorage.setItem('pin',pin);}catch(e){}return lenh(x,than,true);}
+    return r.json().then(function(j){
+      var t=TEN_LENH[x]+': ';
+      if(r.status===409)t+='다른 작업 중이에요 (409)';
+      else if(r.status>=400)t+='오류 '+r.status+' '+(j.loi||'');
+      else if(x==='dung')t+=han(j.ket_qua)+(j.ms!==null&&j.ms!==undefined?' '+j.ms+' ms':'');
+      else t+='시작됨';
+      set('kmsg',t);if(x==='di'&&r.status===202){CHON=null;LOCAL=null;}hoi();
+    });
+  }).catch(function(e){set('kmsg',TEN_LENH[x]+': 네트워크 오류 '+e);});
+}
 function vao_lai_tay(){set('kmsg','수동 조종: 미구현');}
 function ra_lai_tay(){LOCAL=null;ui();}
-function huy_chon(){LOCAL=null;ui();}
+function huy_chon(){LOCAL=null;CHON=null;ui();}
 function hoi(){
   fetch('/v10/trang_thai',{cache:'no-store'}).then(function(r){return r.json();}).then(function(s){S=s;
     if(LOCAL==='TT_XEM_TUYEN'&&['TT_SAN_SANG','TT_DA_DEN'].indexOf(S.ma)<0)LOCAL=null;

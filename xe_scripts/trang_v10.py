@@ -5,7 +5,7 @@ cau_noi_xe.py chi chuyen moi yeu cau /v10... sang xu_ly(); loi o day tra 500 cho
 Khong can ROS. Chi DOC tep cua xe (khong sua tep lai): ~/sep_nhat_ky.csv, ~/log_phu_lai.txt, ~/log_nut_chuyen.txt,
 ~/sep_thoat, ~/gui_duong_luot, ~/ket_qua_chuyen.csv. Nut bam goi lai DUNG ham cua /nut (bat_dau_job, bat_dau_chuyen,
 dung_chuyen, bat_dau_tat). Ma trang thai goc ASCII/tieng Viet; trang dich sang tieng Han luc in (han()).
-Manh: M1 khung + trang thai.
+Manh: M1 khung + trang thai; M4 di / dung / bat / tat (goi lai H._nut cua /nut: cung PIN, cung 409).
 """
 import json
 import os
@@ -202,6 +202,31 @@ HAN_V10 = [
 ]
 
 
+# ---------- M4: di / dung / bat / tat ----------
+LENH_NUT = {'bat': 'bat', 'tat': 'tat', 'dung': 'dung'}       # /v10/api/<lenh> -> /api/nut/<lenh> (nguyen ham cua /nut)
+DICH_NUT = {'B': 'di_B', 'A': 've_A'}                         # 출발: dich B -> 'B로 출발', A -> 'A로 복귀'
+
+
+def doc_than(h):
+    try:
+        n = int(h.headers.get('Content-Length') or 0)
+        return json.loads(h.rfile.read(n) or b'{}') if n else {}
+    except (ValueError, OSError):
+        return {}
+
+
+def lenh(h, C, ten):
+    """POST /v10/api/<ten>: chuyen nguyen sang H._nut (PIN, 409, ma tra ve y nhu /nut)."""
+    if ten in LENH_NUT:
+        return h._nut(LENH_NUT[ten])
+    if ten == 'di':
+        d = doc_than(h).get('dich')
+        if d not in DICH_NUT:
+            return h._gui(400, {'loi': 'dich phai la B hoac A', 'dich': d})
+        return h._nut(DICH_NUT[d])
+    return h._gui(404, {'loi': 'khong co duong nay'})
+
+
 def xu_ly(h, C, method, p):
     """Mot yeu cau /v10... (h: BaseHTTPRequestHandler cua cau noi, C: mo dun cau_noi_xe)."""
     if method == 'GET' and p in ('/v10', '/v10/'):
@@ -213,4 +238,6 @@ def xu_ly(h, C, method, p):
         return h._gui(200, html.replace('/*HAN_JS*/', han_js(C)), 'text/html; charset=utf-8')
     if method == 'GET' and p == '/v10/trang_thai':
         return h._gui(200, trang_thai(C))
+    if method == 'POST' and p.startswith('/v10/api/'):
+        return lenh(h, C, p[len('/v10/api/'):])
     return h._gui(404, {'loi': 'khong co duong nay'})

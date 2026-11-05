@@ -247,5 +247,69 @@ class M1Http(Nen):
         self.assertEqual(js(self.port, 'POST', '/v10/khong_co')[0], 404)
 
 
+
+# ---------------- M4 ----------------
+class M4Lenh(Nen):
+    def test_di_B_ve_A_giong_nut(self):
+        st, j = js(self.port, 'POST', '/v10/api/di', {'dich': 'B'})
+        self.assertEqual((st, j), (202, {'da_bat_dau': True, 'viec': 'chuyen'}))
+        self.assertEqual(C.trang_thai_nut()['chuyen']['huong'], 'di_B')
+        with open(C.CFG['log_chuyen']) as f:
+            dau = f.readline()
+        self.assertIn(': di_B (BANG=day) ==', dau)                 # cung dong dau log nhu /nut (bat_dau_chuyen)
+        self.assertEqual(js(self.port, 'POST', '/v10/api/di', {'dich': 'A'}), (409, {'da_bat_dau': False, 'viec': 'chuyen'}))
+        self.assertEqual(js(self.port, 'POST', '/api/nut/ve_A'), (409, {'da_bat_dau': False, 'viec': 'chuyen'}))
+        self.assertEqual(js(self.port, 'POST', '/v10/api/bat')[0], 409)
+        self.assertEqual(js(self.port, 'POST', '/v10/api/tat')[0], 409)
+        time.sleep(0.3)
+        st, j = js(self.port, 'POST', '/v10/api/dung')
+        self.assertEqual((st, j['ket_qua']), (200, 'DA_DUNG'))
+        self.assertTrue(cho(lambda: not C.trang_thai_nut()['chuyen']['chay']))
+        self.assertEqual(C.trang_thai_nut()['chuyen']['ket_qua'], 'NGAT')
+        st, j = js(self.port, 'POST', '/v10/api/di', {'dich': 'A'})
+        self.assertEqual(st, 202)
+        self.assertEqual(C.trang_thai_nut()['chuyen']['huong'], 've_A')
+        js(self.port, 'POST', '/v10/api/dung')
+        self.assertTrue(cho(lambda: not C.trang_thai_nut()['chuyen']['chay']))
+
+    def test_dich_sai_va_khong_co_chuyen(self):
+        self.assertEqual(js(self.port, 'POST', '/v10/api/di', {'dich': 'C'})[0], 400)
+        self.assertEqual(js(self.port, 'POST', '/v10/api/di', {})[0], 400)
+        self.assertEqual(js(self.port, 'POST', '/v10/api/di')[0], 400)
+        self.assertEqual(js(self.port, 'POST', '/v10/api/dung'), js(self.port, 'POST', '/api/nut/dung'))
+        self.assertEqual(js(self.port, 'POST', '/v10/api/khong_co')[0], 404)
+        self.assertFalse(C.trang_thai_nut()['chuyen']['chay'])
+
+    def test_bat_tat(self):
+        st, j = js(self.port, 'POST', '/v10/api/bat')
+        self.assertEqual((st, j['viec']), (202, 'bat'))
+        self.assertEqual(self.ma(), 'TT_DANG_KET_NOI')
+        self.assertTrue(cho(lambda: not C.trang_thai_nut()['bat']['chay']))
+        self.assertTrue(C.trang_thai_nut()['bat']['dong'].startswith('SAN SANG'))
+        st, j = js(self.port, 'POST', '/v10/api/tat')
+        self.assertEqual((st, j['viec']), (202, 'tat'))
+        self.assertTrue(cho(lambda: not C.trang_thai_nut()['tat']['chay']))
+        self.assertEqual(self.ma(), 'TT_DA_NGAT')
+
+    def test_pin(self):
+        with open(C.CFG['pin_file'], 'w') as f:
+            f.write('2468\n')
+        for ten, than in (('di', {'dich': 'B'}), ('dung', None), ('bat', None), ('tat', None)):
+            self.assertEqual(js(self.port, 'POST', '/v10/api/' + ten, than)[0], 401, ten)
+        self.assertFalse(C.trang_thai_nut()['chuyen']['chay'])
+        self.assertEqual(js(self.port, 'POST', '/v10/api/dung', pin='2468')[0], 200)
+        st, j = js(self.port, 'GET', '/v10/trang_thai')
+        self.assertTrue(j['pin'])
+
+    def test_trang_co_nut_va_cau_hoi_nhu_nut(self):
+        t = http(self.port, 'GET', '/v10')[2].decode()
+        for cau in ('B로 출발? 모터 ON, 손은 스위치 옆에.', 'A로 복귀? 모터 ON, 손은 스위치 옆에.', '차량의 ROS 전체를 종료할까요?',
+                    '전체를 껐다가 다시 시작할까요 (B단계)? 차량은 A선, 모터 OFF.'):
+            self.assertIn(cau, t)
+            self.assertIn(cau, C.TRANG_NUT)
+        for x in ("lenh('bat')", "lenh('tat')", "lenh('dung')", "lenh('di')"):
+            self.assertIn(x, t)
+
+
 if __name__ == '__main__':
     unittest.main()

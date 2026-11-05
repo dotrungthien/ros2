@@ -110,7 +110,7 @@ class Nen(unittest.TestCase):
             except OSError:
                 pass
         with C.LOCK:
-            C.CHUYEN.update(ma=None, ket_qua='', dong='')
+            C.CHUYEN.update(ma=None, ket_qua='', dong='', huong='')
             C.TAT.update(ma=None, dong='')
             C.JOB.update(ket_qua=None, chi_tiet='')
         os.environ.pop('GIA_IN', None)
@@ -562,6 +562,58 @@ class M5Bang(Nen):
         t = http(self.port, 'GET', '/v10')[2].decode()
         for ten in ('단계', '운전 담당', '통로 시도', '앞코 → 장애물', '제자리 회전', '두뇌 기억', '실제 코드'):
             self.assertIn('<span>%s</span>' % ten, t)
+
+
+
+# ---------------- M7 ----------------
+class M7CanGiup(Nen):
+    def test_doc_scan_that(self):
+        L = V.nap(C, 'lai_xe_lidar')
+        for f, n, hop_le, cat in (('du_lieu_0511_toi/scan_ket_5b2.txt', 420, 389, False), ('du_lieu_0511_toi/scan_ket_5b3.txt', 420, 390, False),
+                                  ('du_lieu_0511/scan_ket_k2_1933.txt', 128, 121, True)):          # so tia nhu RA_SOAT_120
+            s = V.doc_scan(os.path.join(HERE, f))
+            self.assertEqual((len(s.ranges), len(L.scan_to_xy(s)), bool(getattr(s, 'bi_cat', False))), (n, hop_le, cat), f)
+
+    def test_anh_lidar_tep_moi_nhat(self):
+        st, j = js(self.port, 'GET', '/v10/anh_lidar')
+        self.assertEqual((st, j['co']), (200, False))                   # khong co tep -> "khong co anh"
+        for i, f in enumerate(('scan_ket_5b2.txt', 'scan_ket_5b3.txt')):
+            shutil.copy(os.path.join(DL, f), os.path.join(TAM, f))
+            os.utime(os.path.join(TAM, f), (time.time() - 100 + i * 50,) * 2)
+        try:
+            st, j = js(self.port, 'GET', '/v10/anh_lidar')
+            self.assertTrue(j['co'])
+            self.assertTrue(j['tep'].endswith('scan_ket_5b3.txt'))
+            L = V.nap(C, 'lai_xe_lidar')
+            pts = [p for p in L.scan_to_xy(V.doc_scan(os.path.join(DL, 'scan_ket_5b3.txt'))) if (p[0] ** 2 + p[1] ** 2) ** .5 <= V.R_ANH]
+            self.assertEqual(j['diem'], [[round(x, 3), round(y, 3)] for x, y in pts])
+            self.assertEqual(j['so_tia'], 420)
+        finally:
+            for f in ('scan_ket_5b2.txt', 'scan_ket_5b3.txt'):
+                os.remove(os.path.join(TAM, f))
+
+    def test_thu_lai_qua_duong_nut(self):
+        LINK['on'] = True
+        self.assertEqual(js(self.port, 'POST', '/v10/api/thu_lai')[0], 409)     # chua co chuyen nao
+        os.environ.update(GIA_KET='HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.', GIA_MA='1', GIA_CHUYEN_S='0.1')
+        self.assertEqual(js(self.port, 'POST', '/v10/api/di', {'dich': 'A'})[0], 202)
+        self.assertTrue(cho(lambda: not C.trang_thai_nut()['chuyen']['chay']))
+        self.assertEqual(self.ma(), 'TT_CAN_GIUP')
+        os.environ.update(GIA_KET='DEN_NOI: ve_A xong.', GIA_MA='0', GIA_CHUYEN_S='30')
+        st, j = js(self.port, 'POST', '/v10/api/thu_lai')
+        self.assertEqual((st, j['viec']), (202, 'chuyen'))
+        self.assertEqual(C.trang_thai_nut()['chuyen']['huong'], 've_A')
+        self.assertEqual(js(self.port, 'POST', '/v10/api/thu_lai')[0], 409)
+        js(self.port, 'POST', '/v10/api/dung')
+        self.assertTrue(cho(lambda: not C.trang_thai_nut()['chuyen']['chay']))
+        with open(C.CFG['pin_file'], 'w') as f:
+            f.write('2468\n')
+        self.assertEqual(js(self.port, 'POST', '/v10/api/thu_lai')[0], 401)
+
+    def test_trang_co_khung_can_giup(self):
+        t = http(self.port, 'GET', '/v10')[2].decode()
+        for x in ('id="help"', 'id="foto"', "lenh('thu_lai')", 'navigator.vibrate', "classList.toggle('bao'", "fetch('/v10/anh_lidar'"):
+            self.assertIn(x, t)
 
 
 if __name__ == '__main__':

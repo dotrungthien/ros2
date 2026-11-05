@@ -49,6 +49,11 @@ body.bao{background:var(--bgdg)}
 <div id="bdloi" class="loi"></div>
 <div class="lg"><span><i style="background:#5F5E5A"></i>벽</span><span><i style="background:#F09595"></i>차량 중심 금지</span><span><i style="background:#FAC775"></i>주의 구역</span><span><i style="background:#C0DD97"></i>목적지 선택 가능</span></div>
 <div id="vitri" style="font-size:11px;color:var(--tx3);margin-top:2px"></div>
+<div id="help" style="display:none;margin-top:8px;padding:8px;border:1px solid var(--bddg);border-radius:var(--r);background:var(--bgdg)">
+<div style="font-size:13px;font-weight:500;color:var(--txdg)">도움 요청 · 차량 주변 라이다 평면도 (위에서 본 모습)</div>
+<canvas id="foto" width="240" height="150" style="width:100%;border-radius:6px;margin-top:6px;background:#2C2C2A"></canvas>
+<div id="fotochu" style="font-size:11px;color:var(--txdg);margin-top:4px">-</div>
+</div>
 <div id="brain" style="font-size:12px;color:var(--tx2);margin-top:6px;padding:6px 8px;border:0.5px solid var(--bd);border-radius:var(--r)">두뇌: -</div>
 <div id="ctl"></div>
 <div id="kmsg" style="font-size:13px;margin-top:8px;min-height:20px;color:var(--txwn);white-space:pre-wrap"></div>
@@ -74,7 +79,10 @@ function $(id){return document.getElementById(id);}
 function set(id,t){$(id).textContent=t;}
 function ten(ma){return HAN_TU[ma]||ma;}
 function chip(t,ok){var e=$('chip');e.textContent=t;e.style.background=ok?'var(--bgok)':'var(--s1)';e.style.color=ok?'var(--txok)':'var(--tx2)';}
-function ma(){return LOCAL||S.ma;}
+// M7: 정지 trong 도움이 필요해요 sau khi chuyen da ket thuc (HET_DUONG / DUNG_SEP) = da xem, ve 준비 완료 cho toi chuyen sau
+var BO_QUA=null;
+function khoa_chuyen(){var c=S.chuyen||{};return [c.huong,c.ma,c.ket_qua,c.dong].join('|');}
+function ma(){if(LOCAL)return LOCAL;if(S.ma==='TT_CAN_GIUP'&&!(S.chuyen||{}).chay&&BO_QUA===khoa_chuyen())return 'TT_SAN_SANG';return S.ma;}
 function phu(m){
   var c=S.chuyen||{};
   switch(m){
@@ -112,7 +120,7 @@ function ui(){
   else if(m==='TT_CAN_GIUP')h=nut([['수동 조종',"vao_lai_tay()"],['다시 시도',"lenh('thu_lai')"],['정지',"lenh('dung')",DO]]);
   else if(m==='TT_LAI_TAY')h=nut([['자동으로',"ra_lai_tay()"],['연결 해제',"lenh('tat')"]]);
   if($('ctl').getAttribute('data-h')!==h){$('ctl').innerHTML=h;$('ctl').setAttribute('data-h',h);}
-  ve();bang();
+  ve();bang();canh_bao();
 }
 var CHON=null;   // M3: {dich:'B'|'A', ...} sau khi cham ban do
 // M4: cung hanh dong voi /nut (cung cau hoi xac nhan); PIN nhu /nut (401 -> hoi, giu trong sessionStorage)
@@ -121,7 +129,7 @@ var HOI={bat:'전체를 껐다가 다시 시작할까요 (B단계)? 차량은 A�
 var TEN_LENH={bat:'차량 연결',tat:'연결 해제',dung:'정지',di:'출발',thu_lai:'다시 시도'};
 function lenh(x,than,da_hoi){
   if(x==='di'&&!than){if(!CHON){set('kmsg','목적지를 먼저 고르세요');return;}than={dich:CHON.dich};}
-  var k=x==='di'?(than.dich==='B'?'di_B':'ve_A'):x;
+  var k=x==='di'?(than.dich==='B'?'di_B':'ve_A'):x==='thu_lai'?((S.chuyen||{}).huong||x):x;
   if(!da_hoi&&HOI[k]&&!confirm(HOI[k]))return;
   var o={method:'POST',headers:{'X-Pin':pin}};
   if(than){o.body=JSON.stringify(than);o.headers['Content-Type']='application/json';}
@@ -133,7 +141,7 @@ function lenh(x,than,da_hoi){
       else if(r.status>=400)t+='오류 '+r.status+' '+(j.loi||'');
       else if(x==='dung')t+=han(j.ket_qua)+(j.ms!==null&&j.ms!==undefined?' '+j.ms+' ms':'');
       else t+='시작됨';
-      set('kmsg',t);if(x==='di'&&r.status===202){CHON=null;LOCAL=null;}hoi();
+      set('kmsg',t);if(x==='di'&&r.status===202){CHON=null;LOCAL=null;}if(x==='dung'&&ma()==='TT_CAN_GIUP')BO_QUA=khoa_chuyen();hoi();
     });
   }).catch(function(e){set('kmsg',TEN_LENH[x]+': 네트워크 오류 '+e);});
 }
@@ -212,6 +220,28 @@ function bang(){
 }
 function ve_nho(){(S.nho||[]).forEach(function(n){var q=tp(n[0],n[1]);c.strokeStyle='#A32D2D';c.lineWidth=2;c.beginPath();
   c.moveTo(q[0]-5,q[1]-5);c.lineTo(q[0]+5,q[1]+5);c.moveTo(q[0]+5,q[1]-5);c.lineTo(q[0]-5,q[1]+5);c.stroke();});}
+// ---- M7: 도움이 필요해요: man do + rung/am tren trang + anh LiDAR (tep chup /scan moi nhat) ----
+var BAO=false,ANH=null,T_ANH=0;
+function keu(){try{if(navigator.vibrate)navigator.vibrate([400,150,400,150,400]);}catch(e){}
+  try{var A=window.AudioContext||window.webkitAudioContext,a=new A(),o=a.createOscillator(),g=a.createGain();o.frequency.value=880;g.gain.value=0.2;
+    o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+0.6);}catch(e){}}
+function tai_anh(){T_ANH=Date.now();fetch('/v10/anh_lidar',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){ANH=j;ve_anh();}).catch(function(){});}
+function ve_anh(){
+  var f=$('foto'),x=f.getContext('2d'),sc=55;   // xe o giua: thay ca phia sau (lop 2 nhin nua sau than)x.fillStyle='#2C2C2A';x.fillRect(0,0,240,150);
+  if(!ANH||!ANH.co){set('fotochu',ANH&&ANH.loi?'사진 없음 ('+ANH.loi+')':'사진 없음 (스캔 파일 없음)');return;}
+  var T=function(u,v){return [120-v*sc,75-u*sc];};
+  x.fillStyle='#F09595';ANH.diem.forEach(function(p){var q=T(p[0],p[1]);x.fillRect(q[0]-1.5,q[1]-1.5,3,3);});
+  if(BD){x.strokeStyle='#C0DD97';x.lineWidth=1.5;x.beginPath();BD.footprint.forEach(function(p,k){var q=T(p[0],p[1]);k?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]);});x.closePath();x.stroke();}
+  x.fillStyle='#fff';x.font='11px sans-serif';var nq=T(0.2,0);x.fillText('▲ 앞코',nq[0]-18,nq[1]-2);x.fillText('1 m',4,146);x.fillRect(4,135,sc,2);
+  set('fotochu','스캔 파일 '+ANH.tep.split('/').pop()+' · '+ANH.gio.slice(11)+' ('+ANH.tuoi_s+'초 전)'+(ANH.bi_cat?' · 일부 잘림':'')+' · 점 = 라이다, 초록 = 차체');
+}
+function canh_bao(){
+  var m=ma()==='TT_CAN_GIUP';
+  $('help').style.display=m?'block':'none';document.body.classList.toggle('bao',m);
+  if(m&&!BAO)keu();
+  if(m&&Date.now()-T_ANH>5000)tai_anh();
+  BAO=m;
+}
 function hoi(){
   fetch('/v10/trang_thai',{cache:'no-store'}).then(function(r){return r.json();}).then(function(s){S=s;
     if(LOCAL==='TT_XEM_TUYEN'&&['TT_SAN_SANG','TT_DA_DEN'].indexOf(S.ma)<0)LOCAL=null;

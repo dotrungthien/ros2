@@ -11,7 +11,9 @@ Manh: M1 khung + trang thai; M4 di / dung / bat / tat (goi lai H._nut cua /nut: 
   M3 경로 확인: tinh_tuyen.tinh_duong (import, khong sua) tu vi tri xe toi dich cua gui_duong.DICH, cung thu tu tuyen voi
   /nut (chuyen.sh khong doi so thu 2 => tuyen 1 truoc, hong thi tuyen 2). Chi B chuan va A (CHON_B_TU_DO tat: gui_duong chi nhan di_B / ve_A);
   M5 dong 두뇌 + bang 7 dong: chi doc ~/sep_nhat_ky.csv, ~/log_phu_lai.txt, ~/log_nut_chuyen.txt, /proc (ten + tham so true/false
-  cua sep.py, lai_xe_lidar.py, gui_duong.py; KHONG doc tham so khac), twist_mux.yaml (uu tien), lai_xe_lidar.R_XOAY.
+  cua sep.py, lai_xe_lidar.py, gui_duong.py; KHONG doc tham so khac), twist_mux.yaml (uu tien), lai_xe_lidar.R_XOAY;
+  M7 도움이 필요해요: anh LiDAR tu tren xuong tu tep chup /scan moi nhat (~/scan_*.txt, 'ros2 topic echo --once /scan'),
+  doi sang khung than bang lai_xe_lidar.scan_to_xy (goc lech 0 nhu tham so mac dinh cua phu lai); 다시 시도 = /nut cung huong.
 """
 import json
 import math
@@ -614,6 +616,57 @@ def tuyen(C, dich, pose):
     return {'loi': '; '.join(loi) or 'khong tim duoc duong'}
 
 
+# ---------- M7: 도움이 필요해요 ----------
+R_ANH = 1.5      # m: chi gui diem LiDAR cach tam xe <= so nay (khung anh tren trang)
+
+
+def doc_scan(path):
+    """Tep 'ros2 topic echo --once /scan' (YAML) -> SimpleNamespace(angle_min, angle_increment, range_min, range_max, ranges)."""
+    from types import SimpleNamespace
+    with open(path) as f:
+        dong = f.read().splitlines()
+    s, khoi = {}, None
+    rg = []
+    for l in dong:
+        if khoi == 'ranges':
+            if l.startswith('- '):
+                v = l[2:].strip()
+                if v.strip("'") == '...':                    # ros2 topic echo khong --full-length: day bi cat
+                    s['bi_cat'] = True
+                    khoi = None
+                    continue
+                rg.append(float('inf') if v in ('.inf', 'inf') else (float('nan') if v in ('.nan', 'nan') else float(v)))
+                continue
+            khoi = None
+        m = re.match(r'^(angle_min|angle_increment|range_min|range_max):\s*(\S+)', l)
+        if m:
+            s[m.group(1)] = float(m.group(2))
+        elif l.rstrip() == 'ranges:':
+            khoi = 'ranges'
+    if len([k for k in s if k != 'bi_cat']) < 4 or not rg:
+        raise ValueError('tep scan thieu truong: %s' % os.path.basename(path))
+    return SimpleNamespace(ranges=rg, **s)
+
+
+def anh_lidar(C):
+    """Tep scan moi nhat -> diem khung than xe. {'co': False, ...} neu khong co tep."""
+    import glob
+    mau = os.environ.get('CAU_NOI_SCAN_GLOB') or os.path.join(C.HOME, 'scan_*.txt')
+    ds = sorted(glob.glob(mau), key=lambda f: os.stat(f).st_mtime)
+    if not ds:
+        return {'co': False, 'mau': mau}
+    f = ds[-1]
+    try:
+        sc = doc_scan(f)
+        L = nap(C, 'lai_xe_lidar')
+        pts = L.scan_to_xy(sc)
+    except (OSError, ValueError, ImportError) as e:
+        return {'co': False, 'loi': str(e), 'tep': f}
+    mt = os.stat(f).st_mtime
+    return {'co': True, 'tep': f, 'gio': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mt)), 'tuoi_s': int(time.time() - mt),
+            'so_tia': len(sc.ranges), 'bi_cat': bool(getattr(sc, 'bi_cat', False)), 'diem': [[round(x, 3), round(y, 3)] for x, y in pts if math.hypot(x, y) <= R_ANH]}
+
+
 # ---------- HTTP ----------
 
 def han_js(C):
@@ -650,6 +703,12 @@ def lenh(h, C, ten):
     """POST /v10/api/<ten>: chuyen nguyen sang H._nut (PIN, 409, ma tra ve y nhu /nut)."""
     if ten in LENH_NUT:
         return h._nut(LENH_NUT[ten])
+    if ten == 'thu_lai':                                         # M7 다시 시도: gui lai chuyen vua roi qua duong /nut
+        with C.LOCK:
+            huong = C.CHUYEN['huong']
+        if huong not in ('di_B', 've_A'):
+            return h._gui(409, {'loi': 'chua co chuyen nao de thu lai', 'da_bat_dau': False})
+        return h._nut(huong)
     if ten == 'di':
         d = doc_than(h).get('dich')
         if d not in DICH_NUT:
@@ -675,6 +734,8 @@ def xu_ly(h, C, method, p):
         s = sep_cuoi(doc_duoi(C.CFG['sep_nhat_ky']))
         kq = tuyen(C, q.get('dich'), s['pose'])
         return h._gui(200 if not kq.get('loi') else 422, kq)
+    if method == 'GET' and p == '/v10/anh_lidar':
+        return h._gui(200, anh_lidar(C))
     if method == 'GET' and p == '/v10/trang_thai':
         return h._gui(200, trang_thai(C))
     if method == 'POST' and p.startswith('/v10/api/'):

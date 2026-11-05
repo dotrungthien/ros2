@@ -483,16 +483,16 @@ def ra2_chay(world, pose, giay=8.0, chi_nhin=False, dt=0.1, **kw):
 _ong8 = [(0.225, 0.405, -0.09, 0.09)]                                  # vat vuong 18 cm, mat cach mui 8 cm (tam xe o 0)
 _pv = L.scan_to_xy(make_scan(hanh_lang(_ong8), (0, 0, 0)))
 check('lop2 vung_lui: vat 8 cm truoc mui => co; hanh lang trong => khong', L.vung_lui(_pv) and not L.vung_lui(L.scan_to_xy(make_scan(hanh_lang(), (0, 0, 0)))))
-check('lop2 cach_truoc: mat vat 0,225 m tu tam', abs(L.cach_truoc(_pv) - 0.225) < 0.02, '%.3f' % L.cach_truoc(_pv))
+check('lop2 cach_truoc: than cach mat vat 0,08 m (05/11 viec 119: do tu than; cu 0,225 m tu tam)', abs(L.cach_truoc(_pv) - 0.08) < 0.02, '%.3f' % L.cach_truoc(_pv))
 _t2, _x2, _p2, _c2 = ra2_chay(hanh_lang(_ong8), (0, 0, 0))
-check('lop2 lui thang toi tam cach vat >= 0,30 m (khong can dich), khong cham, khong xoay',
-      _x2.startswith('RA XONG CACH_30CM') and not _c2 and abs(_p2[1]) < 1e-9 and abs(_p2[2]) < 1e-9 and 0.06 <= -_p2[0] <= 0.12
+check('lop2 lui thang toi than cach vat >= 0,15 m (khong can dich), khong cham, khong xoay (cu: tam >= 0,30 m)',
+      _x2.startswith('RA XONG CACH_15CM') and not _c2 and abs(_p2[1]) < 1e-9 and abs(_p2[2]) < 1e-9 and 0.06 <= -_p2[0] <= 0.12
       and set(_t2[:-1]) == {'RA_LUI'}, '%s %s' % (_x2, _p2))
 _t3, _x3, _p3, _c3 = ra2_chay(hanh_lang(_ong8 + [(-0.20, -0.14, -0.10, 0.10)]), (0, 0, 0))    # sau con 3,5 cm
 check('lop2 sau < 5 cm: xong ngay, khong lui', _x3 == 'RA XONG SAU_5CM 0 cm' and _p3 == (0, 0, 0) and not _c3, _x3)
-_t4, _x4, _p4, _c4 = ra2_chay(hanh_lang([(0.20, 0.40, -0.09, 0.09)]), (0, 0, 0), ra2_cach=0.60)   # muc tieu xa: dung o 0,30 m
+_t4, _x4, _p4, _c4 = ra2_chay(hanh_lang([(0.20, 0.40, -0.09, 0.09)]), (0, 0, 0), ra2_cach_than=0.60)   # muc tieu xa: dung o 0,30 m
 check('lop2 lui toi da 0,30 m', _x4.startswith('RA XONG DA_LUI_30CM') and 0.29 <= -_p4[0] <= 0.32 and not _c4, '%s %s' % (_x4, _p4))
-_t5, _x5, _p5, _ = ra2_chay(hanh_lang(_ong8), (0, 0, 0), ra2_cach=0.60, ra2_di_max=9.0, v_esc=0.02)
+_t5, _x5, _p5, _ = ra2_chay(hanh_lang(_ong8), (0, 0, 0), ra2_cach_than=0.60, ra2_di_max=9.0, v_esc=0.02)
 check('lop2 qua 6 s thi dung', _x5.startswith('RA XONG QUA_6S'), _x5)
 _t6, _x6, _p6, _ = ra2_chay(hanh_lang(_ong8), (0, 0, 0), chi_nhin=True)
 check('lop2 chi nhin (phat_lenh tat): xong ngay 0 cm', _x6 == 'RA XONG CHI_NHIN 0 cm' and _p6 == (0, 0, 0) and _t6 == ['RA_XONG'], _x6)
@@ -519,6 +519,53 @@ check('lop2 ra2_huy ngoai RA2 khong lam gi; luot_huy: HUY / mat tep => co, SAP_G
       and not L.luot_huy('12.30 SAP_GUI di_B 1 1 123') and not L.luot_huy(''))
 _khoi2 = _src[_src.index('def _doc_ra2'):_src.index('def _on_odom')]
 check('lop2 _doc_ra2 khong phat toc do', not any(k in _khoi2 for k in ('publish', 'Twist', 'self.pub', 'phat_lenh')))
+
+
+# --- 05/11 viec 119 (loi B, ket K2 19:33): vung lop 2 theo hinh than, vat o goc truoc ---
+def vung_cu(pts):
+    """Vung lop 2 truoc 05/11: >= 2 diem trong chu nhat X_MUI <= x <= 0,25, |y| <= 0,10."""
+    return sum(1 for x, y in pts if L.X_MUI <= x <= 0.25 and abs(y) <= L.LOP2_W_CU) >= 2
+
+
+_g = 0.055                                                                   # vat cach goc than 5,5 cm (Thien do 19:33)
+_goc8 = []
+for _s in (1, -1):
+    for _ten, (_x0, _y0) in (('ngang hong', (L.X_MUI - 0.01, L.Y_HONG + _g)), ('cheo 45', (L.X_MUI + _g / math.sqrt(2), L.Y_HONG + _g / math.sqrt(2))),
+                             ('truoc mui', (L.X_MUI + _g, L.Y_HONG - 0.01)), ('hong sau goc 4 cm', (L.X_MUI - 0.05, L.Y_HONG + _g))):
+        _y1 = _y0 + 0.02
+        _goc8.append(('%s %s' % ('trai' if _s > 0 else 'phai', _ten), (_x0, _x0 + 0.02, min(_s * _y0, _s * _y1), max(_s * _y0, _s * _y1))))
+_kq8 = []
+for _ten, _hop in _goc8:
+    _w = hanh_lang([_hop])
+    _pp = L.scan_to_xy(make_scan(_w, (0, 0, 0)))
+    _t, _x, _p, _c = ra2_chay(_w, (0, 0, 0))
+    _kq8.append((_ten, L.vung_lui(_pp), vung_cu(_pp), round(min(L.khoang_cach_mep(*q) for q in _pp), 3), _x, round(-_p[0], 3), _c))
+check('119 vat cach goc than 5,5 cm (8 ca): vung moi kich, lui that (CACH_15CM, >= 5 cm, khong cham, khong xoay)',
+      all(k[1] and k[4].startswith('RA XONG CACH_15CM') and k[5] >= 0.05 and not k[6] for k in _kq8), str(_kq8))
+check('119 vung cu bo sot ca ngang hong / cheo / hong sau goc (6/8), chi bat truoc mui', [k[0] for k in _kq8 if k[2]] == ['trai truoc mui', 'phai truoc mui'],
+      str([(k[0], k[2]) for k in _kq8]))
+_ong21 = hanh_lang([(0.21, 0.228, -0.009, 0.009)])                          # ong O18 thang truoc mui, mat cach tam 0,21 m (6,5 cm truoc mui)
+_po = L.scan_to_xy(make_scan(_ong21, (0, 0, 0)))
+_to, _xo, _pq, _co = ra2_chay(_ong21, (0, 0, 0))
+check('119 ong thang truoc mui 0,21 m: vung moi va vung cu deu kich, lui toi than cach >= 0,15 m', L.vung_lui(_po) and vung_cu(_po)
+      and _xo.startswith('RA XONG CACH_15CM') and not _co, '%s %.3f' % (_xo, -_pq[0]))
+_khe = {}
+for _rong in (0.52, 0.56):
+    for _e in (0.0, 0.05, 0.07, 0.09):                                       # xe lech _e ve ben trai trong khe
+        _w = [(-1.0, 2.0, _rong / 2 - _e, 0.60), (-1.0, 2.0, -0.60, -_rong / 2 - _e)]
+        _pp = L.scan_to_xy(make_scan(_w, (0, 0, 0)))
+        _khe[(_rong, _e)] = (L.vung_lui(_pp), vung_cu(_pp))
+print('      khe (rong, lech): (vung moi, vung cu) = %s' % _khe)
+check('119 khe 52 cm: lech 0/5/7 cm khong kich, 9 cm kich (tuong cach hong 9 cm <= 10,5); khe 56 cm: 0..9 cm khong kich; vung cu khong kich',
+      [_khe[(0.52, e)][0] for e in (0.0, 0.05, 0.07, 0.09)] == [False, False, False, True]
+      and not any(_khe[(0.56, e)][0] for e in (0.0, 0.05, 0.07, 0.09)) and not any(v[1] for v in _khe.values()), str(_khe))
+_b10 = L.NguoiLai()
+_b10.ra2_bat_dau([], 0.0)
+_b10.step([], 0.1, False)
+check('119 RA2 ma phia truoc khong co diem nao: ly do TRUOC_TRONG ngay buoc dau (khong ghi CACH_15CM)', _b10.ra_xong.startswith('RA XONG TRUOC_TRONG'), str(_b10.ra_xong))
+check('119 hang ten co gia tri cu canh ben, DEFAULT dung hang', L.DEFAULT['lop2_d_than'] == L.LOP2_D_THAN == 0.105
+      and abs(L.DEFAULT['lop2_x_tu'] - 0.095) < 1e-12 and L.DEFAULT['ra2_cach_than'] == L.RA2_CACH_THAN == 0.15
+      and not any(k in L.DEFAULT for k in ('lop2_x_xa', 'lop2_w', 'ra2_cach')))
 
 fails = [n for n, ok in results if not ok]
 print('\nTONG: %d/%d dat' % (len(results) - len(fails), len(results)))

@@ -808,7 +808,8 @@ class Sep:
         return True
 
     def _lop2(self, now, luot, pts, mat_scan, ra_lenh, ghi):
-        """04/11 lop 2: CHI xet vung khi nhan SAP_GUI moi (~/gui_duong_luot). Co vat trong vung truoc mui (L.vung_lui) va ra_lenh
+        """04/11 lop 2: CHI xet vung khi nhan SAP_GUI moi (~/gui_duong_luot). Co vat trong vung truoc than (L.vung_lui, 05/11: theo hinh
+        than, ca hai goc truoc) va ra_lenh
         => RA_LUI (phu lai lui thang); khong => KHONG_CAN. Giu tra loi toi khi thay RA_XONG (RA_LUI) hoac het T_RA2_*."""
         r = self.ra2
         if r is not None:
@@ -827,7 +828,7 @@ class Sep:
         elif mat_scan:
             chu, ly = 'KHONG_CAN', 'mat_scan'
         elif L.vung_lui(pts):
-            chu, ly = 'RA_LUI', 'vat_truoc_mui_%.2fm' % L.cach_truoc(pts)
+            chu, ly = 'RA_LUI', 'vat_cach_than_%.2fm' % L.cach_truoc(pts)     # 05/11: than -> vat (cu: tam -> vat, 'vat_truoc_mui')
         else:
             chu, ly = 'KHONG_CAN', 'vung_trong'
         self.ra2 = dict(chu=chu, ma_luot=luot['ma'], ma=int(now * 10), t0=now, ly=ly)

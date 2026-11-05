@@ -432,5 +432,53 @@ class M2BanDo(Nen):
         self.assertIsNone(js(self.port, 'GET', '/v10/trang_thai')[1]['pose'])
 
 
+
+# ---------------- M3 ----------------
+def ghi_pose(x, y, g=0):
+    with open(os.path.join(TAM, 'sep_nhat_ky.csv'), 'w') as f:
+        f.write('gio_mono,gio,loai,dau_hieu,nguon_nghi,phep_kiem,ket_qua,se_lam,x,y,goc_do\n'
+                '5.00,2026-11-06 03:00:00,TU_THE,DI_THUONG,,,,,%.2f,%.2f,%d\n' % (x, y, g))
+
+
+class M3Tuyen(Nen):
+    def test_tuyen_B_giong_goi_thang_tinh_tuyen(self):
+        ghi_pose(0.01, 0.00)
+        st, j = js(self.port, 'GET', '/v10/tuyen?dich=B')
+        self.assertEqual(st, 200, j)
+        TT = V.nap(C, 'tinh_tuyen')
+        GD = V.nap(C, 'gui_duong')
+        self.assertEqual(GD.DICH['di_B'], (TT.B, 0.0))
+        ref = TT.tinh_duong(V._CACHE_BAN['ban'], (0.01, 0.0), TT.B, 1, yaw_cuoi=0.0)
+        self.assertEqual(j['diem'], [[round(x, 3), round(y, 3)] for x, y, _ in ref])
+        self.assertEqual((j['dich'], j['huong'], j['tuyen'], j['tu']), ('B', 'di_B', 1, [0.01, 0.0]))
+        self.assertAlmostEqual(j['dai_m'], sum(((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) ** .5 for a, b in zip(ref, ref[1:])), places=2)
+        self.assertGreater(j['kc_do_m'], 0.0)
+        self.assertLess(j['kc_do_m'], 0.30)
+        self.assertEqual(j['diem'][-1], [1.6, 0.82])
+
+    def test_tuyen_A(self):
+        ghi_pose(1.60, 0.82)
+        st, j = js(self.port, 'GET', '/v10/tuyen?dich=A')
+        self.assertEqual((st, j['huong'], j['diem'][-1]), (200, 've_A', [0.0, 0.0]))
+
+    def test_loi(self):
+        self.assertEqual(js(self.port, 'GET', '/v10/tuyen?dich=B')[1]['loi'][:21], 'chua co vi tri xe (se')
+        ghi_pose(0.01, 0.00)
+        st, j = js(self.port, 'GET', '/v10/tuyen?dich=C')
+        self.assertEqual(st, 422)
+        self.assertIn('CHON_B_TU_DO', j['loi'])
+        self.assertEqual(js(self.port, 'GET', '/v10/tuyen')[0], 422)
+        ghi_pose(-3.0, -3.0)                                  # ngoai ban do
+        st, j = js(self.port, 'GET', '/v10/tuyen?dich=B')
+        self.assertEqual(st, 422)
+        self.assertIn('ngoai costmap', j['loi'])
+        self.assertFalse(V.CHON_B_TU_DO)
+
+    def test_trang_chi_cho_chon_B_A(self):
+        t = http(self.port, 'GET', '/v10')[2].decode()
+        self.assertIn("fetch('/v10/tuyen?dich='+d", t)
+        self.assertIn("var d=Math.hypot(x-BD.B[0],y-BD.B[1])<=R_CHAM?'B':Math.hypot(x-BD.A[0],y-BD.A[1])<=R_CHAM?'A':null;", t)
+
+
 if __name__ == '__main__':
     unittest.main()

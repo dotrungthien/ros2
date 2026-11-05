@@ -72,7 +72,9 @@ function phu(m){
   case 'TT_KHONG_KET_NOI':return S.loi?S.loi:(S.link==='fail'?'연결 실패: '+(han(S.chi_tiet)||'-'):'차량을 A 지점에 놓고 누르세요');
   case 'TT_DANG_KET_NOI':return '팀 확인 중: 차체 · Nav2 · 두뇌 · 보조 운전 ('+Math.round(S.connect_s||(S.bat&&S.bat.giay)||0)+'초)'+(S.bat&&S.bat.dong?'\n'+han(S.bat.dong):'');
   case 'TT_SAN_SANG':return '지도에서 목적지를 누르세요'+(S.han_s!==null&&S.han_s!==undefined?' (남은 시간 '+S.han_s+'초)':'');
-  case 'TT_XEM_TUYEN':return '파란 경로를 따라갑니다. 출발을 누르세요';
+  case 'TT_XEM_TUYEN':return CHON?(CHON.dich==='B'?'B로 출발':'A로 복귀')+' · 경로 '+CHON.tuyen+' · 길이 '+CHON.dai_m.toFixed(2)+' m · 빨간 구역까지 최소 '+Math.round(CHON.kc_do_m*100)+' cm'
+      +(CHON.dau_trong_do?'\n출발점이 빨간 구역(차량 중심 금지) 안이에요':'')+(CHON.canh_bao.length?'\n회전 공간 부족 꼭짓점 '+CHON.canh_bao.length+'곳':'')
+      +'\n정적 지도 기준 미리보기 · 출발하면 차량이 현재 costmap으로 다시 계산해요':'';
   case 'TT_DANG_DI':return '경로를 따라가고 있어요';
   case 'TT_DANG_CHO':return '앞이 막혔어요. 기다리는 중 ('+han(S.ly_do)+')';
   case 'TT_DANG_THOAT':return '보조 운전이 차량을 빼내고 있어요 ('+han(S.ly_do)+')';
@@ -158,6 +160,24 @@ function ve(){
   set('vitri',S.pose?'위치 (두뇌 기록 '+S.pose.gio.slice(11)+'): x '+S.pose.x.toFixed(2)+' m, y '+S.pose.y.toFixed(2)+' m, '+Math.round(S.pose.goc_do)+'°'
       +(vung_tai(S.pose.x,S.pose.y)===1?' · 차량 중심이 금지 구역 안':''):'위치 없음 (두뇌 기록 없음)');
 }
+// ---- M3: 경로 확인. Chi B chuan va A (CHON_B_TU_DO tat). R_CHAM: ban kinh cham quanh B / A tren man hinh (giao dien, khong phai so cua xe) ----
+var R_CHAM=0.25;
+function ve_them(){
+  if(!CHON||ma()!=='TT_XEM_TUYEN')return;
+  c.strokeStyle='#185FA5';c.lineWidth=3.5;c.lineJoin='round';c.beginPath();
+  CHON.diem.forEach(function(p,k){var q=tp(p[0],p[1]);k?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});c.stroke();
+}
+cv.onclick=function(e){
+  if(!BD||['TT_SAN_SANG','TT_DA_DEN','TT_XEM_TUYEN'].indexOf(ma())<0)return;
+  var r=cv.getBoundingClientRect(),x=BD.ox+(e.clientX-r.left)/r.width*BD.w*BD.res,y=BD.oy+(1-(e.clientY-r.top)/r.height)*BD.h*BD.res;
+  var d=Math.hypot(x-BD.B[0],y-BD.B[1])<=R_CHAM?'B':Math.hypot(x-BD.A[0],y-BD.A[1])<=R_CHAM?'A':null;
+  if(!d){set('kmsg',vung_tai(x,y)===3?'지금은 B 또는 A만 고를 수 있어요':'그곳은 갈 수 없어요 (B 또는 A를 누르세요)');return;}
+  set('kmsg','경로 계산 중…');
+  fetch('/v10/tuyen?dich='+d,{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+    if(j.loi){CHON=null;LOCAL=null;set('kmsg','경로를 찾지 못했어요: '+j.loi);ui();return;}
+    CHON=j;LOCAL='TT_XEM_TUYEN';set('kmsg','');ui();
+  }).catch(function(e){set('kmsg','경로 계산 오류 '+e);});
+};
 function hoi(){
   fetch('/v10/trang_thai',{cache:'no-store'}).then(function(r){return r.json();}).then(function(s){S=s;
     if(LOCAL==='TT_XEM_TUYEN'&&['TT_SAN_SANG','TT_DA_DEN'].indexOf(S.ma)<0)LOCAL=null;

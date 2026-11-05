@@ -7,7 +7,9 @@ Khong can ROS. Chi DOC tep cua xe (khong sua tep lai): ~/sep_nhat_ky.csv, ~/log_
 dung_chuyen, bat_dau_tat). Ma trang thai goc ASCII/tieng Viet; trang dich sang tieng Han luc in (han()).
 Manh: M1 khung + trang thai; M4 di / dung / bat / tat (goi lai H._nut cua /nut: cung PIN, cung 409);
   M2 ban do + vung (luat 8: ban do tu tep slam_dinh_vi_xuong.yaml tro toi, footprint / inflation tu tep tham so Nav2
-  NAV_PARAMS; thieu tep => loi tren trang, khong so du phong; vung do = o tinh_tuyen cam, tinh bang chinh tinh_tuyen.Ban).
+  NAV_PARAMS; thieu tep => loi tren trang, khong so du phong; vung do = o tinh_tuyen cam, tinh bang chinh tinh_tuyen.Ban);
+  M3 경로 확인: tinh_tuyen.tinh_duong (import, khong sua) tu vi tri xe toi dich cua gui_duong.DICH, cung thu tu tuyen voi
+  /nut (chuyen.sh khong doi so thu 2 => tuyen 1 truoc, hong thi tuyen 2). Chi B chuan va A (CHON_B_TU_DO tat: gui_duong chi nhan di_B / ve_A).
 """
 import json
 import math
@@ -419,6 +421,54 @@ def ban_do(C):
         return {'loi': str(e)}
 
 
+# ---------- M3: 경로 확인 ----------
+CHON_B_TU_DO = False     # chon o xanh bat ky lam dich: TAT (gui_duong.py chi nhan di_B / ve_A; mo can sua tep lai -> "can quyet")
+HUONG_DICH = {'B': 'di_B', 'A': 've_A'}
+
+
+def kc_toi_o(x, y, ban, i, j):
+    """Khoang cach (m) tu diem toi hinh vuong o (i, j); 0 neu diem nam trong o."""
+    x0, y0 = ban.ox + i * ban.res, ban.oy + j * ban.res
+    dx = max(x0 - x, 0.0, x - (x0 + ban.res))
+    dy = max(y0 - y, 0.0, y - (y0 + ban.res))
+    return math.hypot(dx, dy)
+
+
+def tuyen(C, dich, pose):
+    """Duong xem truoc cho /v10/tuyen: {'dich','huong','tuyen','diem','dai_m','kc_do_m','dau_trong_do','canh_bao'} hoac {'loi'}."""
+    if dich not in HUONG_DICH:
+        return {'loi': 'dich phai la B hoac A (CHON_B_TU_DO tat)'}
+    if pose is None:
+        return {'loi': 'chua co vi tri xe (sep chua ghi dong nao co x, y trong ~/sep_nhat_ky.csv)'}
+    bd = ban_do(C)
+    if bd.get('loi'):
+        return {'loi': bd['loi']}
+    ban = _CACHE_BAN['ban']
+    TT = nap(C, 'tinh_tuyen')
+    GD = nap(C, 'gui_duong')
+    huong = HUONG_DICH[dich]
+    (dx, dy), yaw = GD.DICH[huong]
+    dau = (pose[0], pose[1])
+    loi = []
+    for r in (1, 2):
+        cb = []
+        try:
+            duong = TT.tinh_duong(ban, dau, (dx, dy), r, yaw_cuoi=yaw, canh_bao=cb)
+        except TT.KhongCoDuong as e:
+            loi.append('tuyen %d: %s' % (r, e))
+            continue
+        do = [(i, j) for j in range(bd['h']) for i in range(bd['w']) if bd['vung'][j * bd['w'] + i] in '01']
+        kc = min(min((kc_toi_o(x, y, ban, i, j) for i, j in do if abs(ban.ox + (i + .5) * ban.res - x) < 0.6
+                      and abs(ban.oy + (j + .5) * ban.res - y) < 0.6), default=9.9) for x, y, _ in duong)
+        dai = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(duong, duong[1:]))
+        o = ban.o(*dau)
+        return {'loi': None, 'dich': dich, 'huong': huong, 'tuyen': r, 'diem': [[round(x, 3), round(y, 3)] for x, y, _ in duong],
+                'dai_m': round(dai, 2), 'kc_do_m': round(kc, 3), 'dau_trong_do': bool(ban.do(o)),
+                'canh_bao': [[round(x, 2), round(y, 2), round(c, 3)] for x, y, c in cb], 'tu': [round(dau[0], 3), round(dau[1], 3)],
+                'tuyen_loi': loi}
+    return {'loi': '; '.join(loi) or 'khong tim duoc duong'}
+
+
 # ---------- HTTP ----------
 
 def han_js(C):
@@ -475,6 +525,11 @@ def xu_ly(h, C, method, p):
     if method == 'GET' and p == '/v10/ban_do':
         kq = ban_do(C)
         return h._gui(200 if not kq.get('loi') else 503, kq)
+    if method == 'GET' and p == '/v10/tuyen':
+        q = dict(kv.split('=', 1) for kv in (h.path.split('?', 1)[1].split('&') if '?' in h.path else []) if '=' in kv)
+        s = sep_cuoi(doc_duoi(C.CFG['sep_nhat_ky']))
+        kq = tuyen(C, q.get('dich'), s['pose'])
+        return h._gui(200 if not kq.get('loi') else 422, kq)
     if method == 'GET' and p == '/v10/trang_thai':
         return h._gui(200, trang_thai(C))
     if method == 'POST' and p.startswith('/v10/api/'):

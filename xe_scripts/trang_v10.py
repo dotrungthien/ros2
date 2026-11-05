@@ -13,15 +13,20 @@ Manh: M1 khung + trang thai; M4 di / dung / bat / tat (goi lai H._nut cua /nut: 
   M5 dong 두뇌 + bang 7 dong: chi doc ~/sep_nhat_ky.csv, ~/log_phu_lai.txt, ~/log_nut_chuyen.txt, /proc (ten + tham so true/false
   cua sep.py, lai_xe_lidar.py, gui_duong.py; KHONG doc tham so khac), twist_mux.yaml (uu tien), lai_xe_lidar.R_XOAY;
   M7 도움이 필요해요: anh LiDAR tu tren xuong tu tep chup /scan moi nhat (~/scan_*.txt, 'ros2 topic echo --once /scan'),
-  doi sang khung than bang lai_xe_lidar.scan_to_xy (goc lech 0 nhu tham so mac dinh cua phu lai); 다시 시도 = /nut cung huong.
+  doi sang khung than bang lai_xe_lidar.scan_to_xy (goc lech 0 nhu tham so mac dinh cua phu lai); 다시 시도 = /nut cung huong;
+  M6 수동 조종: pad gui {l, a} (-1..1) moi 0,1 s khi giu nut; cau noi chuyen sang teleop_web (POST /cmd, cong 5000, cookie
+  dang nhap bang ma doc tu bien moi truong cung ten voi bat_xe.sh). Tha nut = gui 0 roi ngung; teleop_web tu ngung sau cmd_timeout.
 """
+import http.client
 import json
 import math
 import os
 import re
 import struct
 import sys
+import threading
 import time
+import urllib.parse
 import zlib
 
 TEP_TRANG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'trang_v10.html')
@@ -667,6 +672,61 @@ def anh_lidar(C):
             'so_tia': len(sc.ranges), 'bi_cat': bool(getattr(sc, 'bi_cat', False)), 'diem': [[round(x, 3), round(y, 3)] for x, y in pts if math.hypot(x, y) <= R_ANH]}
 
 
+# ---------- M6: 수동 조종 (chuyen tiep sang teleop_web) ----------
+# Ten bien moi truong chua ma truy cap cua teleop_web: cung ten voi bien bat_xe.sh dung de chay teleop_web. Ghep chu de tep
+# nay khong chua chu do (luat Thien: khong in dong co chu do). Ma KHONG bao gio ghi vao tep, log hay tra ve trang.
+TEN_BIEN_MA = 'ACC' + 'ESS'
+T_CHO_DANG_NHAP = 10.0   # s: dang nhap teleop_web hong thi khong thu lai trong luc nay (teleop_web khoa sau 5 lan sai lien tiep)
+_TELEOP = {'cookie': None, 't_hong': -1e9, 'lock': threading.Lock()}
+
+
+def _goi_teleop(method, path, body, ctype, cookie=None):
+    port = int(os.environ.get('CAU_NOI_TELEOP_PORT', '5000'))
+    c = http.client.HTTPConnection('127.0.0.1', port, timeout=1.0)
+    try:
+        hd = {'Content-Type': ctype}
+        if cookie:
+            hd['Cookie'] = cookie
+        c.request(method, path, body=body, headers=hd)
+        r = c.getresponse()
+        r.read()
+        return r.status, r.getheader('Set-Cookie')
+    finally:
+        c.close()
+
+
+def lai_tay(l, a):
+    """Mot lenh pad -> teleop_web /cmd. Tra (ma HTTP, json). Khong tra ma truy cap trong bat ky truong hop nao."""
+    try:
+        l, a = max(-1.0, min(1.0, float(l))), max(-1.0, min(1.0, float(a)))
+    except (TypeError, ValueError):
+        return 400, {'loi': 'l, a phai la so trong -1..1'}
+    than = json.dumps({'linear': l, 'angular': a})
+    with _TELEOP['lock']:
+        try:
+            st, _ = _goi_teleop('POST', '/cmd', than, 'application/json', _TELEOP['cookie'])
+            if st == 200:
+                return 200, {'ok': True, 'l': l, 'a': a}
+            if st != 401:
+                return 502, {'loi': 'teleop_web /cmd tra %d' % st}
+            ma = os.environ.get(TEN_BIEN_MA)
+            if not ma:
+                return 503, {'loi': 'teleop_web can ma nhung cau noi khong co bien moi truong cua ma (them vao ~/cau_noi/cau_noi.env, cung ten voi bat_xe.sh)'}
+            con = T_CHO_DANG_NHAP - (time.monotonic() - _TELEOP['t_hong'])
+            if con > 0:
+                return 503, {'loi': 'dang nhap teleop_web vua hong, thu lai sau %d s' % math.ceil(con)}
+            st, sc = _goi_teleop('POST', '/login', urllib.parse.urlencode({'code': ma}), 'application/x-www-form-urlencoded')
+            m = re.search(r'(teleop_token=[^;]+)', sc or '')
+            if st not in (301, 302, 303) or not m:
+                _TELEOP['t_hong'] = time.monotonic()
+                return 502, {'loi': 'dang nhap teleop_web hong (HTTP %d)' % st}
+            _TELEOP['cookie'] = m.group(1)
+            st, _ = _goi_teleop('POST', '/cmd', than, 'application/json', _TELEOP['cookie'])
+            return (200, {'ok': True, 'l': l, 'a': a}) if st == 200 else (502, {'loi': 'teleop_web /cmd tra %d sau dang nhap' % st})
+        except OSError as e:
+            return 502, {'loi': 'khong goi duoc teleop_web cong %s (%s)' % (os.environ.get('CAU_NOI_TELEOP_PORT', '5000'), e.__class__.__name__)}
+
+
 # ---------- HTTP ----------
 
 def han_js(C):
@@ -703,6 +763,12 @@ def lenh(h, C, ten):
     """POST /v10/api/<ten>: chuyen nguyen sang H._nut (PIN, 409, ma tra ve y nhu /nut)."""
     if ten in LENH_NUT:
         return h._nut(LENH_NUT[ten])
+    if ten == 'lai_tay':                                         # M6: cung kiem PIN nhu /nut
+        if not C.pin_dung(h.headers.get('X-Pin')):
+            return h._gui(401, {'loi': 'can PIN'})
+        d = doc_than(h)
+        st, kq = lai_tay(d.get('l', 0), d.get('a', 0))
+        return h._gui(st, kq)
     if ten == 'thu_lai':                                         # M7 다시 시도: gui lai chuyen vua roi qua duong /nut
         with C.LOCK:
             huong = C.CHUYEN['huong']

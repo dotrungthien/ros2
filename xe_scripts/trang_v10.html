@@ -118,8 +118,8 @@ function ui(){
   else if(m==='TT_XEM_TUYEN')h=nut([['출발',"lenh('di')"],['취소',"huy_chon()"]]);
   else if(['TT_DANG_DI','TT_DANG_CHO','TT_DANG_THOAT','TT_DANG_XOAY'].indexOf(m)>=0)h=nut([['정지',"lenh('dung')",DO],['수동 조종',"vao_lai_tay()"]]);
   else if(m==='TT_CAN_GIUP')h=nut([['수동 조종',"vao_lai_tay()"],['다시 시도',"lenh('thu_lai')"],['정지',"lenh('dung')",DO]]);
-  else if(m==='TT_LAI_TAY')h=nut([['자동으로',"ra_lai_tay()"],['연결 해제',"lenh('tat')"]]);
-  if($('ctl').getAttribute('data-h')!==h){$('ctl').innerHTML=h;$('ctl').setAttribute('data-h',h);}
+  else if(m==='TT_LAI_TAY')h=PAD+((S.chuyen||{}).chay?nut([['주행 정지',"lenh('dung')",DO],['자동으로',"ra_lai_tay()"]]):nut([['자동으로',"ra_lai_tay()"],['연결 해제',"lenh('tat')"]]));
+  if($('ctl').getAttribute('data-h')!==h){$('ctl').innerHTML=h;$('ctl').setAttribute('data-h',h);if(m==='TT_LAI_TAY')gan_pad();}
   ve();bang();canh_bao();
 }
 var CHON=null;   // M3: {dich:'B'|'A', ...} sau khi cham ban do
@@ -145,8 +145,29 @@ function lenh(x,than,da_hoi){
     });
   }).catch(function(e){set('kmsg',TEN_LENH[x]+': 네트워크 오류 '+e);});
 }
-function vao_lai_tay(){set('kmsg','수동 조종: 미구현');}
-function ra_lai_tay(){LOCAL=null;ui();}
+// ---- M6: 수동 조종: giu nut = gui {l,a} moi 0,1 s qua cau noi sang teleop_web; tha = gui 0 roi ngung ----
+var PAD='<div class="pad"><span></span><button data-l="1" data-a="0" aria-label="전진">▲</button><span></span><button data-l="0" data-a="1" aria-label="좌회전">◀</button>'
+ +'<button data-l="0" data-a="0" aria-label="정지">■</button><button data-l="0" data-a="-1" aria-label="우회전">▶</button><span></span><button data-l="-1" data-a="0" aria-label="후진">▼</button><span></span></div>';
+var GIU=null,T_GIU=null;
+function gui_pad(l,a){
+  return fetch('/v10/api/lai_tay',{method:'POST',headers:{'X-Pin':pin,'Content-Type':'application/json'},body:JSON.stringify({l:l,a:a})}).then(function(r){
+    if(r.status===401){tha();pin=prompt('PIN 입력')||'';try{sessionStorage.setItem('pin',pin);}catch(e){}return;}
+    if(r.status!==200)return r.json().then(function(j){tha();set('kmsg','수동 조종 오류 '+r.status+': '+(j.loi||''));});
+    if(l||a)set('kmsg','');
+  }).catch(function(e){tha();set('kmsg','수동 조종: 네트워크 오류 (차량은 0.3초 뒤 스스로 멈춤)');});
+}
+function tha(){if(T_GIU){clearInterval(T_GIU);T_GIU=null;}if(GIU){GIU.classList.remove('on');GIU=null;gui_pad(0,0);}}
+function gan_pad(){
+  $('ctl').querySelectorAll('.pad button').forEach(function(b){
+    var on=function(e){e.preventDefault();tha();var l=+b.dataset.l,a=+b.dataset.a;GIU=b;b.classList.add('on');gui_pad(l,a);
+      if(l||a)T_GIU=setInterval(function(){gui_pad(l,a);},100);};
+    b.addEventListener('pointerdown',on);['pointerup','pointerleave','pointercancel'].forEach(function(k){b.addEventListener(k,tha);});
+    b.addEventListener('contextmenu',function(e){e.preventDefault();});
+  });
+}
+window.addEventListener('blur',tha);document.addEventListener('visibilitychange',function(){if(document.hidden)tha();});
+function vao_lai_tay(){LOCAL='TT_LAI_TAY';CHON=null;set('kmsg',(S.chuyen||{}).chay?'주행 중이에요: 조종 전에 주행 정지를 누르세요 (사람 조종이 우선순위가 높음)':'');ui();}
+function ra_lai_tay(){tha();LOCAL=null;ui();}
 function huy_chon(){LOCAL=null;CHON=null;ui();}
 // ---- M2: ban do (/v10/ban_do: vung tu tep cua xe, khong so rieng) ----
 var BD=null,P=6,cv=document.getElementById('cv'),c=cv.getContext('2d');
@@ -245,6 +266,7 @@ function canh_bao(){
 function hoi(){
   fetch('/v10/trang_thai',{cache:'no-store'}).then(function(r){return r.json();}).then(function(s){S=s;
     if(LOCAL==='TT_XEM_TUYEN'&&['TT_SAN_SANG','TT_DA_DEN'].indexOf(S.ma)<0)LOCAL=null;
+    if(LOCAL==='TT_LAI_TAY'&&['TT_KHONG_KET_NOI','TT_DA_NGAT','TT_DANG_NGAT','TT_DANG_KET_NOI'].indexOf(S.ma)>=0){tha();LOCAL=null;}
     ui();}).catch(function(){S={ma:'TT_KHONG_KET_NOI',loi:'Pi 연결 끊김'};ui();});
 }
 tai_ban_do();hoi();setInterval(hoi,1000);

@@ -616,5 +616,123 @@ class M7CanGiup(Nen):
             self.assertIn(x, t)
 
 
+
+# ---------------- M6 ----------------
+from http.server import BaseHTTPRequestHandler as _Goc  # noqa: E402
+import urllib.parse  # noqa: E402
+
+MA_GIA = 'ma-thu-7531'      # ma gia cho teleop gia (khong phai ma that)
+
+
+class TeleopGia(_Goc):
+    """Giong teleop_web: /login (form code) -> 302 + Set-Cookie teleop_token; /cmd can cookie (neu co ma) -> 200, ghi lenh."""
+    ma = MA_GIA
+    lenh, dang_nhap = [], []
+
+    def log_message(self, *a):
+        pass
+
+    def do_POST(self):
+        n = int(self.headers.get('Content-Length') or 0)
+        b = self.rfile.read(n).decode()
+        if self.path == '/login':
+            code = urllib.parse.parse_qs(b).get('code', [''])[0]
+            TeleopGia.dang_nhap.append(code == self.ma)
+            if code == self.ma:
+                self.send_response(302)
+                self.send_header('Location', '/')
+                self.send_header('Set-Cookie', 'teleop_token=tok123; HttpOnly; Path=/; SameSite=Strict')
+            else:
+                self.send_response(401)
+            self.end_headers()
+            return
+        if self.path == '/cmd':
+            if self.ma and 'teleop_token=tok123' not in (self.headers.get('Cookie') or ''):
+                self.send_response(401)
+                self.end_headers()
+                return
+            TeleopGia.lenh.append(json.loads(b))
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'{"ok": true}')
+
+
+class M6LaiTay(Nen):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.tp = C.ThreadingHTTPServer(('127.0.0.1', 0), TeleopGia)
+        os.environ['CAU_NOI_TELEOP_PORT'] = str(cls.tp.server_address[1])
+        threading.Thread(target=cls.tp.serve_forever, daemon=True).start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tp.shutdown()
+        cls.tp.server_close()
+        os.environ.pop('CAU_NOI_TELEOP_PORT', None)
+        super().tearDownClass()
+
+    def setUp(self):
+        super().setUp()
+        TeleopGia.lenh, TeleopGia.dang_nhap, TeleopGia.ma = [], [], MA_GIA
+        V._TELEOP.update(cookie=None, t_hong=-1e9)
+        os.environ.pop(V.TEN_BIEN_MA, None)
+
+    def tearDown(self):
+        os.environ.pop(V.TEN_BIEN_MA, None)
+
+    def test_dang_nhap_bang_ma_trong_moi_truong(self):
+        st, b = http(self.port, 'POST', '/v10/api/lai_tay', {'l': 1, 'a': 0})[0::2]
+        self.assertEqual(st, 503)                                   # khong co bien moi truong -> bao, khong so du phong
+        self.assertEqual(TeleopGia.dang_nhap, [])
+        os.environ[V.TEN_BIEN_MA] = MA_GIA
+        st, b = http(self.port, 'POST', '/v10/api/lai_tay', {'l': 1, 'a': 0})[0::2]
+        self.assertEqual(st, 200)
+        self.assertNotIn(MA_GIA.encode(), b)
+        self.assertEqual(TeleopGia.dang_nhap, [True])
+        for _ in range(3):
+            self.assertEqual(js(self.port, 'POST', '/v10/api/lai_tay', {'l': 0, 'a': -1})[0], 200)
+        self.assertEqual(TeleopGia.dang_nhap, [True])               # cookie dung lai, khong dang nhap moi lan
+        self.assertEqual(js(self.port, 'POST', '/v10/api/lai_tay', {'l': 0, 'a': 0})[0], 200)
+        self.assertEqual(TeleopGia.lenh, [{'linear': 1.0, 'angular': 0.0}] + [{'linear': 0.0, 'angular': -1.0}] * 3 + [{'linear': 0.0, 'angular': 0.0}])
+
+    def test_ma_sai_khong_thu_lien_tuc(self):
+        os.environ[V.TEN_BIEN_MA] = 'ma-sai'
+        st, b = http(self.port, 'POST', '/v10/api/lai_tay', {'l': 1, 'a': 0})[0::2]
+        self.assertEqual(st, 502)
+        self.assertNotIn(b'ma-sai', b)
+        for _ in range(5):
+            self.assertEqual(js(self.port, 'POST', '/v10/api/lai_tay', {'l': 1, 'a': 0})[0], 503)
+        self.assertEqual(TeleopGia.dang_nhap, [False])              # 1 lan sai, cho T_CHO_DANG_NHAP (teleop khoa sau 5 lan)
+        self.assertEqual(TeleopGia.lenh, [])
+
+    def test_teleop_khong_ma_va_gioi_han(self):
+        TeleopGia.ma = ''
+        self.assertEqual(js(self.port, 'POST', '/v10/api/lai_tay', {'l': 5, 'a': -9})[0], 200)
+        self.assertEqual(TeleopGia.lenh, [{'linear': 1.0, 'angular': -1.0}])
+        self.assertEqual(TeleopGia.dang_nhap, [])
+        self.assertEqual(js(self.port, 'POST', '/v10/api/lai_tay', {'l': 'x'})[0], 400)
+
+    def test_pin_va_teleop_tat(self):
+        with open(C.CFG['pin_file'], 'w') as f:
+            f.write('2468\n')
+        self.assertEqual(js(self.port, 'POST', '/v10/api/lai_tay', {'l': 1, 'a': 0})[0], 401)
+        self.assertEqual(TeleopGia.lenh, [])
+        cu = os.environ['CAU_NOI_TELEOP_PORT']
+        os.environ['CAU_NOI_TELEOP_PORT'] = '1'
+        try:
+            st, j = js(self.port, 'POST', '/v10/api/lai_tay', {'l': 1, 'a': 0}, pin='2468')
+        finally:
+            os.environ['CAU_NOI_TELEOP_PORT'] = cu
+        self.assertEqual(st, 502)
+        self.assertIn('khong goi duoc teleop_web', j['loi'])
+
+    def test_trang_co_pad(self):
+        t = http(self.port, 'GET', '/v10')[2].decode()
+        for x in ('aria-label="전진"', 'aria-label="후진"', 'aria-label="좌회전"', 'aria-label="우회전"', "'pointerup'", "fetch('/v10/api/lai_tay'",
+                  'setInterval(function(){gui_pad(l,a);},100)'):
+            self.assertIn(x, t)
+
+
 if __name__ == '__main__':
     unittest.main()

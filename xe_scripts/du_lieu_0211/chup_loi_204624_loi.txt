@@ -1,0 +1,690 @@
+chup_loi loi: ung vien controller_server = 3434; chon pid = 3434
+
+===== (1) gio, uptime, tien trinh ros/python3 =====
+2026-11-02 20:46:24.346365060 +0900
+ 20:46:24 up 27 min,  1 user,  load average: 2.73, 3.82, 2.94
+    PID                  STARTED     ELAPSED COMMAND
+    656 Mon Nov  2 20:19:18 2026       27:05 /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers
+    677 Mon Nov  2 20:19:18 2026       27:05 /usr/bin/python3 /home/project1/cau_noi/cau_noi_xe.py
+    709 Mon Nov  2 20:19:18 2026       27:05 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+   3242 Mon Nov  2 20:40:29 2026       05:54 /usr/bin/python3 /opt/ros/humble/bin/ros2 launch my_bot mapping_my_bot.launch.py access_code:=XOA bat_dong_co:=true bat_lidar:=true bat_rf2o:=false bat_camera:=false bat_gyro:=true bat_mo_hinh_san:=true slam_params_file:=/home/project1/slam_dinh_vi_xuong.yaml
+   3260 Mon Nov  2 20:40:31 2026       05:52 python3 /home/project1/ros2_ws/install/my_bot/lib/my_bot/teleop_web.py --ros-args -r __node:=teleop_web --params-file /tmp/launch_params_9qvuaemf
+   3262 Mon Nov  2 20:40:31 2026       05:52 /opt/ros/humble/lib/robot_state_publisher/robot_state_publisher --ros-args --params-file /tmp/launch_params_q3ej3712
+   3264 Mon Nov  2 20:40:31 2026       05:52 /usr/bin/python3 /opt/ros/humble/lib/joint_state_publisher/joint_state_publisher --ros-args -r __node:=joint_state_publisher
+   3266 Mon Nov  2 20:40:31 2026       05:52 /opt/ros/humble/lib/twist_mux/twist_mux --ros-args --params-file /opt/ros/humble/share/twist_mux/config/twist_mux_locks.yaml --params-file /home/project1/ros2_ws/install/my_bot/share/my_bot/config/twist_mux.yaml -r /cmd_vel_out:=/cmd_vel
+   3270 Mon Nov  2 20:40:31 2026       05:52 python3 /home/project1/ros2_ws/install/my_bot/lib/my_bot/odom_tu_lenh.py --ros-args -r __node:=odom_tu_lenh --params-file /tmp/launch_params_2l55x83o
+   3276 Mon Nov  2 20:40:31 2026       05:52 /opt/ros/humble/lib/slam_toolbox/async_slam_toolbox_node --ros-args -r __node:=slam_toolbox --params-file /home/project1/slam_dinh_vi_xuong.yaml --params-file /tmp/launch_params_ed78qibg
+   3281 Mon Nov  2 20:40:31 2026       05:52 /home/project1/ros2_ws/install/ydlidar_ros2_driver/lib/ydlidar_ros2_driver/ydlidar_ros2_driver_node --ros-args -r __node:=ydlidar_ros2_driver_node -r __ns:=/ --params-file /home/project1/ros2_ws/install/ydlidar_ros2_driver/share/ydlidar_ros2_driver/params/ydlidar.yaml
+   3287 Mon Nov  2 20:40:31 2026       05:52 /opt/ros/humble/lib/tf2_ros/static_transform_publisher 0.025 0 0.1675 0 0 0 1 base_link laser_frame --ros-args -r __node:=static_tf_pub_laser
+   3294 Mon Nov  2 20:40:31 2026       05:52 python3 /home/project1/ros2_ws/install/my_bot/lib/my_bot/dieu_khien.py --ros-args -r __node:=dieu_khien --params-file /tmp/launch_params_vuc7f80u
+   3301 Mon Nov  2 20:40:31 2026       05:52 python3 /home/project1/ros2_ws/install/my_bot/lib/my_bot/gyro_mpu6050.py --ros-args -r __node:=gyro_mpu6050 --params-file /tmp/launch_params_srgfcaf1
+   3426 Mon Nov  2 20:40:38 2026       05:45 /usr/bin/python3 /opt/ros/humble/bin/ros2 launch my_bot navigation_my_bot.launch.py params_file:=/home/project1/nav2_params_cho.yaml
+   3434 Mon Nov  2 20:40:40 2026       05:43 /opt/ros/humble/lib/nav2_controller/controller_server --ros-args --log-level info --ros-args --params-file /tmp/launch_params_sn0ogci7 -r /tf:=tf -r /tf_static:=tf_static -r cmd_vel:=cmd_vel_nav_raw
+   3436 Mon Nov  2 20:40:40 2026       05:43 /opt/ros/humble/lib/nav2_planner/planner_server --ros-args --log-level info --ros-args -r __node:=planner_server --params-file /tmp/launch_params_sn0ogci7 -r /tf:=tf -r /tf_static:=tf_static
+   3438 Mon Nov  2 20:40:40 2026       05:43 /opt/ros/humble/lib/nav2_behaviors/behavior_server --ros-args --log-level info --ros-args -r __node:=behavior_server --params-file /tmp/launch_params_sn0ogci7 -r /tf:=tf -r /tf_static:=tf_static -r cmd_vel:=cmd_vel_nav_raw
+   3440 Mon Nov  2 20:40:40 2026       05:43 /opt/ros/humble/lib/nav2_bt_navigator/bt_navigator --ros-args --log-level info --ros-args -r __node:=bt_navigator --params-file /tmp/launch_params_sn0ogci7 -r /tf:=tf -r /tf_static:=tf_static
+   3442 Mon Nov  2 20:40:40 2026       05:43 /opt/ros/humble/lib/nav2_velocity_smoother/velocity_smoother --ros-args --log-level info --ros-args -r __node:=velocity_smoother --params-file /tmp/launch_params_sn0ogci7 -r /tf:=tf -r /tf_static:=tf_static -r cmd_vel:=cmd_vel_nav_raw -r cmd_vel_smoothed:=cmd_vel_nav
+   3444 Mon Nov  2 20:40:40 2026       05:43 /opt/ros/humble/lib/nav2_lifecycle_manager/lifecycle_manager --ros-args --log-level info --ros-args -r __node:=lifecycle_manager_navigation --params-file /tmp/launch_params_1e0o5byv --params-file /tmp/launch_params_6kq0r76t --params-file /tmp/launch_params_iqc333e0
+   3542 Mon Nov  2 20:40:48 2026       05:35 python3 /home/project1/sep.py --ros-args -p ra_lenh:=true -p ra_thoat:=true
+   3543 Mon Nov  2 20:40:48 2026       05:35 python3 /home/project1/lai_xe_lidar.py --ros-args -p phat_lenh:=true -p sep_ra_thoat:=true
+   3571 Mon Nov  2 20:41:01 2026       05:22 /usr/bin/python3 -c from ros2cli.daemon.daemonize import main; main() --name ros2-daemon --ros-domain-id 0 --rmw-implementation rmw_fastrtps_cpp
+   3790 Mon Nov  2 20:46:23 2026       00:00 awk NR == 1 || /ros|python3/
+
+===== (2) Udp /proc/net/snmp + ss -uam(p) =====
+Udp: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors IgnoredMulti MemErrors
+Udp: 1665428 921 290814 1727587 290814 0 0 0 0
+State  Recv-Q Send-Q Local Address:Port   Peer Address:PortProcess                                                                                                                                                                                                                                                                                                                                                                                                        
+>>CS UNCONN 0      0        192.168.0.2:52536       0.0.0.0:*    users:(("controller_serv",pid=3434,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0        192.168.0.2:34117       0.0.0.0:*    users:(("velocity_smooth",pid=3442,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:58756       0.0.0.0:*    users:(("planner_server",pid=3436,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                   
+UNCONN 0      0            0.0.0.0:40473       0.0.0.0:*    users:(("python3",pid=3294,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0        192.168.0.2:50780       0.0.0.0:*    users:(("lifecycle_manag",pid=3444,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:38537       0.0.0.0:*    users:(("bt_navigator",pid=3440,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                     
+UNCONN 0      0        192.168.0.2:54970       0.0.0.0:*    users:(("bt_navigator",pid=3440,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                     
+UNCONN 0      0        192.168.0.2:38601       0.0.0.0:*    users:(("python3",pid=3260,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0        192.168.0.2:46794       0.0.0.0:*    users:(("joint_state_pub",pid=3264,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0        192.168.0.2:42850       0.0.0.0:*    users:(("behavior_server",pid=3438,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:40857       0.0.0.0:*    users:(("lifecycle_manag",pid=3444,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0        192.168.0.2:59296       0.0.0.0:*    users:(("python3",pid=3571,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:49175       0.0.0.0:*    users:(("behavior_server",pid=3438,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0        192.168.0.2:32795       0.0.0.0:*    users:(("python3",pid=3301,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0      127.0.0.53%lo:domain      0.0.0.0:*    users:(("systemd-resolve",pid=637,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                
+UNCONN 0      0        192.168.0.2:32852       0.0.0.0:*    users:(("planner_server",pid=3436,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                   
+UNCONN 0      0        192.168.0.2:34905       0.0.0.0:*    users:(("python3",pid=3294,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:39029       0.0.0.0:*    users:(("joint_state_pub",pid=3264,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:53452       0.0.0.0:*    users:(("twist_mux",pid=3266,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                        
+UNCONN 0      0            0.0.0.0:49380       0.0.0.0:*    users:(("velocity_smooth",pid=3442,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0        192.168.0.2:53525       0.0.0.0:*    users:(("python3",pid=3543,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0        192.168.0.2:41241       0.0.0.0:*    users:(("python3",pid=3270,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:51488       0.0.0.0:*    users:(("python3",pid=3543,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:49528       0.0.0.0:*    users:(("python3",pid=3542,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:51632       0.0.0.0:*    users:(("robot_state_pub",pid=3262,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:51722       0.0.0.0:*    users:(("python3",pid=3270,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:59962       0.0.0.0:*    users:(("python3",pid=3301,fd=20),("python3",pid=3294,fd=20),("static_transfor",pid=3287,fd=20),("ydlidar_ros2_dr",pid=3281,fd=20),("async_slam_tool",pid=3276,fd=20),("python3",pid=3270,fd=20),("twist_mux",pid=3266,fd=20),("joint_state_pub",pid=3264,fd=20),("robot_state_pub",pid=3262,fd=20),("python3",pid=3260,fd=20),("ros2",pid=3242,fd=20))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)     
+UNCONN 0      0            0.0.0.0:47766       0.0.0.0:*    users:(("python3",pid=3260,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:33432       0.0.0.0:*    users:(("ydlidar_ros2_dr",pid=3281,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0        192.168.0.2:53993       0.0.0.0:*    users:(("async_slam_tool",pid=3276,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:43805       0.0.0.0:*    users:(("async_slam_tool",pid=3276,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0        192.168.0.2:51998       0.0.0.0:*    users:(("python3",pid=3301,fd=21),("python3",pid=3294,fd=21),("static_transfor",pid=3287,fd=21),("ydlidar_ros2_dr",pid=3281,fd=21),("async_slam_tool",pid=3276,fd=21),("python3",pid=3270,fd=21),("twist_mux",pid=3266,fd=21),("joint_state_pub",pid=3264,fd=21),("robot_state_pub",pid=3262,fd=21),("python3",pid=3260,fd=21),("ros2",pid=3242,fd=21))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)     
+>>CS UNCONN 0      0            0.0.0.0:50015       0.0.0.0:*    users:(("controller_serv",pid=3434,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:54131       0.0.0.0:*    users:(("python3",pid=3571,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0        192.168.0.2:33709       0.0.0.0:*    users:(("twist_mux",pid=3266,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                        
+UNCONN 0      0            0.0.0.0:33735       0.0.0.0:*    users:(("python3",pid=3301,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0        192.168.0.2:50154       0.0.0.0:*    users:(("ydlidar_ros2_dr",pid=3281,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:60437       0.0.0.0:*    users:(("static_transfor",pid=3287,fd=24))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0        192.168.0.2:56543       0.0.0.0:*    users:(("robot_state_pub",pid=3262,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("python3",pid=3571,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                                      
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("python3",pid=3542,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                                      
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("python3",pid=3543,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                                      
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("lifecycle_manag",pid=3444,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                              
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("planner_server",pid=3436,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d25)                                                                                                                                                                                                                                                                                                              
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("velocity_smooth",pid=3442,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d126)                                                                                                                                                                                                                                                                                                            
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("bt_navigator",pid=3440,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d92)                                                                                                                                                                                                                                                                                                                
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("behavior_server",pid=3438,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d52)                                                                                                                                                                                                                                                                                                             
+>>CS UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("controller_serv",pid=3434,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d108)                                                                                                                                                                                                                                                                                                            
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("python3",pid=3260,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                                      
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("python3",pid=3294,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                                      
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("joint_state_pub",pid=3264,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                              
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("python3",pid=3270,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                                      
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("python3",pid=3301,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                                      
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("async_slam_tool",pid=3276,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                              
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("static_transfor",pid=3287,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                              
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("ydlidar_ros2_dr",pid=3281,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                              
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("twist_mux",pid=3266,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                                    
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("robot_state_pub",pid=3262,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                              
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("python3",pid=3301,fd=16),("python3",pid=3294,fd=16),("static_transfor",pid=3287,fd=16),("ydlidar_ros2_dr",pid=3281,fd=16),("async_slam_tool",pid=3276,fd=16),("python3",pid=3270,fd=16),("twist_mux",pid=3266,fd=16),("joint_state_pub",pid=3264,fd=16),("robot_state_pub",pid=3262,fd=16),("python3",pid=3260,fd=16),("ros2",pid=3242,fd=16))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0) 
+UNCONN 0      0            0.0.0.0:7410        0.0.0.0:*    users:(("python3",pid=3301,fd=17),("python3",pid=3294,fd=17),("static_transfor",pid=3287,fd=17),("ydlidar_ros2_dr",pid=3281,fd=17),("async_slam_tool",pid=3276,fd=17),("python3",pid=3270,fd=17),("twist_mux",pid=3266,fd=17),("joint_state_pub",pid=3264,fd=17),("robot_state_pub",pid=3262,fd=17),("python3",pid=3260,fd=17),("ros2",pid=3242,fd=17))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d752)
+UNCONN 0      0            0.0.0.0:7411        0.0.0.0:*    users:(("python3",pid=3301,fd=19),("python3",pid=3294,fd=19),("static_transfor",pid=3287,fd=19),("ydlidar_ros2_dr",pid=3281,fd=19),("async_slam_tool",pid=3276,fd=19),("python3",pid=3270,fd=19),("twist_mux",pid=3266,fd=19),("joint_state_pub",pid=3264,fd=19),("robot_state_pub",pid=3262,fd=19),("python3",pid=3260,fd=19),("ros2",pid=3242,fd=19))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)     
+UNCONN 0      0            0.0.0.0:7412        0.0.0.0:*    users:(("robot_state_pub",pid=3262,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d1033)                                                                                                                                                                                                                                                                                                            
+UNCONN 0      0            0.0.0.0:7413        0.0.0.0:*    users:(("robot_state_pub",pid=3262,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7414        0.0.0.0:*    users:(("twist_mux",pid=3266,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d1833)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7415        0.0.0.0:*    users:(("twist_mux",pid=3266,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                        
+UNCONN 0      0            0.0.0.0:7416        0.0.0.0:*    users:(("ydlidar_ros2_dr",pid=3281,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d642)                                                                                                                                                                                                                                                                                                             
+UNCONN 0      0            0.0.0.0:7417        0.0.0.0:*    users:(("ydlidar_ros2_dr",pid=3281,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7418        0.0.0.0:*    users:(("async_slam_tool",pid=3276,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d8306)                                                                                                                                                                                                                                                                                                            
+UNCONN 0      0            0.0.0.0:7419        0.0.0.0:*    users:(("async_slam_tool",pid=3276,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7420        0.0.0.0:*    users:(("static_transfor",pid=3287,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d355)                                                                                                                                                                                                                                                                                                             
+UNCONN 0      0            0.0.0.0:7421        0.0.0.0:*    users:(("static_transfor",pid=3287,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7422        0.0.0.0:*    users:(("python3",pid=3301,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d370)                                                                                                                                                                                                                                                                                                                     
+UNCONN 0      0            0.0.0.0:7423        0.0.0.0:*    users:(("python3",pid=3301,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:7424        0.0.0.0:*    users:(("python3",pid=3270,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d579)                                                                                                                                                                                                                                                                                                                     
+UNCONN 0      0            0.0.0.0:7425        0.0.0.0:*    users:(("python3",pid=3270,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0        192.168.0.2:44289       0.0.0.0:*    users:(("static_transfor",pid=3287,fd=25))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7426        0.0.0.0:*    users:(("joint_state_pub",pid=3264,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d938)                                                                                                                                                                                                                                                                                                             
+UNCONN 0      0            0.0.0.0:7427        0.0.0.0:*    users:(("joint_state_pub",pid=3264,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7428        0.0.0.0:*    users:(("python3",pid=3294,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d1298)                                                                                                                                                                                                                                                                                                                    
+UNCONN 0      0            0.0.0.0:7429        0.0.0.0:*    users:(("python3",pid=3294,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:7430        0.0.0.0:*    users:(("python3",pid=3260,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d337)                                                                                                                                                                                                                                                                                                                     
+UNCONN 0      0            0.0.0.0:7431        0.0.0.0:*    users:(("python3",pid=3260,fd=23))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+>>CS UNCONN 0      0            0.0.0.0:7432        0.0.0.0:*    users:(("controller_serv",pid=3434,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d22828)                                                                                                                                                                                                                                                                                                           
+>>CS UNCONN 0      0            0.0.0.0:7433        0.0.0.0:*    users:(("controller_serv",pid=3434,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7434        0.0.0.0:*    users:(("behavior_server",pid=3438,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d12096)                                                                                                                                                                                                                                                                                                           
+UNCONN 0      0            0.0.0.0:7435        0.0.0.0:*    users:(("behavior_server",pid=3438,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7436        0.0.0.0:*    users:(("bt_navigator",pid=3440,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d37520)                                                                                                                                                                                                                                                                                                              
+UNCONN 0      0            0.0.0.0:7437        0.0.0.0:*    users:(("velocity_smooth",pid=3442,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7438        0.0.0.0:*    users:(("velocity_smooth",pid=3442,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d5480)                                                                                                                                                                                                                                                                                                            
+UNCONN 0      0            0.0.0.0:7439        0.0.0.0:*    users:(("bt_navigator",pid=3440,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                     
+UNCONN 0      0            0.0.0.0:7440        0.0.0.0:*    users:(("planner_server",pid=3436,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d20676)                                                                                                                                                                                                                                                                                                            
+UNCONN 0      0            0.0.0.0:7441        0.0.0.0:*    users:(("planner_server",pid=3436,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                   
+UNCONN 0      0            0.0.0.0:7442        0.0.0.0:*    users:(("lifecycle_manag",pid=3444,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d10325)                                                                                                                                                                                                                                                                                                           
+UNCONN 0      0            0.0.0.0:7443        0.0.0.0:*    users:(("lifecycle_manag",pid=3444,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+UNCONN 0      0            0.0.0.0:7444        0.0.0.0:*    users:(("python3",pid=3543,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d2244)                                                                                                                                                                                                                                                                                                                    
+UNCONN 0      0            0.0.0.0:7445        0.0.0.0:*    users:(("python3",pid=3543,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:7446        0.0.0.0:*    users:(("python3",pid=3542,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d4143)                                                                                                                                                                                                                                                                                                                    
+UNCONN 0      0            0.0.0.0:7447        0.0.0.0:*    users:(("python3",pid=3542,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0            0.0.0.0:7448        0.0.0.0:*    users:(("python3",pid=3571,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d1393)                                                                                                                                                                                                                                                                                                                    
+UNCONN 0      0            0.0.0.0:7449        0.0.0.0:*    users:(("python3",pid=3571,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+UNCONN 0      0        192.168.0.2:44329       0.0.0.0:*    users:(("python3",pid=3542,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                          
+
+===== (3) luong cua controller_server (pid 3434) =====
+top - 20:46:24 up 27 min,  1 user,  load average: 2.73, 3.82, 2.94
+Threads:  16 total,   0 running,  16 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 49.2 us,  4.9 sy,  0.0 ni, 45.9 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :   3789.8 total,   1942.5 free,    674.5 used,   1172.9 buff/cache
+MiB Swap:      0.0 total,      0.0 free,      0.0 used.   2934.4 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+   3434 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:14.21 control+
+   3446 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.00 control+
+   3447 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.00 control+
+   3448 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.09 control+
+   3449 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:03.15 control+
+   3450 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.31 control+
+   3451 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:01.50 control+
+   3458 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:11.98 control+
+   3459 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.00 control+
+   3463 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:02.77 control+
+   3505 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.02 control+
+   3514 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.54 control+
+   3515 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.23 control+
+   3516 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.03 control+
+   3517 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:00.00 control+
+   3529 project1  20   0 1051064  38556  24176 S   0.0   1.0   0:01.36 control+
+-- tid trang_thai wchan ten (tu /proc/3434/task/*/stat)
+3434 S futex_wait_queue_me (controller_serv)
+3446 S futex_wait_queue_me (controller_serv)
+3447 S futex_wait_queue_me (controller_serv)
+3448 S futex_wait_queue_me (controller_serv)
+3449 S futex_wait_queue_me (controller_serv)
+3450 S __skb_wait_for_more_packets (controller_serv)
+3451 S __skb_wait_for_more_packets (controller_serv)
+3458 S futex_wait_queue_me (controller_serv)
+3459 S __skb_wait_for_more_packets (controller_serv)
+3463 S futex_wait_queue_me (controller_serv)
+3505 S futex_wait_queue_me (controller_serv)
+3514 S futex_wait_queue_me (controller_serv)
+3515 S futex_wait_queue_me (controller_serv)
+3516 S futex_wait_queue_me (controller_serv)
+3517 S futex_wait_queue_me (controller_serv)
+3529 S futex_wait_queue_me (controller_serv)
+
+===== (4) ros2 topic info -v /tf =====
+moi truong lenh nay: ROS_DOMAIN_ID= RMW_IMPLEMENTATION= ROS_LOCALHOST_ONLY=0 FASTRTPS_DEFAULT_PROFILES_FILE=
+moi truong controller_server: ROS_LOCALHOST_ONLY=0 
+Type: tf2_msgs/msg/TFMessage
+
+Publisher count: 4
+
+Node name: robot_state_publisher
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: PUBLISHER
+GID: 01.0f.5e.d8.be.0c.af.f1.00.00.00.00.00.00.12.03.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: odom_tu_lenh
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: PUBLISHER
+GID: 01.0f.5e.d8.c6.0c.c1.f4.00.00.00.00.00.00.12.03.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: slam_toolbox
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: PUBLISHER
+GID: 01.0f.5e.d8.cc.0c.1a.62.00.00.01.00.00.00.16.03.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: slam_toolbox
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: PUBLISHER
+GID: 01.0f.5e.d8.cc.0c.1a.62.00.00.01.00.00.00.26.03.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Subscription count: 7
+
+Node name: transform_listener_impl_aaaac8f29750
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.5e.d8.6a.0d.10.99.00.00.00.00.00.00.39.04.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: transform_listener_impl_aaaae90ee750
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.5e.d8.6c.0d.be.87.00.00.00.00.00.00.39.04.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: transform_listener_impl_aaaac5633da0
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.5e.d8.6e.0d.a7.55.00.00.00.00.00.00.1f.04.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: bt_navigator
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.5e.d8.70.0d.e4.a1.00.00.00.00.00.00.1d.04.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: transform_listener_impl_aaaaf67351f0
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.5e.d8.cc.0c.1a.62.00.00.01.00.00.00.14.04.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: sep
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.5e.d8.d6.0d.da.0a.00.00.00.00.00.00.1a.04.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: lai_xe_lidar
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Endpoint type: SUBSCRIPTION
+GID: 01.0f.5e.d8.d7.0d.18.9c.00.00.00.00.00.00.16.04.00.00.00.00.00.00.00.00
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): UNKNOWN
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+ma ros2 topic info = 0
+
+===== (5) gdb thread apply all bt (pid 3434) =====
+[New LWP 3446]
+[New LWP 3447]
+[New LWP 3448]
+[New LWP 3449]
+[New LWP 3450]
+[New LWP 3451]
+[New LWP 3458]
+[New LWP 3459]
+[New LWP 3463]
+[New LWP 3505]
+[New LWP 3514]
+[New LWP 3515]
+[New LWP 3516]
+[New LWP 3517]
+[New LWP 3529]
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/aarch64-linux-gnu/libthread_db.so.1".
+__futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0xffffc599c058, op=137, expected=0, futex_word=0xaaaac8b7ae2c) at ./nptl/futex-internal.c:57
+57	./nptl/futex-internal.c: No such file or directory.
+
+Thread 16 (Thread 0xffff6989e860 (LWP 3529) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0xffff6989d618, op=137, expected=0, futex_word=0xaaaac8abedf8) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0xffff6989d618, clockid=0, expected=0, futex_word=0xaaaac8abedf8) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaac8abedf8, expected=expected@entry=0, clockid=clockid@entry=1, abstime=abstime@entry=0xffff6989d618, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f43fccc in __pthread_cond_wait_common (abstime=0xffff6989d618, clockid=1, mutex=0xaaaac8abee00, cond=0xaaaac8abedd0) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_clockwait64 (abstime=0xffff6989d618, clockid=1, mutex=0xaaaac8abee00, cond=0xaaaac8abedd0) at ./nptl/pthread_cond_wait.c:691
+#5  ___pthread_cond_clockwait64 (cond=0xaaaac8abedd0, mutex=0xaaaac8abee00, clockid=1, abstime=0xffff6989d618) at ./nptl/pthread_cond_wait.c:679
+#6  0x0000ffff8f9c9958 in rclcpp::Context::sleep_for(std::chrono::duration<long, std::ratio<1l, 1000000000l> > const&) () from /opt/ros/humble/lib/librclcpp.so
+#7  0x0000ffff8f0a47d8 in nav2_costmap_2d::Costmap2DROS::mapUpdateLoop(double) () from /opt/ros/humble/lib/libnav2_costmap_2d_core.so
+#8  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#9  0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#10 0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 15 (Thread 0xffff6a0ae860 (LWP 3517) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0xffff6a0acf28, op=137, expected=0, futex_word=0xaaaac907deb8) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0xffff6a0acf28, clockid=0, expected=0, futex_word=0xaaaac907deb8) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaac907deb8, expected=expected@entry=0, clockid=clockid@entry=1, abstime=abstime@entry=0xffff6a0acf28, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f43fccc in __pthread_cond_wait_common (abstime=0xffff6a0acf28, clockid=1, mutex=0xaaaac907de60, cond=0xaaaac907de90) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_clockwait64 (abstime=0xffff6a0acf28, clockid=1, mutex=0xaaaac907de60, cond=0xaaaac907de90) at ./nptl/pthread_cond_wait.c:691
+#5  ___pthread_cond_clockwait64 (cond=0xaaaac907de90, mutex=0xaaaac907de60, clockid=1, abstime=0xffff6a0acf28) at ./nptl/pthread_cond_wait.c:679
+#6  0x0000ffff8e45cc14 in eprosima::fastdds::dds::detail::WaitSetImpl::wait(std::vector<eprosima::fastdds::dds::Condition*, std::allocator<eprosima::fastdds::dds::Condition*> >&, eprosima::fastrtps::Time_t const&) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#7  0x0000ffff8e45ce28 in eprosima::fastdds::dds::WaitSet::wait(std::vector<eprosima::fastdds::dds::Condition*, std::allocator<eprosima::fastdds::dds::Condition*> >&, eprosima::fastrtps::Time_t) const () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#8  0x0000ffff8e8b5bd4 in rmw_fastrtps_shared_cpp::__rmw_wait(char const*, rmw_subscriptions_s*, rmw_guard_conditions_s*, rmw_services_s*, rmw_clients_s*, rmw_events_s*, rmw_wait_set_s*, rmw_time_s const*) () from /opt/ros/humble/lib/librmw_fastrtps_shared_cpp.so
+#9  0x0000ffff8fbc6330 in rcl_wait () from /opt/ros/humble/lib/librcl.so
+#10 0x0000ffff8f9d6d40 in rclcpp::Executor::wait_for_work(std::chrono::duration<long, std::ratio<1l, 1000000000l> >) () from /opt/ros/humble/lib/librclcpp.so
+#11 0x0000ffff8f9d9f8c in rclcpp::Executor::get_next_executable(rclcpp::AnyExecutable&, std::chrono::duration<long, std::ratio<1l, 1000000000l> >) () from /opt/ros/humble/lib/librclcpp.so
+#12 0x0000ffff8f9e2f10 in rclcpp::executors::SingleThreadedExecutor::spin() () from /opt/ros/humble/lib/librclcpp.so
+#13 0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#14 0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#15 0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 14 (Thread 0xffff6a98e860 (LWP 3516) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0xaaaac907dba8) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0x0, clockid=0, expected=0, futex_word=0xaaaac907dba8) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaac907dba8, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f43f6c4 in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0xaaaac907db50, cond=0xaaaac907db80) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_wait (cond=0xaaaac907db80, mutex=0xaaaac907db50) at ./nptl/pthread_cond_wait.c:627
+#5  0x0000ffff8e45cd74 in eprosima::fastdds::dds::detail::WaitSetImpl::wait(std::vector<eprosima::fastdds::dds::Condition*, std::allocator<eprosima::fastdds::dds::Condition*> >&, eprosima::fastrtps::Time_t const&) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#6  0x0000ffff8e45ce28 in eprosima::fastdds::dds::WaitSet::wait(std::vector<eprosima::fastdds::dds::Condition*, std::allocator<eprosima::fastdds::dds::Condition*> >&, eprosima::fastrtps::Time_t) const () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#7  0x0000ffff8e8b5bd4 in rmw_fastrtps_shared_cpp::__rmw_wait(char const*, rmw_subscriptions_s*, rmw_guard_conditions_s*, rmw_services_s*, rmw_clients_s*, rmw_events_s*, rmw_wait_set_s*, rmw_time_s const*) () from /opt/ros/humble/lib/librmw_fastrtps_shared_cpp.so
+#8  0x0000ffff8fbc6330 in rcl_wait () from /opt/ros/humble/lib/librcl.so
+#9  0x0000ffff8f9d6d40 in rclcpp::Executor::wait_for_work(std::chrono::duration<long, std::ratio<1l, 1000000000l> >) () from /opt/ros/humble/lib/librclcpp.so
+#10 0x0000ffff8f9d9f8c in rclcpp::Executor::get_next_executable(rclcpp::AnyExecutable&, std::chrono::duration<long, std::ratio<1l, 1000000000l> >) () from /opt/ros/humble/lib/librclcpp.so
+#11 0x0000ffff8f9e2f10 in rclcpp::executors::SingleThreadedExecutor::spin() () from /opt/ros/humble/lib/librclcpp.so
+#12 0x0000ffff8efd8ed0 in ?? () from /opt/ros/humble/lib/libnav2_util_core.so
+#13 0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#14 0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#15 0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 13 (Thread 0xffff6b19e860 (LWP 3515) "controller_serv"):
+#0  futex_wait (private=0, expected=2, futex_word=0xaaaac8dabaa0) at ../sysdeps/nptl/futex-internal.h:146
+#1  __GI___lll_lock_wait (futex=futex@entry=0xaaaac8dabaa0, private=private@entry=0) at ./nptl/lowlevellock.c:49
+#2  0x0000ffff8f44353c in lll_mutex_lock_optimized (mutex=0xaaaac8dabaa0) at ./nptl/pthread_mutex_lock.c:48
+#3  ___pthread_mutex_lock (mutex=0xaaaac8dabaa0) at ./nptl/pthread_mutex_lock.c:93
+#4  0x0000ffff8ec3addc in tf2::BufferCore::addTransformableRequest(std::function<void (unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::chrono::time_point<std::chrono::_V2::system_clock, std::chrono::duration<long, std::ratio<1l, 1000000000l> > >, tf2::TransformableResult)> const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::chrono::time_point<std::chrono::_V2::system_clock, std::chrono::duration<long, std::ratio<1l, 1000000000l> > >) () from /opt/ros/humble/lib/libtf2.so
+#5  0x0000ffff8eae6d08 in tf2_ros::Buffer::waitForTransform(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::chrono::time_point<std::chrono::_V2::system_clock, std::chrono::duration<long, std::ratio<1l, 1000000000l> > > const&, std::chrono::duration<long, std::ratio<1l, 1000000000l> > const&, std::function<void (tf2_ros::TransformStampedFuture const&)>) () from /opt/ros/humble/lib/libtf2_ros.so
+#6  0x0000ffff6b4f4be4 in ?? () from /opt/ros/humble/lib/liblayers.so
+#7  0x0000ffff6b506d50 in ?? () from /opt/ros/humble/lib/liblayers.so
+#8  0x0000ffff6b4fc728 in std::_Function_handler<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const>), message_filters::Subscriber<sensor_msgs::msg::LaserScan_<std::allocator<void> >, rclcpp_lifecycle::LifecycleNode>::subscribe(rclcpp_lifecycle::LifecycleNode*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, rmw_qos_profile_s, rclcpp::SubscriptionOptionsWithAllocator<std::allocator<void> >)::{lambda(std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const>)#1}>::_M_invoke(std::_Any_data const&, std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const>&&) () from /opt/ros/humble/lib/liblayers.so
+#9  0x0000ffff6b50aaa4 in std::__detail::__variant::__gen_vtable_impl<std::__detail::__variant::_Multi_array<std::__detail::__variant::__deduce_visit_result<void> (*)(rclcpp::AnySubscriptionCallback<sensor_msgs::msg::LaserScan_<std::allocator<void> >, std::allocator<void> >::dispatch(std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > >, rclcpp::MessageInfo const&)::{lambda(auto:1&&)#1}&&, std::variant<std::function<void (sensor_msgs::msg::LaserScan_<std::allocator<void> > const&)>, std::function<void (sensor_msgs::msg::LaserScan_<std::allocator<void> > const&, rclcpp::MessageInfo const&)>, std::function<void (rclcpp::SerializedMessage const&)>, std::function<void (rclcpp::SerializedMessage const&, rclcpp::MessageInfo const&)>, std::function<void (std::unique_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> >, std::default_delete<sensor_msgs::msg::LaserScan_<std::allocator<void> > > >)>, std::function<void (std::unique_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> >, std::default_delete<sensor_msgs::msg::LaserScan_<std::allocator<void> > > >, rclcpp::MessageInfo const&)>, std::function<void (std::unique_ptr<rclcpp::SerializedMessage, std::default_delete<rclcpp::SerializedMessage> >)>, std::function<void (std::unique_ptr<rclcpp::SerializedMessage, std::default_delete<rclcpp::SerializedMessage> >, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const>)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const>, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const>)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const>, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const> const&)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const> const&, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const> const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const> const&, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > >)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > >, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage>)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage>, rclcpp::MessageInfo const&)> >&)>, std::integer_sequence<unsigned long, 8ul> >::__visit_invoke(rclcpp::AnySubscriptionCallback<sensor_msgs::msg::LaserScan_<std::allocator<void> >, std::allocator<void> >::dispatch(std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > >, rclcpp::MessageInfo const&)::{lambda(auto:1&&)#1}&&, std::variant<std::function<void (sensor_msgs::msg::LaserScan_<std::allocator<void> > const&)>, std::function<void (sensor_msgs::msg::LaserScan_<std::allocator<void> > const&, rclcpp::MessageInfo const&)>, std::function<void (rclcpp::SerializedMessage const&)>, std::function<void (rclcpp::SerializedMessage const&, rclcpp::MessageInfo const&)>, std::function<void (std::unique_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> >, std::default_delete<sensor_msgs::msg::LaserScan_<std::allocator<void> > > >)>, std::function<void (std::unique_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> >, std::default_delete<sensor_msgs::msg::LaserScan_<std::allocator<void> > > >, rclcpp::MessageInfo const&)>, std::function<void (std::unique_ptr<rclcpp::SerializedMessage, std::default_delete<rclcpp::SerializedMessage> >)>, std::function<void (std::unique_ptr<rclcpp::SerializedMessage, std::default_delete<rclcpp::SerializedMessage> >, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const>)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const>, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const>)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const>, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const> const&)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > const> const&, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const> const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const> const&, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > >)>, std::function<void (std::shared_ptr<sensor_msgs::msg::LaserScan_<std::allocator<void> > >, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage>)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage>, rclcpp::MessageInfo const&)> >&) () from /opt/ros/humble/lib/liblayers.so
+#10 0x0000ffff6b50ee90 in ?? () from /opt/ros/humble/lib/liblayers.so
+#11 0x0000ffff8f9d92f0 in rclcpp::Executor::execute_subscription(std::shared_ptr<rclcpp::SubscriptionBase>) () from /opt/ros/humble/lib/librclcpp.so
+#12 0x0000ffff8f9d9b0c in rclcpp::Executor::execute_any_executable(rclcpp::AnyExecutable&) () from /opt/ros/humble/lib/librclcpp.so
+#13 0x0000ffff8f9e2f24 in rclcpp::executors::SingleThreadedExecutor::spin() () from /opt/ros/humble/lib/librclcpp.so
+#14 0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#15 0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#16 0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 12 (Thread 0xffff6bd9e860 (LWP 3514) "controller_serv"):
+#0  futex_wait (private=0, expected=2, futex_word=0xaaaac8dabb58) at ../sysdeps/nptl/futex-internal.h:146
+#1  __GI___lll_lock_wait (futex=futex@entry=0xaaaac8dabb58, private=private@entry=0) at ./nptl/lowlevellock.c:49
+#2  0x0000ffff8f44353c in lll_mutex_lock_optimized (mutex=0xaaaac8dabb58) at ./nptl/pthread_mutex_lock.c:48
+#3  ___pthread_mutex_lock (mutex=0xaaaac8dabb58) at ./nptl/pthread_mutex_lock.c:93
+#4  0x0000ffff8eae5f48 in ?? () from /opt/ros/humble/lib/libtf2_ros.so
+#5  0x0000ffff8ec3c5e0 in tf2::BufferCore::testTransformableRequests() () from /opt/ros/humble/lib/libtf2.so
+#6  0x0000ffff8ec3ffc0 in tf2::BufferCore::setTransformImpl(tf2::Transform const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::chrono::time_point<std::chrono::_V2::system_clock, std::chrono::duration<long, std::ratio<1l, 1000000000l> > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) () from /opt/ros/humble/lib/libtf2.so
+#7  0x0000ffff8ec40424 in tf2::BufferCore::setTransform(geometry_msgs::msg::TransformStamped_<std::allocator<void> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool) () from /opt/ros/humble/lib/libtf2.so
+#8  0x0000ffff8eaedb20 in tf2_ros::TransformListener::subscription_callback(std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const>, bool) () from /opt/ros/humble/lib/libtf2_ros.so
+#9  0x0000ffff8eaece28 in std::_Function_handler<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const>), std::_Bind<void (tf2_ros::TransformListener::*(tf2_ros::TransformListener*, std::_Placeholder<1>, bool))(std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const>, bool)> >::_M_invoke(std::_Any_data const&, std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const>&&) () from /opt/ros/humble/lib/libtf2_ros.so
+#10 0x0000ffff8eb03544 in std::__detail::__variant::__gen_vtable_impl<std::__detail::__variant::_Multi_array<std::__detail::__variant::__deduce_visit_result<void> (*)(rclcpp::AnySubscriptionCallback<tf2_msgs::msg::TFMessage_<std::allocator<void> >, std::allocator<void> >::dispatch(std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > >, rclcpp::MessageInfo const&)::{lambda(auto:1&&)#1}&&, std::variant<std::function<void (tf2_msgs::msg::TFMessage_<std::allocator<void> > const&)>, std::function<void (tf2_msgs::msg::TFMessage_<std::allocator<void> > const&, rclcpp::MessageInfo const&)>, std::function<void (rclcpp::SerializedMessage const&)>, std::function<void (rclcpp::SerializedMessage const&, rclcpp::MessageInfo const&)>, std::function<void (std::unique_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> >, std::default_delete<tf2_msgs::msg::TFMessage_<std::allocator<void> > > >)>, std::function<void (std::unique_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> >, std::default_delete<tf2_msgs::msg::TFMessage_<std::allocator<void> > > >, rclcpp::MessageInfo const&)>, std::function<void (std::unique_ptr<rclcpp::SerializedMessage, std::default_delete<rclcpp::SerializedMessage> >)>, std::function<void (std::unique_ptr<rclcpp::SerializedMessage, std::default_delete<rclcpp::SerializedMessage> >, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const>)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const>, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const>)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const>, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const> const&)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const> const&, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const> const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const> const&, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > >)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > >, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage>)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage>, rclcpp::MessageInfo const&)> >&)>, std::integer_sequence<unsigned long, 8ul> >::__visit_invoke(rclcpp::AnySubscriptionCallback<tf2_msgs::msg::TFMessage_<std::allocator<void> >, std::allocator<void> >::dispatch(std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > >, rclcpp::MessageInfo const&)::{lambda(auto:1&&)#1}&&, std::variant<std::function<void (tf2_msgs::msg::TFMessage_<std::allocator<void> > const&)>, std::function<void (tf2_msgs::msg::TFMessage_<std::allocator<void> > const&, rclcpp::MessageInfo const&)>, std::function<void (rclcpp::SerializedMessage const&)>, std::function<void (rclcpp::SerializedMessage const&, rclcpp::MessageInfo const&)>, std::function<void (std::unique_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> >, std::default_delete<tf2_msgs::msg::TFMessage_<std::allocator<void> > > >)>, std::function<void (std::unique_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> >, std::default_delete<tf2_msgs::msg::TFMessage_<std::allocator<void> > > >, rclcpp::MessageInfo const&)>, std::function<void (std::unique_ptr<rclcpp::SerializedMessage, std::default_delete<rclcpp::SerializedMessage> >)>, std::function<void (std::unique_ptr<rclcpp::SerializedMessage, std::default_delete<rclcpp::SerializedMessage> >, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const>)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const>, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const>)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const>, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const> const&)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > const> const&, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const> const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage const> const&, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > >)>, std::function<void (std::shared_ptr<tf2_msgs::msg::TFMessage_<std::allocator<void> > >, rclcpp::MessageInfo const&)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage>)>, std::function<void (std::shared_ptr<rclcpp::SerializedMessage>, rclcpp::MessageInfo const&)> >&) () from /opt/ros/humble/lib/libtf2_ros.so
+#11 0x0000ffff8eb05c20 in ?? () from /opt/ros/humble/lib/libtf2_ros.so
+#12 0x0000ffff8f9d92f0 in rclcpp::Executor::execute_subscription(std::shared_ptr<rclcpp::SubscriptionBase>) () from /opt/ros/humble/lib/librclcpp.so
+#13 0x0000ffff8f9d9b0c in rclcpp::Executor::execute_any_executable(rclcpp::AnyExecutable&) () from /opt/ros/humble/lib/librclcpp.so
+#14 0x0000ffff8f9e2f24 in rclcpp::executors::SingleThreadedExecutor::spin() () from /opt/ros/humble/lib/librclcpp.so
+#15 0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#16 0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#17 0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 11 (Thread 0xffff890fe860 (LWP 3505) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0xffff78000c08) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0x0, clockid=0, expected=0, futex_word=0xffff78000c08) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xffff78000c08, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f43f6c4 in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0xffff78000bb0, cond=0xffff78000be0) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_wait (cond=0xffff78000be0, mutex=0xffff78000bb0) at ./nptl/pthread_cond_wait.c:627
+#5  0x0000ffff8e45cd74 in eprosima::fastdds::dds::detail::WaitSetImpl::wait(std::vector<eprosima::fastdds::dds::Condition*, std::allocator<eprosima::fastdds::dds::Condition*> >&, eprosima::fastrtps::Time_t const&) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#6  0x0000ffff8e45ce28 in eprosima::fastdds::dds::WaitSet::wait(std::vector<eprosima::fastdds::dds::Condition*, std::allocator<eprosima::fastdds::dds::Condition*> >&, eprosima::fastrtps::Time_t) const () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#7  0x0000ffff8e8b5bd4 in rmw_fastrtps_shared_cpp::__rmw_wait(char const*, rmw_subscriptions_s*, rmw_guard_conditions_s*, rmw_services_s*, rmw_clients_s*, rmw_events_s*, rmw_wait_set_s*, rmw_time_s const*) () from /opt/ros/humble/lib/librmw_fastrtps_shared_cpp.so
+#8  0x0000ffff8e8a2b74 in ?? () from /opt/ros/humble/lib/librmw_fastrtps_shared_cpp.so
+#9  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#10 0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#11 0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 10 (Thread 0xffff89947860 (LWP 3463) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0xaaaac8b22ad4) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0x0, clockid=0, expected=0, futex_word=0xaaaac8b22ad4) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaac8b22ad4, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f43f6c4 in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0xaaaac8b22b40, cond=0xaaaac8b22aa8) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_wait (cond=0xaaaac8b22aa8, mutex=0xaaaac8b22b40) at ./nptl/pthread_cond_wait.c:627
+#5  0x0000ffff8e4ad980 in eprosima::fastdds::rtps::FlowControllerImpl<eprosima::fastdds::rtps::FlowControllerSyncPublishMode, eprosima::fastdds::rtps::FlowControllerFifoSchedule>::run() () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#6  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#7  0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#8  0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 9 (Thread 0xffff8a217860 (LWP 3459) "controller_serv"):
+#0  0x0000ffff8f4abf24 in __libc_recvfrom (fd=13, buf=0xaaaac8b11cb0, len=65500, flags=0, addr=..., addrlen=0xffff8a216aa8) at ../sysdeps/unix/sysv/linux/recvfrom.c:27
+#1  0x0000ffff8e398960 in eprosima::fastdds::rtps::UDPChannelResource::Receive(unsigned char*, unsigned int, unsigned int&, eprosima::fastrtps::rtps::Locator_t&) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#2  0x0000ffff8e398e10 in eprosima::fastdds::rtps::UDPChannelResource::perform_listen_operation(eprosima::fastrtps::rtps::Locator_t) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#3  0x0000ffff8e393ec8 in ?? () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#4  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#5  0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#6  0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 8 (Thread 0xffff8aa27860 (LWP 3458) "controller_serv"):
+#0  0x0000ffff8e2d28e4 in ?? () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#1  0x0000ffff8e2d3df0 in eprosima::fastrtps::rtps::StatefulWriter::check_acked_status() () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#2  0x0000ffff8e2d8c20 in ?? () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#3  0x0000ffff8e2d9078 in eprosima::fastrtps::rtps::StatefulWriter::process_acknack(eprosima::fastrtps::rtps::GUID_t const&, eprosima::fastrtps::rtps::GUID_t const&, unsigned int, eprosima::fastrtps::BitmapRange<eprosima::fastrtps::rtps::SequenceNumber_t, eprosima::fastrtps::rtps::SequenceNumberDiff, 256u> const&, bool, bool&) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#4  0x0000ffff8e30cafc in eprosima::fastrtps::rtps::MessageReceiver::proc_Submsg_Acknack(eprosima::fastrtps::rtps::CDRMessage_t*, eprosima::fastrtps::rtps::SubmessageHeader_t*, bool) const () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#5  0x0000ffff8e30edcc in eprosima::fastrtps::rtps::MessageReceiver::processCDRMsg(eprosima::fastrtps::rtps::Locator_t const&, eprosima::fastrtps::rtps::Locator_t const&, eprosima::fastrtps::rtps::CDRMessage_t*) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#6  0x0000ffff8e315c4c in eprosima::fastrtps::rtps::ReceiverResource::OnDataReceived(unsigned char const*, unsigned int, eprosima::fastrtps::rtps::Locator_t const&, eprosima::fastrtps::rtps::Locator_t const&) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#7  0x0000ffff8e53e928 in eprosima::fastdds::rtps::SharedMemChannelResource::perform_listen_operation(eprosima::fastrtps::rtps::Locator_t) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#8  0x0000ffff8e539b5c in ?? () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#9  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#10 0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#11 0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 7 (Thread 0xffff8b237860 (LWP 3451) "controller_serv"):
+#0  0x0000ffff8f4abf24 in __libc_recvfrom (fd=11, buf=0xaaaac8afdc80, len=65500, flags=0, addr=..., addrlen=0xffff8b236aa8) at ../sysdeps/unix/sysv/linux/recvfrom.c:27
+#1  0x0000ffff8e398960 in eprosima::fastdds::rtps::UDPChannelResource::Receive(unsigned char*, unsigned int, unsigned int&, eprosima::fastrtps::rtps::Locator_t&) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#2  0x0000ffff8e398e10 in eprosima::fastdds::rtps::UDPChannelResource::perform_listen_operation(eprosima::fastrtps::rtps::Locator_t) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#3  0x0000ffff8e393ec8 in ?? () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#4  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#5  0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#6  0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 6 (Thread 0xffff8ba47860 (LWP 3450) "controller_serv"):
+#0  0x0000ffff8f4abf24 in __libc_recvfrom (fd=10, buf=0xaaaac8aedc90, len=65500, flags=0, addr=..., addrlen=0xffff8ba46aa8) at ../sysdeps/unix/sysv/linux/recvfrom.c:27
+#1  0x0000ffff8e398960 in eprosima::fastdds::rtps::UDPChannelResource::Receive(unsigned char*, unsigned int, unsigned int&, eprosima::fastrtps::rtps::Locator_t&) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#2  0x0000ffff8e398e10 in eprosima::fastdds::rtps::UDPChannelResource::perform_listen_operation(eprosima::fastrtps::rtps::Locator_t) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#3  0x0000ffff8e393ec8 in ?? () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#4  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#5  0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#6  0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 5 (Thread 0xffff8c257860 (LWP 3449) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0xffff8c256ee8, op=137, expected=0, futex_word=0xaaaac8ac4534) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0xffff8c256ee8, clockid=0, expected=0, futex_word=0xaaaac8ac4534) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaac8ac4534, expected=expected@entry=0, clockid=clockid@entry=1, abstime=abstime@entry=0xffff8c256ee8, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f43fccc in __pthread_cond_wait_common (abstime=0xffff8c256ee8, clockid=1, mutex=0xaaaac8ac3370, cond=0xaaaac8ac4508) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_clockwait64 (abstime=0xffff8c256ee8, clockid=1, mutex=0xaaaac8ac3370, cond=0xaaaac8ac4508) at ./nptl/pthread_cond_wait.c:691
+#5  ___pthread_cond_clockwait64 (cond=0xaaaac8ac4508, mutex=0xaaaac8ac3370, clockid=1, abstime=0xffff8c256ee8) at ./nptl/pthread_cond_wait.c:679
+#6  0x0000ffff8e2bbe00 in eprosima::fastrtps::rtps::ResourceEvent::event_service() () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#7  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#8  0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#9  0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 4 (Thread 0xffff8caee860 (LWP 3448) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0xffff8caedee8, op=137, expected=0, futex_word=0xaaaac8ac3b48) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0xffff8caedee8, clockid=0, expected=0, futex_word=0xaaaac8ac3b48) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaac8ac3b48, expected=expected@entry=0, clockid=clockid@entry=1, abstime=abstime@entry=0xffff8caedee8, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f43fccc in __pthread_cond_wait_common (abstime=0xffff8caedee8, clockid=1, mutex=0xaaaac8ac3b50, cond=0xaaaac8ac3b20) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_clockwait64 (abstime=0xffff8caedee8, clockid=1, mutex=0xaaaac8ac3b50, cond=0xaaaac8ac3b20) at ./nptl/pthread_cond_wait.c:691
+#5  ___pthread_cond_clockwait64 (cond=0xaaaac8ac3b20, mutex=0xaaaac8ac3b50, clockid=1, abstime=0xffff8caedee8) at ./nptl/pthread_cond_wait.c:679
+#6  0x0000ffff8e528fe8 in eprosima::fastdds::rtps::SharedMemWatchdog::run() () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#7  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#8  0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#9  0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 3 (Thread 0xffff8d2fe860 (LWP 3447) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=<optimized out>, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0xaaaac8ac0dd0) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=<optimized out>, abstime=0x0, clockid=0, expected=0, futex_word=0xaaaac8ac0dd0) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaac8ac0dd0, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=<optimized out>) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f448834 in do_futex_wait (sem=sem@entry=0xaaaac8ac0dd0, abstime=0x0, clockid=0) at ./nptl/sem_waitcommon.c:111
+#4  0x0000ffff8f4488f4 in __new_sem_wait_slow64 (sem=0xaaaac8ac0dd0, abstime=0x0, clockid=0) at ./nptl/sem_waitcommon.c:183
+#5  0x0000ffff8fa56f4c in rclcpp::SignalHandler::wait_for_signal() () from /opt/ros/humble/lib/librclcpp.so
+#6  0x0000ffff8fa57f58 in rclcpp::SignalHandler::deferred_signal_handler() () from /opt/ros/humble/lib/librclcpp.so
+#7  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#8  0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#9  0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 2 (Thread 0xffff8db0e860 (LWP 3446) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0xffff8db0df48, op=137, expected=0, futex_word=0xaaaac8a63e98) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0xffff8db0df48, clockid=0, expected=0, futex_word=0xaaaac8a63e98) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaac8a63e98, expected=expected@entry=0, clockid=clockid@entry=1, abstime=abstime@entry=0xffff8db0df48, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f43fccc in __pthread_cond_wait_common (abstime=0xffff8db0df48, clockid=1, mutex=0xaaaac8a63e40, cond=0xaaaac8a63e70) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_clockwait64 (abstime=0xffff8db0df48, clockid=1, mutex=0xaaaac8a63e40, cond=0xaaaac8a63e70) at ./nptl/pthread_cond_wait.c:691
+#5  ___pthread_cond_clockwait64 (cond=0xaaaac8a63e70, mutex=0xaaaac8a63e40, clockid=1, abstime=0xffff8db0df48) at ./nptl/pthread_cond_wait.c:679
+#6  0x0000ffff8ed15b28 in ?? () from /lib/aarch64-linux-gnu/libspdlog.so.1
+#7  0x0000ffff8f6729cc in ?? () from /lib/aarch64-linux-gnu/libstdc++.so.6
+#8  0x0000ffff8f4403c8 in start_thread (arg=0x80e0a0) at ./nptl/pthread_create.c:442
+#9  0x0000ffff8f4a9fdc in thread_start () at ../sysdeps/unix/sysv/linux/aarch64/clone.S:79
+
+Thread 1 (Thread 0xffff8fb7e480 (LWP 3434) "controller_serv"):
+#0  __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0xffffc599c058, op=137, expected=0, futex_word=0xaaaac8b7ae2c) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0xffffc599c058, clockid=0, expected=0, futex_word=0xaaaac8b7ae2c) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaac8b7ae2c, expected=expected@entry=0, clockid=clockid@entry=1, abstime=abstime@entry=0xffffc599c058, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x0000ffff8f43fccc in __pthread_cond_wait_common (abstime=0xffffc599c058, clockid=1, mutex=0xaaaac8b7add0, cond=0xaaaac8b7ae00) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_clockwait64 (abstime=0xffffc599c058, clockid=1, mutex=0xaaaac8b7add0, cond=0xaaaac8b7ae00) at ./nptl/pthread_cond_wait.c:691
+#5  ___pthread_cond_clockwait64 (cond=0xaaaac8b7ae00, mutex=0xaaaac8b7add0, clockid=1, abstime=0xffffc599c058) at ./nptl/pthread_cond_wait.c:679
+#6  0x0000ffff8e45cc14 in eprosima::fastdds::dds::detail::WaitSetImpl::wait(std::vector<eprosima::fastdds::dds::Condition*, std::allocator<eprosima::fastdds::dds::Condition*> >&, eprosima::fastrtps::Time_t const&) () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#7  0x0000ffff8e45ce28 in eprosima::fastdds::dds::WaitSet::wait(std::vector<eprosima::fastdds::dds::Condition*, std::allocator<eprosima::fastdds::dds::Condition*> >&, eprosima::fastrtps::Time_t) const () from /opt/ros/humble/lib/libfastrtps.so.2.6
+#8  0x0000ffff8e8b5bd4 in rmw_fastrtps_shared_cpp::__rmw_wait(char const*, rmw_subscriptions_s*, rmw_guard_conditions_s*, rmw_services_s*, rmw_clients_s*, rmw_events_s*, rmw_wait_set_s*, rmw_time_s const*) () from /opt/ros/humble/lib/librmw_fastrtps_shared_cpp.so
+#9  0x0000ffff8fbc6330 in rcl_wait () from /opt/ros/humble/lib/librcl.so
+#10 0x0000ffff8f9d6d40 in rclcpp::Executor::wait_for_work(std::chrono::duration<long, std::ratio<1l, 1000000000l> >) () from /opt/ros/humble/lib/librclcpp.so
+#11 0x0000ffff8f9d9f8c in rclcpp::Executor::get_next_executable(rclcpp::AnyExecutable&, std::chrono::duration<long, std::ratio<1l, 1000000000l> >) () from /opt/ros/humble/lib/librclcpp.so
+#12 0x0000ffff8f9e2f10 in rclcpp::executors::SingleThreadedExecutor::spin() () from /opt/ros/humble/lib/librclcpp.so
+#13 0x0000ffff8f9e3198 in rclcpp::spin(std::shared_ptr<rclcpp::node_interfaces::NodeBaseInterface>) () from /opt/ros/humble/lib/librclcpp.so
+#14 0x0000aaaab5e318d0 in ?? ()
+#15 0x0000ffff8f3e7400 in __libc_start_call_main (main=main@entry=0xaaaab5e317c0, argc=argc@entry=13, argv=argv@entry=0xffffc599d838) at ../sysdeps/nptl/libc_start_call_main.h:58
+#16 0x0000ffff8f3e74d8 in __libc_start_main_impl (main=0xaaaab5e317c0, argc=13, argv=0xffffc599d838, init=<optimized out>, fini=<optimized out>, rtld_fini=<optimized out>, stack_end=<optimized out>) at ../csu/libc-start.c:392
+#17 0x0000aaaab5e31b30 in ?? ()
+[Inferior 1 (process 3434) detached]
+ma gdb = 0

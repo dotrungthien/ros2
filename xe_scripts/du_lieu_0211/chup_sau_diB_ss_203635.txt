@@ -1,0 +1,13 @@
+UNCONN 0      0            0.0.0.0:34155       0.0.0.0:*    users:(("controller_serv",pid=2603,fd=14))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+--
+UNCONN 0      0        192.168.0.2:56839       0.0.0.0:*    users:(("controller_serv",pid=2603,fd=15))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  
+--
+UNCONN 0      0            0.0.0.0:7400        0.0.0.0:*    users:(("controller_serv",pid=2603,fd=10))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o96,bl0,d0)                                                                                                                                                                                                                                                                                                              
+--
+UNCONN 0      0            0.0.0.0:7436        0.0.0.0:*    users:(("controller_serv",pid=2603,fd=11))
+	 skmem:(r0,rb212992,t0,tb212992,f4096,w0,o0,bl0,d16116)                                                                                                                                                                                                                                                                                                           
+UNCONN 0      0            0.0.0.0:7437        0.0.0.0:*    users:(("controller_serv",pid=2603,fd=13))
+	 skmem:(r0,rb212992,t0,tb212992,f0,w0,o0,bl0,d0)                                                                                                                                                                                                                                                                                                                  

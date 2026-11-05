@@ -1,0 +1,11 @@
+== cau_noi_xe 21:04:19: di_B (BANG=day) ==
+   tuyen 1: khong tim duoc duong (11, 8) -> (43, 24) => doi tuyen
+== Tuyen 1 hong. ==
+-- tuyen 2, lan 1/3: 48 diem tu (-0.00; 0.00) toi (1.60; 0.82)
+   khong den duoc (ABORTED, cach dich 1.45 m).
+-- tuyen 2, lan 2/3: 35 diem tu (0.16; 0.76) toi (1.60; 0.82)
+   khong den duoc (ABORTED, cach dich 1.45 m).
+-- tuyen 2, lan 3/3: 35 diem tu (0.16; 0.76) toi (1.60; 0.82)
+   khong den duoc (ABORTED, cach dich 1.45 m).
+== Tuyen 2 hong. ==
+HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.

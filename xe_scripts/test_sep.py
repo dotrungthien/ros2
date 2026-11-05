@@ -748,6 +748,44 @@ def test_45_lop2_sap_gui_ra_lui_khong_can():
     tt, _ = c2(luot=dict(luot, ma=59), scan_tuoi=2.0)
     assert tt['ra2']['ly'] == 'mat_scan'
 
+
+def _scan_k1():
+    """06/11 viec 120: diem khung than tu du_lieu_0511_toi/scan_ket_k1_2106.txt (ket K1 21:06, vat sau-trai 6,3 cm)."""
+    from types import SimpleNamespace
+    d = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'du_lieu_0511_toi', 'scan_ket_k1_2106.txt')).read().split('\n')
+    g = lambda k: float([l for l in d if l.startswith(k)][0].split()[1])
+    r = [float(l[2:]) for l in d[d.index('ranges:') + 1:d.index('intensities:')] if l.startswith('- ')]
+    return L.scan_to_xy(SimpleNamespace(ranges=r, angle_min=g('angle_min'), angle_increment=g('angle_increment'),
+                                        range_min=g('range_min'), range_max=g('range_max')))
+
+
+def test_46_lop2_ra_tien_vat_sau_than():
+    import gui_duong as G
+    k1 = _scan_k1()
+    luot = S.doc_sap_gui(G.dong_sap_gui(50.0, 'di_B', 2, 2, 61), 50.2)
+    c = Chay(vao(pts=k1, ra_lenh=True))
+    tt, log = c(luot=luot)
+    assert tt['ra2']['chu'] == 'RA_TIEN' and tt['ra2']['ly'] == 'vat_sau_than_0.06m' and co(log, ',LOP2,RA_TIEN,')
+    assert co(log, 'phu lai tien thang') and S.dong_ra2(tt['ra2']) == ('RA_TIEN', '61 %d' % tt['ra2']['ma'])
+    tt, log = c(rosout=[('lai_xe_lidar', 'RA_TIEN -> RA_XONG () | x')])
+    assert tt['ra2'] is None and co(log, ',LOP2,RA_XONG,')
+    tt, log = c(luot=dict(luot, ma=62))
+    assert tt['ra2']['chu'] == 'RA_TIEN'
+    tt, moi = dung_n_giay(c, 12.2)                                     # khong thay RA_XONG: giu toi T_RA2_CHO roi HET_GIO
+    assert tt['ra2'] is None and co(moi, ',LOP2,HET_GIO,')
+    c.s.p['lop2_sau'] = False                                          # tat rieng nhanh sau: nhu cu (vung truoc trong => KHONG_CAN)
+    tt, log = c(luot=dict(luot, ma=63))
+    assert tt['ra2']['chu'] == 'KHONG_CAN' and tt['ra2']['ly'] == 'vung_trong'
+    c2 = Chay(vao(pts=k1 + [(0.20, 0.0), (0.20, 0.01)], ra_lenh=True))   # them vat 5,5 cm truoc mui: ca truoc lan sau
+    tt, log = c2(luot=dict(luot, ma=64))
+    assert tt['ra2']['chu'] == 'KHONG_CAN' and tt['ra2']['ly'] == 'vat_truoc_va_sau'
+    c2.s.p['lop2_sau'] = False                                         # tat nhanh sau: vat truoc => RA_LUI nhu cu
+    tt, log = c2(luot=dict(luot, ma=65))
+    assert tt['ra2']['chu'] == 'RA_LUI'
+    tt, _ = Chay(vao(pts=k1, ra_lenh=False))(luot=dict(luot, ma=66))    # ra_lenh = false: khong tien
+    assert tt['ra2']['chu'] == 'KHONG_CAN' and tt['ra2']['ly'] == 'ra_lenh=false'
+    assert S.P_MAC_DINH['lop2_sau'] is True
+
 if __name__ == '__main__':
     import sys
     import traceback

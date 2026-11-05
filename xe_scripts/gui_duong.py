@@ -20,7 +20,7 @@ Mot tien trinh rclpy, KHONG goi ros2 CLI. Chay (chuyen.sh BANG=day goi):  python
   Ma thoat: 0 den noi, 1 het duong, 2 sai doi so, 3 sai vi tri, 4 sep bao dung, 130 bi ngat (NGAT).
 Bien moi truong: LUOT (3), CHO_HONG (30 s), TO (130 s/lan gui), TOI_SAI_SO (0,20 m); cung ten voi chuyen.sh: SEP_CHO_S (10 s),
   SEP_TUOI_MAX (3 s). Phu lai lai mai thi tong thoi gian cho giua hai lan gui toi da 3 x CHO_HONG.
-04/11 lop 2: truoc MOI lan gui ghi ~/gui_duong_luot (SAP_GUI); sep tra loi trong ~/sep_thoat: KHONG_CAN => gui; RA_LUI => cho phu
+04/11 lop 2: truoc MOI lan gui ghi ~/gui_duong_luot (SAP_GUI); sep tra loi trong ~/sep_thoat: KHONG_CAN => gui; RA_LUI (06/11: hoac RA_TIEN) => cho phu
   lai lui thang va bao RA_XONG (toi da 12 s); sep khong tra loi 2 s / het 12 s => in RA_HET_GIO roi gui nhu cu.
 Dung khan: TAT CONG TAC MOTOR. Ctrl+C / SIGTERM: ghi HUY vao ~/gui_duong_luot (phu lai dung lui lop 2),
   huy dich dang chay (in HUY_DICH_KHI_NGAT ...), ghi dong NGAT, thoat 130.
@@ -210,7 +210,7 @@ def dong_huy(t):
 
 
 def cho_lop2(io, cfg, huong, r, lan):
-    """04/11 lop 2, truoc moi lan gui: ghi SAP_GUI, cho sep tra loi (~/sep_thoat). KHONG_CAN => gui ngay. RA_LUI => cho phu lai
+    """04/11 lop 2, truoc moi lan gui: ghi SAP_GUI, cho sep tra loi (~/sep_thoat). KHONG_CAN => gui ngay. RA_LUI / RA_TIEN => cho phu lai
     bao RA_XONG (toi da lop2_cho s tinh tu SAP_GUI). RA_XONG moi sau SAP_GUI cung tinh (phu lai co the xong truoc khi doc RA_LUI).
     Sep khong tra loi sau lop2_tra s hoac het lop2_cho s => in RA_HET_GIO, gui nhu cu. ~/sep_lenh DUNG => 'DUNG'.
     Tra 'KHONG_CAN' | 'RA_XONG' | 'RA_HET_GIO' | 'DUNG'."""
@@ -223,7 +223,8 @@ def cho_lop2(io, cfg, huong, r, lan):
                 return 'KHONG_CAN'
             if not ra:
                 ra = True
-                io.bao('   lop 2: sep bao RA_LUI (vat sat mui): cho phu lai lui ra, toi da %d s.' % cfg['lop2_cho'])
+                chu, lam = ('RA_TIEN', 'tien ra') if tra['chu'] == 'RA_TIEN' else ('RA_LUI (vat sat mui)', 'lui ra')
+                io.bao('   lop 2: sep bao %s: cho phu lai %s, toi da %d s.' % (chu, lam, cfg['lop2_cho']))
         if io.so_lan_ra_xong() != n0:
             io.bao('   lop 2: RA_XONG sau %.1f s.' % (io.now() - t0))
             return 'RA_XONG'

@@ -461,10 +461,11 @@ check("18:09 cau doi trang thai in ly do ca khi CHO_SEP (sep bat qua /rosout)", 
 
 
 # --- 04/11 lop 2: vung kich hoat va lui thang (khong can dich) ---
-def ra2_chay(world, pose, giay=8.0, chi_nhin=False, dt=0.1, **kw):
-    """Giao RA2 luc t = 0 (khong co dich), chay toi RA_XONG. Tra (ten cac buoc, cau ra_xong, tu the cuoi, cham?)."""
+def ra2_chay(world, pose, giay=8.0, chi_nhin=False, dt=0.1, tien=False, **kw):
+    """Giao RA2 luc t = 0 (khong co dich), chay toi RA_XONG. Tra (ten cac buoc, cau ra_xong, tu the cuoi, cham?).
+    tien=True: sep giao RA_TIEN (06/11 viec 120)."""
     b = L.NguoiLai(**kw)
-    ok, _ = b.ra2_bat_dau(L.scan_to_xy(make_scan(world, pose)), 0.0, chi_nhin)
+    ok, _ = b.ra2_bat_dau(L.scan_to_xy(make_scan(world, pose)), 0.0, chi_nhin, tien=tien)
     t, ten = 0.0, []
     while t < giay:
         v, w, n = b.step(L.scan_to_xy(make_scan(world, pose)), t, False)
@@ -566,6 +567,71 @@ check('119 RA2 ma phia truoc khong co diem nao: ly do TRUOC_TRONG ngay buoc dau 
 check('119 hang ten co gia tri cu canh ben, DEFAULT dung hang', L.DEFAULT['lop2_d_than'] == L.LOP2_D_THAN == 0.105
       and abs(L.DEFAULT['lop2_x_tu'] - 0.095) < 1e-12 and L.DEFAULT['ra2_cach_than'] == L.RA2_CACH_THAN == 0.15
       and not any(k in L.DEFAULT for k in ('lop2_x_xa', 'lop2_w', 'ra2_cach')))
+
+# --- 06/11 viec 120: lop 2 nhanh RA_TIEN (vat sau than, ket K1 21:04-21:06) ---
+def doc_scan_tep(ten):
+    """LaserScan tu tep `ros2 topic echo --full-length /scan` (du_lieu_0511_toi) -> diem khung than (scan_to_xy)."""
+    d = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'du_lieu_0511_toi', ten)).read().split('\n')
+    g = lambda k: float([l for l in d if l.startswith(k)][0].split()[1])
+    r = [float(l[2:]) for l in d[d.index('ranges:') + 1:d.index('intensities:')] if l.startswith('- ')]
+    sc = SimpleNamespace(ranges=r, angle_min=g('angle_min'), angle_increment=g('angle_increment'), range_min=g('range_min'), range_max=g('range_max'))
+    return L.scan_to_xy(sc)
+
+
+_k1 = doc_scan_tep('scan_ket_k1_2106.txt')
+check('120 scan K1 21:06: vat sau than (vung_sau), KHONG o vung truoc (vung_lui); than-sau ~6,3 cm, mui-truoc ~24,4 cm',
+      L.vung_sau(_k1) and not L.vung_lui(_k1) and abs(L.cach_sau(_k1) - 0.063) < 0.005 and abs(L.mui_truoc(_k1) - 0.244) < 0.005,
+      'sau %.3f truoc %.3f' % (L.cach_sau(_k1), L.mui_truoc(_k1)))
+
+
+def tien_tren_scan(pts, dt=0.05, giay=5.0, **kw):
+    """RA_TIEN tren scan that: xe tien d thi moi diem lui -d theo x (khong xoay). Buoc dau cung `now` voi ra2_bat_dau (nhu nut:
+    _doc_ra2 roi step trong cung mot nhip). Tra (cau ra_xong, quang tien, cac lenh)."""
+    b = L.NguoiLai(**kw)
+    b.ra2_bat_dau(pts, 0.0, tien=True)
+    d, t, lenh = 0.0, 0.0, []
+    while t < giay:
+        v, w, n = b.step([(x - d, y) for x, y in pts], t, False)
+        lenh.append((v, w, n))
+        if n == 'RA_XONG':
+            break
+        d += v * dt
+        t += dt
+    return b.ra_xong, d, lenh
+
+
+_x11, _d11, _l11 = tien_tren_scan(_k1)
+check('120 RA_TIEN tren scan K1: tien thang 0,10 m/s, dung TRUOC_15CM sau ~9,4 cm (mui con <= 0,15 m)',
+      _x11.startswith('RA XONG TRUOC_15CM') and 0.09 <= _d11 <= 0.10 and all(v == 0.10 and w == 0.0 and n == 'RA_TIEN' for v, w, n in _l11[:-1]),
+      '%s, %.3f m' % (_x11, _d11))
+_x12, _d12, _ = tien_tren_scan(_k1, dt=0.1)
+check('120 RA_TIEN tren scan K1, nhip 0,1 s nhu tren xe: dung trong 9,4-10 cm, bao 10 cm', _x12 == 'RA XONG TRUOC_15CM 10 cm' and 0.094 <= _d12 <= 0.101,
+      '%s, %.3f m' % (_x12, _d12))
+_vs = [(-0.15, -0.12, -0.09, 0.09)]                                     # vat sau duoi 1,5 cm, phia truoc hanh lang trong
+_t13, _x13, _p13, _c13 = ra2_chay(hanh_lang(_vs), (0, 0, 0), tien=True)
+check('120 RA_TIEN phia truoc trong: dung DA_TIEN_10CM, khong cham, khong xoay', _x13.startswith('RA XONG DA_TIEN_10CM')
+      and 0.09 <= _p13[0] <= 0.115 and abs(_p13[1]) < 1e-9 and abs(_p13[2]) < 1e-9 and not _c13 and 'RA_TIEN' in _t13, '%s %s' % (_x13, _p13))
+_t14, _x14, _, _ = ra2_chay(hanh_lang(_vs), (0, 0, 0), tien=True, v_esc=0.02)
+check('120 RA_TIEN qua 3 s thi dung', _x14.startswith('RA XONG QUA_3S'), _x14)
+_t15, _x15, _p15, _ = ra2_chay(hanh_lang(_vs), (0, 0, 0), tien=True, chi_nhin=True)
+check('120 RA_TIEN chi nhin: xong ngay 0 cm', _x15 == 'RA XONG CHI_NHIN 0 cm' and _p15 == (0, 0, 0), _x15)
+_b16 = L.NguoiLai()
+_b16.ra2_bat_dau(_k1, 0.0, tien=True)
+_r16 = [_b16.step(_k1, 0.1 * i, False) for i in range(1, 4)]
+_b16.ra2_huy()
+_h16 = _b16.step(_k1, 0.4, False)
+check('120 RA_TIEN HUY: buoc ke tiep gui 0 va RA_XONG HUY', all(r[2] == 'RA_TIEN' and r[0] > 0 for r in _r16) and _h16 == (0.0, 0.0, 'RA_XONG')
+      and _b16.ra_xong.startswith('RA XONG HUY') and _b16.state == 'BINH_THUONG', '%s %s' % (_h16, _b16.ra_xong))
+_b17 = L.NguoiLai()
+_b17.ra2_bat_dau([(0.20, 0.0), (0.21, 0.01)], 0.0, tien=True)               # mui con 5,5 cm: khong tien
+check('120 RA_TIEN ma mui da <= 0,15 m: xong ngay TRUOC_15CM 0 cm', _b17.step([(0.20, 0.0), (0.21, 0.01)], 0.0, False)[0] is None
+      and _b17.ra_xong == 'RA XONG TRUOC_15CM 0 cm', str(_b17.ra_xong))
+check('120 doc_sep_ra2 RA_TIEN; doc_sep_thoat bo qua', L.doc_sep_ra2('100.00 RA_TIEN 55 901', 100.5) == dict(chu='RA_TIEN', ma_luot=55, ma=901)
+      and L.doc_sep_thoat('100.00 RA_TIEN 55 901', 100.5) is None and L.doc_sep_ra2('100.00 RA_TIEN 55 x', 100.5) is None)
+check('120 hang so va DEFAULT RA_TIEN', L.LOP2_X_SAU == -0.05 and L.DEFAULT['ra_tien_di_max'] == 0.10 and L.DEFAULT['ra_tien_truoc'] == 0.15
+      and L.DEFAULT['ra_tien_w'] == 0.10 and L.DEFAULT['ra_tien_t_max'] == 3.0 and L.DEFAULT['v_esc'] == 0.10)
+check('120 vung_sau: hanh lang 52 cm trong, xe giua => khong; vat sau 1,5 cm => co', not L.vung_sau(L.scan_to_xy(make_scan(hanh_lang(), (0, 0, 0))))
+      and L.vung_sau(L.scan_to_xy(make_scan(hanh_lang(_vs), (0, 0, 0)))))
 
 fails = [n for n, ok in results if not ok]
 print('\nTONG: %d/%d dat' % (len(results) - len(fails), len(results)))

@@ -32,6 +32,7 @@ LOP2_D_THAN = 0.105         # m: diem cach hinh chu nhat than <= so nay (cu: chu
 LOP2_X_TU = X_MUI - 0.05    # = 0,095 m: chi nua truoc, gom 5 cm hong sau goc (cu: x >= X_MUI = 0,145)
 LOP2_W_CU = 0.10            # m: |y| <= so nay cua vung cu (khong con dung; giu de tra lai)
 RA2_CACH_THAN = 0.15        # m: RA2 dung khi THAN cach diem gan nhat phia truoc >= so nay (cu: ra2_cach 0,30 tu TAM xe, dai |y| <= 0,10)
+LOP2_X_SAU = -0.05          # m: 06/11 viec 120: vung sau = diem cach than <= lop2_d_than va x <= so nay (ket K1 21:04: vat sau-trai)
 CORNERS = ((X_MUI, Y_HONG), (X_MUI, -Y_HONG), (X_DUOI, Y_HONG), (X_DUOI, -Y_HONG))
 R_VETO = math.hypot(X_MUI, Y_HONG) + 0.01       # vat trong ban kinh nay se bi quet trung khi xe xoay tai cho
 R_XOAY = math.hypot(X_MUI, Y_HONG) + 0.02        # xoay tai cho an toan khi moi diem LiDAR cach tam xa hon so nay
@@ -73,6 +74,11 @@ DEFAULT = dict(
     ra2_di_max=0.30,         # m: lui toi da
     ra2_sau=0.05,            # m: phia sau co >= dem_diem_do diem trong so nay tu duoi xe thi dung
     ra2_t_max=6.0,           # s: lui qua lau thi dung
+    # 06/11 viec 120: sep giao RA_TIEN khi chi co vat o vung sau than; phu lai tien thang v_esc (RA_LUI van lui v_esc)
+    ra_tien_di_max=0.10,     # m: tien toi da
+    ra_tien_truoc=0.15,      # m: dung khi mui toi diem gan nhat phia truoc (x >= X_MUI, |y| <= ra_tien_w) <= so nay
+    ra_tien_w=0.10,          # m: nua be ngang dai phia truoc cua ra_tien_truoc
+    ra_tien_t_max=3.0,       # s: tien qua lau thi dung
 )
 
 
@@ -401,22 +407,30 @@ class NguoiLai:
         self.xoay_cho = ly != 'MAT_DICH'
         return self._ket_thuc(now, 'RA_XONG', p['t_nghi_sau_xong'])
 
-    def ra2_bat_dau(self, pts, now, chi_nhin=False):
+    def ra2_bat_dau(self, pts, now, chi_nhin=False, tien=False):
         """04/11 lop 2: sep giao RA_LUI truoc luot moi (KHONG can dich): lui thang toi khi than cach vat phia truoc >= ra2_cach_than,
         hoac da lui ra2_di_max, hoac phia sau con < ra2_sau, hoac qua ra2_t_max s; xong bao RA_XONG (khong XOAY).
+        06/11 viec 120: tien=True (sep giao RA_TIEN, vat sau than): tien thang, xem _ra_tien.
         chi_nhin (phat_lenh tat): xong ngay 0 cm. Dang RA / XOAY / THOAT / RA2 thi bo qua. Tra (bat_dau, cau_log)."""
         if self.state in ('RA', 'XOAY', 'THOAT', 'RA2'):
             return False, 'RA2 BO QUA: dang %s' % self.state
-        c0 = cach_truoc(pts, self.p['lop2_x_tu'])
         self.state, self.trigger, self.xoay_cho = 'RA2', set(), False
+        nhin = ' [chi nhin]' if chi_nhin else ''
+        if tien:
+            m0 = mui_truoc(pts, self.p['ra_tien_w'])
+            self.ra2 = dict(t0=now, t_truoc=now, di=0.0, m0=m0, chi_nhin=chi_nhin, tien=True)
+            return True, 'RA2 BAT DAU TIEN (mui-truoc %.2f m, than-sau %.2f m)%s' % (min(m0, 9.99), min(cach_sau(pts), 9.99), nhin)
+        c0 = cach_truoc(pts, self.p['lop2_x_tu'])
         self.ra2 = dict(t0=now, t_truoc=now, di=0.0, c0=c0, chi_nhin=chi_nhin)
-        return True, 'RA2 BAT DAU LUI (than-truoc %.2f m, sau %.2f m)%s' % (min(c0, 9.99), thoang(pts, math.pi), ' [chi nhin]' if chi_nhin else '')
+        return True, 'RA2 BAT DAU LUI (than-truoc %.2f m, sau %.2f m)%s' % (min(c0, 9.99), thoang(pts, math.pi), nhin)
 
     def _ra2(self, pts, now):
         """Pha lui thang lop 2. Dung khi (theo thu tu): chi nhin; HUY (ra2_huy, 05/11); sau co diem trong ra2_sau; phia truoc
         (x >= lop2_x_tu) khong con diem nao (TRUOC_TRONG, 05/11 viec 119); than-truoc >= ra2_cach_than; da lui ra2_di_max
         (max(uoc theo lenh, do bang LiDAR)); qua ra2_t_max s."""
         r, p = self.ra2, self.p
+        if r.get('tien'):
+            return self._ra_tien(pts, now)
         r['di'] += abs(p['v_esc']) * min(max(now - r['t_truoc'], 0.0), 0.2)
         r['t_truoc'] = now
         c = cach_truoc(pts, p['lop2_x_tu'])
@@ -437,8 +451,34 @@ class NguoiLai:
             ly = 'QUA_%dS' % round(p['ra2_t_max'])
         else:
             return -abs(p['v_esc']), 0.0, 'RA_LUI'
+        return self._ra2_xong(now, ly, di)
+
+    def _ra_tien(self, pts, now):
+        """06/11 viec 120: pha tien thang lop 2 (vat sau than). Dung khi (theo thu tu): chi nhin; HUY; mui toi diem gan nhat phia
+        truoc (x >= X_MUI, |y| <= ra_tien_w) <= ra_tien_truoc; da tien ra_tien_di_max (max(uoc theo lenh, do bang LiDAR));
+        qua ra_tien_t_max s."""
+        r, p = self.ra2, self.p
+        r['di'] += abs(p['v_esc']) * min(max(now - r['t_truoc'], 0.0), 0.2)
+        r['t_truoc'] = now
+        m = mui_truoc(pts, p['ra_tien_w'])
+        di = max(r['di'], r['m0'] - m if m < INF and r['m0'] < INF else 0.0)
+        if r['chi_nhin']:
+            ly, di = 'CHI_NHIN', 0.0
+        elif r.get('huy'):
+            ly = 'HUY'
+        elif m <= p['ra_tien_truoc']:
+            ly = 'TRUOC_%dCM' % round(p['ra_tien_truoc'] * 100)
+        elif di >= p['ra_tien_di_max']:
+            ly = 'DA_TIEN_%dCM' % round(p['ra_tien_di_max'] * 100)
+        elif now - r['t0'] > p['ra_tien_t_max']:
+            ly = 'QUA_%dS' % round(p['ra_tien_t_max'])
+        else:
+            return abs(p['v_esc']), 0.0, 'RA_TIEN'
+        return self._ra2_xong(now, ly, di)
+
+    def _ra2_xong(self, now, ly, di):
         self.ra2, self.ra_xong = None, 'RA XONG %s %d cm' % (ly, round(di * 100))
-        _, _, ten = self._ket_thuc(now, 'RA_XONG', p['t_nghi_sau_xong'])
+        _, _, ten = self._ket_thuc(now, 'RA_XONG', self.p['t_nghi_sau_xong'])
         return (0.0, 0.0, ten) if ly == 'HUY' else (None, None, ten)     # 05/11: HUY => gui mot lenh 0 ngay
 
     def ra2_huy(self):
@@ -599,20 +639,36 @@ def cach_truoc(pts, x_tu=DEFAULT['lop2_x_tu']):
     return min((khoang_cach_mep(x, y) for x, y in pts if x >= x_tu), default=INF)
 
 
+def vung_sau(pts, d=DEFAULT['lop2_d_than'], x_den=LOP2_X_SAU, n=DEFAULT['dem_diem_do']):
+    """06/11 viec 120: >= n diem LiDAR cach hinh chu nhat than <= d va x <= x_den (vung sau than, ca hai goc duoi)."""
+    return sum(1 for x, y in pts if x <= x_den and khoang_cach_mep(x, y) <= d) >= n
+
+
+def cach_sau(pts, x_den=LOP2_X_SAU):
+    """06/11 viec 120: khoang cach (m) tu THAN xe toi diem LiDAR gan nhat co x <= x_den; INF neu khong co."""
+    return min((khoang_cach_mep(x, y) for x, y in pts if x <= x_den), default=INF)
+
+
+def mui_truoc(pts, w=DEFAULT['ra_tien_w']):
+    """06/11 viec 120: khoang cach (m) tu MUI (x = X_MUI) toi diem gan nhat phia truoc trong dai |y| <= w; INF neu khong co."""
+    return min((x - X_MUI for x, y in pts if x >= X_MUI and abs(y) <= w), default=INF)
+
+
 def doc_sep_ra2(dong, t_now, tuoi_max=3.0):
-    """04/11 lop 2: dong ~/sep_thoat '<giay BOOTTIME> RA_LUI <ma_luot> <ma>' | '<giay> KHONG_CAN <ma_luot> <ly do>' (sep.py
-    dong_ra2) -> dict(chu, ma_luot, ma | ly) neu hop le va tuoi <= tuoi_max s, nguoc lai None. doc_sep_thoat bo qua hai chu nay."""
+    """04/11 lop 2: dong ~/sep_thoat '<giay BOOTTIME> RA_LUI <ma_luot> <ma>' | '<giay> RA_TIEN <ma_luot> <ma>' (06/11 viec 120)
+    | '<giay> KHONG_CAN <ma_luot> <ly do>' (sep.py dong_ra2) -> dict(chu, ma_luot, ma | ly) neu hop le va tuoi <= tuoi_max s,
+    nguoc lai None. doc_sep_thoat bo qua ba chu nay."""
     o = (dong or '').split()
-    if len(o) < 4 or o[1] not in ('RA_LUI', 'KHONG_CAN'):
+    if len(o) < 4 or o[1] not in ('RA_LUI', 'RA_TIEN', 'KHONG_CAN'):
         return None
     try:
         t, ma_luot = float(o[0]), int(o[2])
-        ma = int(o[3]) if o[1] == 'RA_LUI' else None
+        ma = int(o[3]) if o[1] != 'KHONG_CAN' else None
     except ValueError:
         return None
     if not -1.0 <= t_now - t <= tuoi_max:
         return None
-    return dict(chu='RA_LUI', ma_luot=ma_luot, ma=ma) if o[1] == 'RA_LUI' else dict(chu='KHONG_CAN', ma_luot=ma_luot, ly=' '.join(o[3:]))
+    return dict(chu=o[1], ma_luot=ma_luot, ma=ma) if o[1] != 'KHONG_CAN' else dict(chu='KHONG_CAN', ma_luot=ma_luot, ly=' '.join(o[3:]))
 
 
 def luot_huy(dong):
@@ -749,17 +805,18 @@ if rclpy is not None:
                 self.get_logger().info(cau)
 
         def _doc_ra2(self, pts, now, phat):
-            """04/11 lop 2: ~/sep_thoat 'RA_LUI <ma_luot> <ma>' ma moi => giao lui thang cho bo nao (phat = False: chi nhin, xong ngay 0 cm). Khong phat toc do o day."""
+            """04/11 lop 2: ~/sep_thoat 'RA_LUI <ma_luot> <ma>' ma moi => giao lui thang cho bo nao (phat = False: chi nhin, xong ngay 0 cm). Khong phat toc do o day.
+            06/11 viec 120: 'RA_TIEN <ma_luot> <ma>' => giao tien thang."""
             try:
                 with open(self.get_parameter('tep_thoat').value, 'r') as f:
                     dong = f.readline()
             except OSError:
                 return
             t = doc_sep_ra2(dong, time.clock_gettime(time.CLOCK_BOOTTIME))
-            if t is None or t['chu'] != 'RA_LUI' or t['ma'] == self.ma_ra2_cu:
+            if t is None or t['chu'] not in ('RA_LUI', 'RA_TIEN') or t['ma'] == self.ma_ra2_cu:
                 return
             self.ma_ra2_cu = t['ma']
-            _, cau = self.brain.ra2_bat_dau(pts, now, chi_nhin=not phat)
+            _, cau = self.brain.ra2_bat_dau(pts, now, chi_nhin=not phat, tien=t['chu'] == 'RA_TIEN')
             self.get_logger().info(cau)
 
         def _doc_huy(self):

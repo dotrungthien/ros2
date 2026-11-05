@@ -70,7 +70,7 @@ T_CHO, T_CHO_THEM, T_CHO_B = 30.0, 10.0, 60.0          # s (#9, #12; vat tai B: 
 T_PLAN_XAU = 10.0                # s, muc B: ABORT_NHANH / PLAN_RONG / PLAN_LECH vua xay ra trong chung nay giay => CHO
 B_XY, R_B = (1.60, 0.82), 0.20   # B (chuyen.sh) va ban kinh coi la "dich tai B"
 A_XY = (0.0, 0.0)                # A (goc map, chuyen.sh)
-T_RA2_TRA, T_RA2_CHO = 3.0, 12.0  # s, 04/11 lop 2: giu cau KHONG_CAN / lenh RA_LUI trong ~/sep_thoat toi da bay lau
+T_RA2_TRA, T_RA2_CHO = 3.0, 12.0  # s, 04/11 lop 2: giu cau KHONG_CAN / lenh RA_LUI, RA_TIEN trong ~/sep_thoat toi da bay lau
 R_VAT_DICH = 0.30                # m, F4 (03/11): vat la cach dich chuyen <= so nay moi la "vat tai B" (#9); xa hon = giua duong
 TREO = 1.0                       # s, mot vong cham hon so nay = sep treo (muc 9.9) [de xuat]
 ABORT_NHANH = 2.0                # s, ABORTED som hon so nay = nghi "0 poses"
@@ -80,6 +80,7 @@ P_MAC_DINH = dict(               # tham so ROS (viec 100) [de xuat]
     dich_dung=0.03,              # m, "dung yen" = tam xe dich duoi so nay trong t_dung
     sat_vat=0.10,                # m, diem LiDAR cach hinh chu nhat than xe tu so nay tro xuong = sat vat (BAT)
     sat_vat_tat=0.12,            # m, khoang tre (viec 105): da bat thi chi TAT khi diem gan nhat > so nay
+    lop2_sau=True,               # 06/11 viec 120: false = tat rieng nhanh RA_TIEN (vat sau than) cua lop 2, giu RA_LUI nhu cu
 )
 CUA_SO_VONG = 10.0               # s, cu bay nhieu giay ghi mot dong VONG
 
@@ -416,10 +417,10 @@ def doc_sap_gui(dong, t_now, tuoi_max=3.0):
 
 
 def dong_ra2(ra2):
-    """04/11 lop 2: (chu, phan sau) cho ghi_lenh vao ~/sep_thoat: ('RA_LUI', '<ma_luot> <ma>') | ('KHONG_CAN', '<ma_luot> <ly>')
-    (lai_xe_lidar.doc_sep_ra2 doc lai dung khuon nay)."""
-    if ra2['chu'] == 'RA_LUI':
-        return 'RA_LUI', '%d %d' % (ra2['ma_luot'], ra2['ma'])
+    """04/11 lop 2: (chu, phan sau) cho ghi_lenh vao ~/sep_thoat: ('RA_LUI' | 'RA_TIEN', '<ma_luot> <ma>') | ('KHONG_CAN',
+    '<ma_luot> <ly>') (lai_xe_lidar.doc_sep_ra2 doc lai dung khuon nay)."""
+    if ra2['chu'] in ('RA_LUI', 'RA_TIEN'):
+        return ra2['chu'], '%d %d' % (ra2['ma_luot'], ra2['ma'])
     return 'KHONG_CAN', '%d %s' % (ra2['ma_luot'], ra2['ly'])
 
 
@@ -810,14 +811,17 @@ class Sep:
     def _lop2(self, now, luot, pts, mat_scan, ra_lenh, ghi):
         """04/11 lop 2: CHI xet vung khi nhan SAP_GUI moi (~/gui_duong_luot). Co vat trong vung truoc than (L.vung_lui, 05/11: theo hinh
         than, ca hai goc truoc) va ra_lenh
-        => RA_LUI (phu lai lui thang); khong => KHONG_CAN. Giu tra loi toi khi thay RA_XONG (RA_LUI) hoac het T_RA2_*."""
+        => RA_LUI (phu lai lui thang); khong => KHONG_CAN. Giu tra loi toi khi thay RA_XONG (RA_LUI) hoac het T_RA2_*.
+        06/11 viec 120 (lop2_sau): chi co vat o vung sau than (L.vung_sau) => RA_TIEN (phu lai tien thang); vat ca truoc lan sau
+        => KHONG_CAN vat_truoc_va_sau (lui hay tien deu vao vat)."""
         r = self.ra2
+        xe_chay = ('RA_LUI', 'RA_TIEN')
         if r is not None:
-            if r['chu'] == 'RA_LUI' and self.t_ra_xong is not None and self.t_ra_xong >= r['t0']:
+            if r['chu'] in xe_chay and self.t_ra_xong is not None and self.t_ra_xong >= r['t0']:
                 ghi('LOP2', 'RA_XONG', 'lai_xe_lidar', 'luot %d' % r['ma_luot'], 'DONG')
                 self.ra2 = None
-            elif now - r['t0'] > (T_RA2_CHO if r['chu'] == 'RA_LUI' else T_RA2_TRA):
-                if r['chu'] == 'RA_LUI':
+            elif now - r['t0'] > (T_RA2_CHO if r['chu'] in xe_chay else T_RA2_TRA):
+                if r['chu'] in xe_chay:
                     ghi('LOP2', 'HET_GIO', 'lai_xe_lidar', 'luot %d' % r['ma_luot'], 'khong thay RA_XONG sau %d s' % T_RA2_CHO)
                 self.ra2 = None
         if luot is None or luot['ma'] == self.ma_luot_cu:
@@ -827,13 +831,19 @@ class Sep:
             chu, ly = 'KHONG_CAN', 'ra_lenh=false'
         elif mat_scan:
             chu, ly = 'KHONG_CAN', 'mat_scan'
-        elif L.vung_lui(pts):
-            chu, ly = 'RA_LUI', 'vat_cach_than_%.2fm' % L.cach_truoc(pts)     # 05/11: than -> vat (cu: tam -> vat, 'vat_truoc_mui')
         else:
-            chu, ly = 'KHONG_CAN', 'vung_trong'
+            truoc, sau = L.vung_lui(pts), self.p['lop2_sau'] and L.vung_sau(pts)
+            if truoc and sau:
+                chu, ly = 'KHONG_CAN', 'vat_truoc_va_sau'
+            elif truoc:
+                chu, ly = 'RA_LUI', 'vat_cach_than_%.2fm' % L.cach_truoc(pts)     # 05/11: than -> vat (cu: tam -> vat, 'vat_truoc_mui')
+            elif sau:
+                chu, ly = 'RA_TIEN', 'vat_sau_than_%.2fm' % L.cach_sau(pts)
+            else:
+                chu, ly = 'KHONG_CAN', 'vung_trong'
         self.ra2 = dict(chu=chu, ma_luot=luot['ma'], ma=int(now * 10), t0=now, ly=ly)
         ghi('LOP2', chu, 'gui_duong SAP_GUI', '%s t%d l%d' % (luot['huong'], luot['tuyen'], luot['lan']), ly,
-            'phu lai lui thang' if chu == 'RA_LUI' else 'gui_duong gui ngay')
+            {'RA_LUI': 'phu lai lui thang', 'RA_TIEN': 'phu lai tien thang'}.get(chu, 'gui_duong gui ngay'))
 
     def _dot_thoat(self, now, mt, kep, ghi):
         """18:09 (ra_thoat): mo dot ngay khi lai_xe_lidar vao CHO_SEP (xoay bi chan qua lau, ket hinh hoc) - khong doi 10 s dung yen;

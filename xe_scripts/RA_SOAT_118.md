@@ -1371,3 +1371,90 @@ Luật như B8; thêm tệp MỚI trong `xe_scripts/do_xuong/` (không sửa t�
 ### 6) Trạng thái
 - Tệp mới: `do_xuong/do_toc_do.sh`, `ghi_sua_vi_tri.py`, `khop_scan_A.py`, `HUONG_DAN.md`.
 - Không sửa tệp cũ nào khác (gia_lap/ như B8). Giả lập đã tắt. **Chưa commit.**
+
+## B12. Sửa gốc tật odom bằng tham số `v_banh_nang` (odom-118) — **giả lập: lệch K2 12,0 → 7,9 cm, lượt 1 1/5 → 8/10, nhảy ≥ 5 cm 5,6 → 0,6 / chuyến; còn sàn ~7–8 cm của giả lập; dừng trước ống 15/15 đạt**
+
+Luật: chỉ sửa `gia_lap/` và nhánh mới `odom-118` (từ dong-bo 1e95cb8, worktree `~/ros2_ws/src/ros2_odom118`); không push, không Pi; mỗi lần đổi một thứ. Giả lập **chưa hiệu chuẩn**; **chưa thử trên xe**. Tiêu chí ghi trước lúc 01:27:17 (`scratchpad/b12/tieu_chi.txt`), trước mọi lần chạy (chỉ 1 lần thử khói `thu_1`).
+
+### 1) Hằng 0,0918 m/s từ đâu, đổi thành tham số [đọc code]
+- `dev_ws/src/my_bot/scripts/odom_tu_lenh.py:280` (bản cũ, dong-bo 1e95cb8), trong mô hình sàn (`mo_hinh_san`):
+  bánh có `duty0 < duty_min` (và ≥ `duty_ngung` 0,05) bị coi là **bánh bị nâng**, odom tính `copysign(dmin * max_wheel_speed, s)`.
+  - `max_wheel_speed` 0,437 (`:74`), `duty_min_trai` / `duty_min_phai` 0,21 (`:77`–`:78`) ⇒ 0,21 × 0,437 = **0,09177 m/s** ("0,0918").
+  - Launch xe `mapping_my_bot.launch.py:90`, `:164` truyền `max_wheel_speed` 0,437. (`dieu_khien.py` có mặc định riêng `:39` 0,23, `:49`–`:50` 0,21; không dùng cho phép tính này.)
+- Sửa (+5/−1), số dòng bản mới:
+  - `:81`–`:83` khai báo `v_banh_nang` (m/s), **mặc định −1,0**.
+  - `:131` đọc tham số.
+  - `:284` `copysign(dmin * max_wheel_speed if v_banh_nang < 0 else v_banh_nang, s)`.
+- **Vì sao mặc định −1 chứ không 0,0918:** 0,0918 ≠ 0,21 × 0,437 = 0,09177. Đặt số 0,0918 sẽ đổi kết quả (dù rất nhỏ), trái yêu cầu "giữ nguyên từng byte". Giá trị < 0 nghĩa là "tính như cũ", giữ đúng phép tính cũ.
+- **Thử giữ nguyên** (`scratchpad/b12/thu_odom.py`, chép hàm tính của bản cũ và bản mới): lưới 12261 cặp (v, w) với mô hình sàn bật, **0 khác biệt** (so `repr`). Lệnh 0,05 m/s: mặc định 0,09177; `v_banh_nang` 0,12 → 0,12. Lệnh 0,15 (không nâng): như nhau 0,15.
+- Lưu ý [đọc code]: một giá trị chung cho cả hai bánh. Khi xoay tại chỗ với cả hai bánh nâng, `w` theo lệnh cũng đổi theo `v_banh_nang`. Với `yaw_nguon=gyro`, `w` này chỉ dùng khi gyro mất ≥ 0,5 s.
+- `gia_lap/bat_gia.sh` (+6/−3): thêm `ODOM_PY` (mặc định = bản cài như cũ) và `ODOM_THAM` (rỗng = như cũ); in cả hai ra log. Giả lập B12 chạy thẳng tệp ở worktree, **không** build lại `install/`.
+
+### 2) Kết quả di_B t2 (LUOT=3, tinh_tuyen @579cda5, SLAM như xe: travel 0,25) [log, tính]
+Cặp (thật = `v_nang_that` của xe_gia | odom = `v_banh_nang`):
+
+| | N (0,12 \| 0,0918 cũ) ×5 | A (0,12 \| 0,12) ×10 | B (0,10 \| 0,10) ×5 | C (0,14 \| 0,14) ×5 | D (0,12 \| 0,10) ×5 |
+|---|---|---|---|---|---|
+| lượt 1 tới B | 1/5 | **8/10** | 3/5 | 4/5 | **5/5** |
+| tới B theo tuyến (cả 3 lượt) | 4/5 | 8/10 | 3/5 | 5/5 | 5/5 |
+| số lần huỷ (sếp) | 8 (5 ở K1) | 6 (2 lần kẹt cửa K2) | 4 | 1 | 0 |
+| lệch dọc thật − tin ở cửa K2, trung vị (khoảng) | 12,0 (8,8..14,4) | **7,9** (4,5..9,0) | 8,7 (7,8..9,0) | 7,7 (6,8..9,7) | 11,9 (7,9..12,4) |
+| khoảng hở nhỏ nhất ở cửa K2: min / trung vị (cm) | 5,2 / 6,4 | 4,2 / 5,0 | 5,0 / 5,2 | 4,1 / 9,4 | 4,1 / 6,3 |
+| d / f / L = d/f (cm, –, cm) | 7,0 / 0,60 / 11,8 | 1,2 / 0,17 / 7,0 | 1,4 / 0,17 / 8,5 | 1,5 / 0,17 / 8,7 | 5,7 / 0,50 / 11,3 |
+| map → odom nhảy ≥ 5 cm (/ chuyến) | 28 (5,6) | 6 (0,6) | 1 (0,2) | 3 (0,6) | 15 (3,0) |
+
+- **Chỗ huỷ:**
+  - N: 5/8 ở K1 (tin x 0,43–0,46, y 0,75), 3 ở x 0,82–1,07 y 0,67–0,72.
+  - A: A_3, A_6 kẹt ở cửa K2 (tin x 0,85–0,88, y 0,82), mỗi lần 3 huỷ liền.
+  - B: B_2 kẹt cửa K2 (0,78; 0,81) ×3. **B_5: kiểu q1_1** (B10 mục 1). Gyro mất ≥ 0,5 s đúng lúc xoay, odom khoá lệch góc 1,464 rad (84°). Tin (0,26; 0,63), thật (0,58; 0,03) → `HET_DUONG`. Giữ trong số liệu (không phải hỏng khởi động).
+  - C: C_6 1 huỷ ở (0,68; 0,79), lượt 2 tới.
+- **Đọc** [tính, suy luận]:
+  - Odom đúng tốc độ thật (A, B, C) đưa d từ 7,0 xuống 1,2–1,5 cm. Lệch K2 về 7,7–8,7 cm, ngang đối chứng **không tật** của giả lập (B7b 7,2 cm). Không xuống ≤ 4 cm, đúng như đoán trước: phần lệch còn lại có ngay lúc bật (SLAM giả lập lệch 4–6 cm ở A), không do odom.
+  - Sửa thiếu (D: odom 0,10 so với thật 0,12) **hầu như không giảm lệch** (11,9 so với 12,0). d 5,7, nhảy ≥ 5 cm vẫn 3 / chuyến. Phải đo tốc độ thật cho đúng, sai ~17 % là mất gần hết tác dụng.
+  - Lượt 1: D 5/5 dù lệch như N 1/5. Lần huỷ ở N phần lớn ở K1, không ở K2. Mẫu 5 lần, **lượt 1 không giải thích được chỉ bằng lệch K2**; đừng đọc D 5/5 là "sửa thiếu tốt hơn".
+  - Ở A còn 2/10 kẹt cửa K2, cùng chỗ với các lần kẹt của B8/B9. Đây là phần của tầng đường / sàn lệch giả lập, không phải odom.
+  - f tụt 0,60 → 0,17 khi d nhỏ (như B9). Lệch ổn định vẫn ~7–8 cm.
+
+### 3) di_B t1 ×3, ve_A t2 ×3 mỗi bộ [log]
+| | N | A | B | C | D |
+|---|---|---|---|---|---|
+| di_B t1: DEN_NOI | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 |
+| ve_A t2: DEN_NOI / qua khe | 3/3 / 3/3 | 3/3 / 3/3 | 3/3 / 3/3 | 3/3 / 3/3 | 3/3 / 3/3 |
+| ve_A t2: lượt 1 | 2/3 | 3/3 | 3/3 | 3/3 | 3/3 |
+| ve_A: khoảng hở cửa K2 min / trung vị (cm) | 5,1 / 9,4 | 9,6 / 10,0 | 9,9 / 10,2 | 6,7 / 9,9 | 9,7 / 10,0 |
+
+⇒ t1 và ve_A **không hỏng** ở bộ nào (tiêu chí ghi trước: DEN_NOI 3/3, ve_A thêm qua khe 3/3).
+
+### 4) Dừng trước ống đặt lúc chạy ×3 mỗi bộ [log, tính]
+Ống tâm (1,15; 0,82), R 0,09 (xe_gia), đặt khi mũi **thật** cách mặt ống ≤ 0,40 m (đặt thực tế lúc 39,0–40,0 cm). Ống ở lại. T_MAX 120 s.
+
+| | mũi → mặt ống nhỏ nhất (cm) | thân → mặt ống nhỏ nhất (cm) | chạm | mũi ≥ 6 cm |
+|---|---|---|---|---|
+| N | 33,6 · 35,6 · 9,2 | 30,9 · 25,5 · 7,0 | 0 | 3/3 (*) |
+| A | 7,6 · 8,5 · 8,7 | 7,4 · 6,8 · 8,2 | 0 | **3/3** |
+| B | 7,6 · 8,9 · 10,0 | 7,6 · 8,9 · 9,9 | 0 | **3/3** |
+| C | 8,6 · 10,3 · 9,1 | 7,3 · 9,5 · 8,9 | 0 | **3/3** |
+| D | 7,7 · 9,2 · 8,8 | 6,7 · 6,7 · 8,1 | 0 | **3/3** |
+
+- (*) N: chỉ Nong_3 thật sự tiến tới ống. Nong_1 bị **kiểu q1_1** (khoá lệch góc 1,298 rad, bản odom **cũ**, không truyền tham số), huỷ ở K1, đổi tuyến. Nong_2 huỷ ở K1, đổi sang tuyến 1 và tới B (cách đích 0,14 m), không đi ngang ống.
+- ⇒ Tham số không làm xe dừng sát ống hơn: mũi nhỏ nhất 7,6 cm (A, B), cao hơn ngưỡng 6 cm 1,6 cm. Kiểu q1_1 xảy ra ở cả bản cũ (Nong_1) lẫn bản mới (B_5), nên không do `v_banh_nang`.
+
+### 5) Lần loại, chạy bù (theo luật ghi trước) [log]
+- 7 lần hỏng khởi động, xe đứng yên 0,00 m, đã đổi tên `loai_*` và chạy bù cùng cấu hình:
+  - 2 `SAI_VI_TRI` (không có costmap sau 15 s, không gửi lệnh): Dt1_2 → Dt1_4, Dong_2 → Dong_4.
+  - 5 "khong thay may chu /follow_path (controller_server)" (`TU_CHOI` cả 6 lần thử, vết thật 0,00 m): At1_3 → At1_4, C_3 → C_6, Ct1_1 → Ct1_4, Cva_3 → Cva_4, Dong_1 → Dong_5.
+  - Luật ghi trước chỉ nêu `BAT_GIA_HONG` / `SAI_VI_TRI`. Tôi xếp `controller_server` không lên vào cùng loại vì xe không nhận lệnh nào [suy luận].
+- Không loại lần nào khác. Lần kiểu q1_1 (B_5, Nong_1) **giữ** trong số liệu.
+
+### 6) Hình `RA_SOAT_118_b12.png`
+- Ô N | A | D. Vết thật liền, vết tin đứt (cam), chấm đỏ = chỗ huỷ (tin, sếp).
+- Nền = costmap sống; 1 cm = 4 px.
+
+### 7) Cần Thiên quyết / việc trên xe
+- Đưa lên xe cần: **số tốc độ thật** của bánh bị nâng (đo bằng `do_xuong/do_toc_do.sh` + thước; giả lập cho thấy sai ~17 % là mất gần hết tác dụng). Sau đó truyền `-p v_banh_nang:=<số>` cho odom_tu_lenh trong launch xe, rồi build lại `install/`. Chưa làm gì trong số này.
+- Khoá lỗi góc kiểu q1_1 (2 / 75 lần chạy hợp lệ ở B12) vẫn còn, cả bản cũ lẫn bản mới (B10 mục 1).
+
+### 8) Trạng thái
+- Nhánh `odom-118` (worktree `ros2_odom118`): commit `odom_tu_lenh.py`, `gia_lap/bat_gia.sh`, mục này, hình. **Không push.**
+- md5 sau sửa: `odom_tu_lenh.py` 93b2d4ad (cũ 4d3de16d), `bat_gia.sh` 717b4281.
+- Giả lập đã tắt. Kết quả từng lần ở `scratchpad/b12/kq/`; tổng hợp `tong_chinh.txt`, `tong_phu.txt`, `tong_ong.txt`, `mo_hinh.txt`.

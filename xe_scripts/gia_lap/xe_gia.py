@@ -42,6 +42,9 @@ X_MUI, X_DUOI, Y_HONG = 0.145, -0.105, 0.08   # lai_xe_lidar.py
 TEP_VI_TRI = '/tmp/gia_lap/vi_tri_that.csv'
 TEP_ONG, R_ONG = os.path.expanduser('~/ong_gia'), 0.09
 TEP_ONG_CSV = '/tmp/gia_lap/ong_gia.csv'
+# 06/11 viec 118 B7b: tat "hut quang di" (mac dinh = nhu cu) + ghi map -> odom va vet that / tin.
+TEP_MO = '/tmp/gia_lap/map_odom.csv'      # moi lan map -> odom doi: gio, buoc doi, lech that - tin truoc / sau (khung than tin)
+TEP_VET = '/tmp/gia_lap/vet_that.csv'     # 10 Hz: that va tin
 
 
 def doc_ong(path):
@@ -74,9 +77,10 @@ def cach_ong(x, y, th, cx, cy, r):
     return than, math.hypot(px - X_MUI, py) - r
 
 
-def van_toc_san(v, w, banh_trai_that):
+def van_toc_san(v, w, banh_trai_that, v_nang_that=None):
     """(v, w) that tren san tu lenh (chua tinh tre xoay). Duty moi banh nhu dieu_khien (trai x he_so_trai);
-    toc do that = duty x 0.437 x do manh banh (trai: banh_trai_that, phai: 1). Banh bi nang -> w x he_so_xoay."""
+    toc do that = duty x 0.437 x do manh banh (trai: banh_trai_that, phai: 1). Banh bi nang -> w x he_so_xoay.
+    B7b (M2): v_nang_that (m/s) = toc do that cua banh bi nang (x do manh banh); None = duty_min x 0.437 nhu cu."""
     eff, nang = [], False
     for s, k, manh in ((v + w * WHEEL_SEP / 2.0, 1.0, 1.0),
                        (v - w * WHEEL_SEP / 2.0, HE_SO_TRAI, banh_trai_that)):   # phai, trai
@@ -86,6 +90,9 @@ def van_toc_san(v, w, banh_trai_that):
         elif duty < DUTY_MIN:     # banh bi nang: chay duty toi thieu
             nang = True
             duty = DUTY_MIN
+            if v_nang_that is not None:
+                eff.append(math.copysign(v_nang_that * manh, s))
+                continue
         eff.append(math.copysign(duty * MAX_WHEEL * manh, s))
     v, w = (eff[0] + eff[1]) / 2.0, (eff[0] - eff[1]) / WHEEL_SEP
     return v, (w * HE_SO_XOAY if nang else w)
@@ -100,6 +107,20 @@ class XeGia(Node):
         self.banh_trai_that = self.get_parameter('banh_trai_that').value
         for k in ('x0', 'y0', 'goc0_do'):
             self.declare_parameter(k, 0.0)
+        # B7b: tat (mac dinh = nhu cu)
+        self.declare_parameter('v_nang_that', -1.0)        # M2: < 0 = nhu cu
+        self.declare_parameter('he_so_quang', 1.0)         # M1: toc do thang that = mo hinh x he_so_quang
+        self.declare_parameter('nhieu_lidar', 0.0)         # S-a: sigma (m) nhieu khoang cach moi tia
+        self.declare_parameter('tia_tam_o', False)         # S-a: tia dung o tam o (thay vi mep gan)
+        self.declare_parameter('chu_ky_lidar', 0.1)        # S-a: s (0,1 = 10 Hz; 0,0833 = 12 Hz)
+        vn = self.get_parameter('v_nang_that').value
+        self.v_nang_that = vn if vn >= 0 else None
+        self.he_so_quang = self.get_parameter('he_so_quang').value
+        self.nhieu_lidar = self.get_parameter('nhieu_lidar').value
+        self.tia_tam_o = self.get_parameter('tia_tam_o').value
+        self.rng = np.random.default_rng(118)
+        self.mo_cu = None                                  # map -> odom lan truoc (x, y, goc)
+        self.tin = None                                    # tu the tin moi nhat (x, y, goc)
         img = np.array(Image.open(MAP_PNG).convert('L'))
         self.chiem = (255 - img.astype(float)) / 255.0 > 0.65   # hang 0 = y lon nhat
         self.h, self.w = self.chiem.shape
@@ -114,6 +135,11 @@ class XeGia(Node):
             f.write('gio,t_epoch,nguon,x,y,goc_do,x_tin,y_tin,goc_tin_do,d_min_cm\n')
         with open(TEP_ONG_CSV, 'w') as f:
             f.write('t_epoch,ong_x,ong_y,x,y,goc_do,d_than_cm,d_mui_cm\n')
+        with open(TEP_MO, 'w') as f:
+            f.write('t_epoch,mo_x,mo_y,mo_goc_do,buoc_x_cm,buoc_y_cm,buoc_goc_do,buoc_cm,x,y,goc_do,'
+                    'truoc_doc_cm,truoc_ngang_cm,sau_doc_cm,sau_ngang_cm\n')
+        with open(TEP_VET, 'w') as f:
+            f.write('t_epoch,x,y,goc_do,x_tin,y_tin,goc_tin_do,v,w\n')
         self.ong_loi = ''
         self.x, self.y = self.get_parameter('x0').value, self.get_parameter('y0').value
         self.th = math.radians(self.get_parameter('goc0_do').value)
@@ -134,12 +160,17 @@ class XeGia(Node):
         self.tf.sendTransform(t)
         self.t_cu = self.get_clock().now()
         self.create_timer(0.02, self.tich_phan)
-        self.create_timer(0.1, self.quet)
+        self.create_timer(self.get_parameter('chu_ky_lidar').value, self.quet)
+        self.create_timer(0.05, self.theo_doi)
+        self.create_timer(0.1, self.ghi_vet)
         self.create_timer(0.2, self.canh)
         self.create_timer(1.0, lambda: self.ghi('dinh_ky'))
         self.get_logger().info('xe_gia: ban do %dx%d, %d o chiem, vi tri dau (%.2f; %.2f; %.1f do), banh_trai_that %.4f'
                                % (self.w, self.h, int(self.chiem.sum()), self.x, self.y, math.degrees(self.th),
                                   self.banh_trai_that))
+        self.get_logger().info('xe_gia B7b: v_nang_that %s, he_so_quang %.3f, nhieu_lidar %.3f, tia_tam_o %s, chu_ky_lidar %.4f'
+                               % (self.v_nang_that, self.he_so_quang, self.nhieu_lidar, self.tia_tam_o,
+                                  self.get_parameter('chu_ky_lidar').value))
 
     def lenh(self, msg):
         self.v, self.w_lenh = msg.linear.x, msg.angular.z
@@ -153,7 +184,8 @@ class XeGia(Node):
         if self.t_lenh is None or (now - self.t_lenh).nanoseconds * 1e-9 > WATCHDOG:
             self.bat_dau_xoay = None
             return
-        v, w = van_toc_san(self.v, self.w_lenh, self.banh_trai_that)
+        v, w = van_toc_san(self.v, self.w_lenh, self.banh_trai_that, self.v_nang_that)
+        v *= self.he_so_quang
         if v == 0.0 and w != 0.0:                 # xoay tai cho: TRE_XOAY s dau chua quay
             if self.bat_dau_xoay is None:
                 self.bat_dau_xoay = now
@@ -176,6 +208,8 @@ class XeGia(Node):
         trung[trong] = self.chiem[hang[trong], cot[trong]]
         co = trung.any(axis=1)
         dau = trung.argmax(axis=1)
+        if self.tia_tam_o:                        # B7b S-a: dung o tam o chiem (them nua o theo huong tia)
+            dau = np.minimum(dau + int(round(RES / 2 / BUOC)), len(self.r) - 1)
         m = LaserScan()
         m.header.stamp = self.get_clock().now().to_msg()
         m.header.frame_id = 'laser_frame'
@@ -185,6 +219,8 @@ class XeGia(Node):
         m.scan_time = 0.1
         m.range_min, m.range_max = R_MIN, R_MAX
         rr = np.where(co, self.r[dau], np.inf)
+        if self.nhieu_lidar > 0:                  # B7b S-a: nhieu khoang cach
+            rr = np.where(co, np.maximum(rr + self.rng.normal(0.0, self.nhieu_lidar, rr.shape), R_MIN), rr)
         try:
             ong = doc_ong(TEP_ONG)
         except ValueError as e:                    # tep hong: bao 1 lan, coi nhu khong co ong
@@ -202,6 +238,47 @@ class XeGia(Node):
             with open(TEP_ONG_CSV, 'a') as f:
                 f.write('%.3f,%.3f,%.3f,%.4f,%.4f,%.2f,%.1f,%.1f\n' % (time.time(), ong[0], ong[1], self.x, self.y,
                                                                      math.degrees(self.th), than * 100, mui * 100))
+
+    def theo_doi(self):
+        """B7b: 20 Hz. map -> odom va tu the tin; ghi moi lan map -> odom doi (> 1 mm hoac > 0,05 do)."""
+        try:
+            a = self.tf_buf.lookup_transform('map', 'odom', rclpy.time.Time())
+            b = self.tf_buf.lookup_transform('odom', 'base_footprint', rclpy.time.Time())
+        except Exception:
+            return
+        def xyg(t):
+            q = t.transform.rotation
+            return (t.transform.translation.x, t.transform.translation.y,
+                    math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z)))
+        mo, ob = xyg(a), xyg(b)
+        def ghep(m):
+            c, s = math.cos(m[2]), math.sin(m[2])
+            return (m[0] + c * ob[0] - s * ob[1], m[1] + s * ob[0] + c * ob[1], m[2] + ob[2])
+        self.tin = ghep(mo)
+        cu = self.mo_cu
+        if cu is None:
+            self.mo_cu = mo
+            return
+        dg = math.atan2(math.sin(mo[2] - cu[2]), math.cos(mo[2] - cu[2]))
+        if math.hypot(mo[0] - cu[0], mo[1] - cu[1]) <= 0.001 and abs(math.degrees(dg)) <= 0.05:
+            return
+        def lech(tin):                                  # that - tin, khung than tin (doc + = mui, ngang + = trai)
+            dx, dy = self.x - tin[0], self.y - tin[1]
+            c, s = math.cos(tin[2]), math.sin(tin[2])
+            return dx * c + dy * s, -dx * s + dy * c
+        tr, sa = lech(ghep(cu)), lech(self.tin)
+        with open(TEP_MO, 'a') as f:
+            f.write('%.3f,%.4f,%.4f,%.3f,%.2f,%.2f,%.3f,%.2f,%.4f,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f\n' % (
+                time.time(), mo[0], mo[1], math.degrees(mo[2]), (mo[0] - cu[0]) * 100, (mo[1] - cu[1]) * 100,
+                math.degrees(dg), math.hypot(mo[0] - cu[0], mo[1] - cu[1]) * 100, self.x, self.y, math.degrees(self.th),
+                tr[0] * 100, tr[1] * 100, sa[0] * 100, sa[1] * 100))
+        self.mo_cu = mo
+
+    def ghi_vet(self):
+        t = self.tin
+        with open(TEP_VET, 'a') as f:
+            f.write('%.3f,%.4f,%.4f,%.2f,%s,%.3f,%.3f\n' % (time.time(), self.x, self.y, math.degrees(self.th),
+                    ('%.4f,%.4f,%.2f' % (t[0], t[1], math.degrees(t[2]))) if t else ',,', self.v, self.w_lenh))
 
     def cach_o_chiem(self):
         """Khoang cach [m] tu hinh chu nhat than xe that toi diem gan nhat cua o chiem (0 neu cham)."""

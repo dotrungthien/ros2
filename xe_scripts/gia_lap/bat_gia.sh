@@ -15,6 +15,10 @@ INFLATION="${INFLATION:-0.20}"     # inflation_radius cua global va local costma
 VI_TRI_DAU="${VI_TRI_DAU:-0 0 0}"  # "x y goc_do": vi tri that dau cua xe_gia, cung la map_start_pose cua SLAM
 # (banh_trai_that = 1/he_so_trai: tham so o dau xe_gia.py)
 ROTATE_MIN="${ROTATE_MIN:-}"       # rong = giu rotate_to_heading_min_angle cua yaml; vi du 0.785 (xe 02/11 16:43)
+# 06/11 viec 118 B7b: tat cua xe_gia (rong = nhu cu), vd XE_GIA_THAM="-p v_nang_that:=0.12"; SLAM_MIN_TRAVEL ghi de
+# minimum_travel_distance CHI trong ban chep slam.yaml cua gia lap (rong = giu 0.25 nhu xe)
+XE_GIA_THAM="${XE_GIA_THAM:-}"
+SLAM_MIN_TRAVEL="${SLAM_MIN_TRAVEL:-}"
 # ---- sep va phu lai, nhu bat_xe.sh (mac dinh false) ----
 SEP_RA_LENH="${SEP_RA_LENH:-false}"; SEP_RA_THOAT="${SEP_RA_THOAT:-false}"; PHU_LAI_PHAT_LENH="${PHU_LAI_PHAT_LENH:-false}"
 for b in "SEP_RA_LENH=$SEP_RA_LENH" "SEP_RA_THOAT=$SEP_RA_THOAT" "PHU_LAI_PHAT_LENH=$PHU_LAI_PHAT_LENH"; do
@@ -32,6 +36,14 @@ echo "rotate_to_heading_min_angle dung: $(sed -n 's/^ *rotate_to_heading_min_ang
 read -r X0 Y0 G0 <<< "$(echo "$VI_TRI_DAU" | awk '{printf "%.4f %.4f %.4f", $1, $2, $3}')"   # so thuc cho -p
 G0_RAD=$(awk -v g="$G0" 'BEGIN{printf "%.6f", g * atan2(0, -1) / 180}')
 sed -i -E "s/^( *map_start_pose:).*/\1 [$X0, $Y0, $G0_RAD]/" "$TAM/slam.yaml"
+[ -n "$SLAM_MIN_TRAVEL" ] && sed -i -E "s/^( *minimum_travel_distance:) .*/\1 $SLAM_MIN_TRAVEL/" "$TAM/slam.yaml"
+# B8: SLAM_THAM="ten=gia_tri ..." ghi de them tham so CHI trong ban chep slam.yaml (ten phai co san trong tep)
+for kv in ${SLAM_THAM:-}; do
+  k=${kv%%=*}; v=${kv#*=}
+  grep -qE "^ *$k:" "$TAM/slam.yaml" || { echo "LOI: SLAM_THAM $k khong co trong slam.yaml"; exit 1; }
+  sed -i -E "s/^( *$k:) .*/\1 $v/" "$TAM/slam.yaml"
+done
+grep -h "minimum_travel\|scan_buffer_size\|loop_match_minimum_chain_size\|correlation_search_space_smear" "$TAM/slam.yaml" | tr -s ' ' | tr '\n' ' '; echo "(SLAM_MIN_TRAVEL=${SLAM_MIN_TRAVEL:-khong dat} SLAM_THAM=${SLAM_THAM:-khong}) XE_GIA_THAM=${XE_GIA_THAM:-khong}"
 grep -h "inflation_radius\|map_start_pose" "$TAM/nav2.yaml" "$TAM/slam.yaml" | tr -s ' ' | tr '\n' ' '; echo
 if grep -n project1 "$TAM/slam.yaml" "$TAM/nav2.yaml"; then echo "LOI: con /home/project1 trong ban chep"; exit 1; fi
 grep -h "map_file_name\|default_nav_to_pose_bt_xml" "$TAM/slam.yaml" "$TAM/nav2.yaml"
@@ -48,7 +60,7 @@ setsid nohup ros2 launch my_bot mapping_my_bot.launch.py bat_lidar:=false bat_do
   > "$TAM/log_launch.txt" 2>&1 < /dev/null &
 P1=$!
 setsid nohup python3 "$GIA/xe_gia.py" --ros-args -p canh_pid:=$P1 \
-  -p x0:="$X0" -p y0:="$Y0" -p goc0_do:="$G0" > "$TAM/log_xe_gia.txt" 2>&1 < /dev/null &
+  -p x0:="$X0" -p y0:="$Y0" -p goc0_do:="$G0" $XE_GIA_THAM > "$TAM/log_xe_gia.txt" 2>&1 < /dev/null &
 echo "launch mapping PID $P1, xe_gia PID $!"
 # Xe that lay goc tu con quay (bat_gyro:=true), nhung bat_gyro:=true se bat node gyro_mpu6050 that. Nen: tat
 # odom_tu_lenh do launch bat (yaw_nguon=lenh) roi bat lai chinh no voi yaw_nguon=gyro; /gyro_yaw do xe_gia phat.

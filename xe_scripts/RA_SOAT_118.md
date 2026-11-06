@@ -1,5 +1,7 @@
 # RÀ SOÁT 118: scan_ket_5b2 chụp lúc nào (CHỈ ĐỌC; không sửa mã, không commit). CHƯA CHẠY GÌ TRÊN XE
 
+> **Ghi chú 06/11 23:25:** nhánh luật khe (B6–B6d, mã ở tinh_tuyen.py) KHÔNG được gộp và KHÔNG chạy trên xe: trên costmap sống (dựng từ map_xuong_v3_pg) khe trên chỉ còn 2 ô nên luật khe không bật (mục B7b). Gốc lỗi là định vị lệch (mục B8–B9); gói đo xưởng ở do_xuong/ (mục B10).
+
 Nhãn: [log] = đọc thẳng từ tệp dữ liệu; [tính] = tính từ số [log]; [đọc code] = đọc mã.
 
 ## B1. Giờ chụp scan_ket_5b2.txt so với lúc kẹt / lúc cứu

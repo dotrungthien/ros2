@@ -745,6 +745,23 @@ class M6LaiTay(Nen):
         self.assertEqual(st, 502)
         self.assertIn('khong goi duoc teleop_web', j['loi'])
 
+    def test_khoa_khi_co_chuyen(self):            # 07/11 111-Q2 (9)
+        TeleopGia.ma = ''
+        with C.LOCK:
+            C.CHUYEN['chay'] = True
+        try:
+            st, j = js(self.port, 'POST', '/v10/api/lai_tay', {'l': 1, 'a': 0})
+            self.assertEqual(st, 409)
+            self.assertTrue(j.get('khoa'))
+            self.assertEqual(js(self.port, 'POST', '/v10/api/lai_tay', {'l': 0, 'a': -1})[0], 409)
+            self.assertEqual(TeleopGia.lenh, [])                              # teleop khong nhan lenh nao
+            self.assertEqual(js(self.port, 'POST', '/v10/api/lai_tay', {'l': 0, 'a': 0})[0], 200)   # lenh 0 (tha nut) van qua
+            self.assertEqual(TeleopGia.lenh, [{'linear': 0.0, 'angular': 0.0}])
+        finally:
+            with C.LOCK:
+                C.CHUYEN['chay'] = False
+        self.assertEqual(js(self.port, 'POST', '/v10/api/lai_tay', {'l': 1, 'a': 0})[0], 200)       # het chuyen: mo khoa
+
     def test_trang_co_pad(self):
         t = http(self.port, 'GET', '/v10')[2].decode()
         for x in ('aria-label="전진"', 'aria-label="후진"', 'aria-label="좌회전"', 'aria-label="우회전"', "'pointerup'", "fetch('/v10/api/lai_tay'",
@@ -871,6 +888,75 @@ class D1KhopGhep(unittest.TestCase):
 def http_tinh():
     with open(os.path.join(HERE, 'trang_v10.html'), encoding='utf-8') as f:
         return f.read()
+
+
+# ---------------- 111-Q2 (07/11): (9) khoa lai tay khi co chuyen, (11) so_voi_pi.sh, (15) ma 5 + HUY_DICH ok ----------------
+DONG_LOI_OK = 'LOI_GUI_DUONG RuntimeError: Unable to convert call argument to Python object; HUY_DICH ok'
+
+
+def nut_ma5(dong):
+    n = nut(ket_qua='LOI')
+    n['chuyen'].update(ma=5, dong=dong)
+    return n
+
+
+class Q2Ma5(unittest.TestCase):
+    def test_ma5_huy_dich_ok_khac_loi_thoat(self):
+        f = V.suy_trang_thai
+        ma_, ly_ = f(link('on'), nut_ma5(DONG_LOI_OK), SEP0, None, None, None, 1000.0)
+        self.assertEqual(ma_, 'TT_CAN_GIUP')
+        self.assertTrue(ly_.startswith('LOI_DA_HUY'), ly_)
+        dai = 'LOI_GUI_DUONG RuntimeError: ' + 'x' * 160 + '; HUY_DICH ok'      # thong bao dai: ly_do bi cat 120 van nhan dung
+        self.assertTrue(f(link('on'), nut_ma5(dai), SEP0, None, None, None, 1000.0)[1].startswith('LOI_DA_HUY'))
+        for kq in ('khong_tra_loi', 'khong_co_dich'):                           # khong xac nhan huy -> giu LOI_THOAT
+            ly = f(link('on'), nut_ma5(DONG_LOI_OK.replace('HUY_DICH ok', 'HUY_DICH ' + kq)), SEP0, None, None, None, 1000.0)[1]
+            self.assertTrue(ly.startswith('LOI_THOAT'), ly)
+        n = nut_ma5(DONG_LOI_OK)
+        n['chuyen'].update(ma=1)                                                # "ok" chi tinh voi ma 5
+        self.assertTrue(f(link('on'), n, SEP0, None, None, None, 1000.0)[1].startswith('LOI_THOAT'))
+
+    def test_trang_cau_ma5(self):
+        t = http_tinh()
+        self.assertIn('오류로 주행을 멈췄어요. 목표는 취소됐어요', t)
+        self.assertIn('Nav2 목표가 아직 살아 있을 수 있어요: 모터 스위치를 끄세요', t)    # LOI_THOAT giu cau cu
+
+
+class Q2Nut(unittest.TestCase):
+    def test_trang_khoa_pad_va_nut_sau_dung(self):
+        t = http_tinh()
+        chay = [l for l in t.split('\n') if "['TT_DANG_DI','TT_DANG_CHO','TT_DANG_THOAT','TT_DANG_XOAY'].indexOf(m)>=0" in l]
+        self.assertEqual(len(chay), 1)
+        self.assertNotIn('vao_lai_tay', chay[0])                              # dang chay: chi con 정지
+        self.assertIn("['정지',\"lenh('dung')\",DO]", chay[0])
+        self.assertIn("function SAU_DUNG(){return nut([['다시 시도',\"lenh('thu_lai')\"],['수동 조종',\"vao_lai_tay()\"],['연결 해제',\"lenh('tat')\"]]);}", t)
+        self.assertIn("m==='TT_SAN_SANG'&&(S.chuyen||{}).ket_qua==='NGAT')h=SAU_DUNG()", t)
+        self.assertIn("(S.ly_do||'').indexOf('LOI_DA_HUY')===0?SAU_DUNG()", t)
+        vao = [l for l in t.split('\n') if l.startswith('function vao_lai_tay(')][0]
+        self.assertIn('if((S.chuyen||{}).chay){', vao)                       # dang chay: khong vao pad
+        self.assertIn("if(LOCAL==='TT_LAI_TAY'&&(S.chuyen||{}).chay){tha();LOCAL=null;}", t)
+
+
+class Q2D1(unittest.TestCase):
+    def test_huy_dich_gui_duong_khop_trang(self):
+        g = doc('gui_duong.py')
+        self.assertTrue("io.bao('LOI_GUI_DUONG %s: %s; HUY_DICH %s' % (e.__class__.__name__, str(e)[:160], kq))" in g, 'dong LOI_GUI_DUONG cua gui_duong.py doi')
+        self.assertTrue("return 'ok' if fut.done() else 'khong_tra_loi'" in g, 'ket qua huy dich cua gui_duong.py doi')
+        self.assertTrue('MA_LOI = 5 ' in g and 'return MA_LOI' in g, 'ma 5 cua gui_duong.py doi')
+        dong = 'LOI_GUI_DUONG %s: %s; HUY_DICH %s' % ('RuntimeError', 'y' * 160, 'ok')       # dung dinh dang ben ghi
+        self.assertTrue(C.DONG_CHUYEN.match(dong))                             # cau noi chon dong nay lam dong ket thuc chuyen
+        self.assertEqual(C.MA_CHUYEN.get(5, 'LOI'), 'LOI')
+        self.assertTrue(V.suy_trang_thai(link('on'), nut_ma5(dong), SEP0, None, None, None, 1.0)[1].startswith('LOI_DA_HUY'))
+
+    def test_so_voi_pi_co_trang_v10(self):
+        import subprocess
+        sv = doc('so_voi_pi.sh')                                                # tep co dong khong duoc in: chi assertTrue
+        for d in ('trang_v10.py|~/cau_noi/trang_v10.py', 'trang_v10.html|~/cau_noi/trang_v10.html'):
+            self.assertTrue(('\n' + d + '\n') in sv, 'so_voi_pi.sh thieu dong bang %s' % d.split('|')[0])
+        cai = doc('cai_cau_noi.sh')
+        self.assertTrue('DIR="$HOME/cau_noi"' in cai and 'cp -f "$f" "$DIR/$f"' in cai, 'cai_cau_noi.sh khong chep vao ~/cau_noi')
+        r = subprocess.run(['bash', os.path.join(HERE, 'so_voi_pi.sh'), '--nhac'], capture_output=True, text=True, timeout=30)
+        self.assertEqual(r.returncode, 0)
+        self.assertFalse('trang_v10' in r.stdout, 'so_voi_pi.sh --nhac con nhac trang_v10')
 
 
 if __name__ == '__main__':

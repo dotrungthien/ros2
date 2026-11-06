@@ -125,6 +125,9 @@ def thoat_moi(dong, t_boot):
     return o[1] if -1.0 <= t_boot - t <= T_THOAT_MOI else None
 
 
+DONG_DA_HUY = re.compile(r'^LOI_GUI_DUONG .*; HUY_DICH ok\s*$')
+
+
 def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch):
     """Ma trang thai /v10 tu du lieu that. link: trang_thai() cua cau noi; nut: trang_thai_nut(); sep: sep_cuoi();
     phu_lai: phu_lai_cuoi(); chuyen_log: dong_chuyen_cuoi(); thoat: thoat_moi(). Tra (ma, ly_do)."""
@@ -152,6 +155,10 @@ def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch):
         return 'TT_DANG_DI', ''
     # D(1) gia lap 06/11 03:56: SIGINT roi vao rclpy take_message => gui_duong.py chet vi RuntimeError (ma 1, khong HUY, khong NGAT);
     # /nut ghi HET_DUONG + DA_DUNG nhung dich FollowPath con song, xe di tiep 26 s toi B. Trang bao rieng, khong cho bo qua.
+    # 07/11 111-Q2: ma 5 (LOI_GUI_DUONG) ma gui_duong bao Nav2 tra loi huy dich ('; HUY_DICH ok', gui_duong.py:197, :535) => dich da huy.
+    # Xet tren nguyen dong (ly_do bi cat 120 ky tu). 'khong_tra_loi' / 'khong_co_dich' => giu LOI_THOAT (tat motor).
+    if c['ma'] == 5 and DONG_DA_HUY.match(c['dong'] or ''):
+        return 'TT_CAN_GIUP', 'LOI_DA_HUY ma 5: %s' % (c['dong'] or '')[:120]
     if c['ma'] is not None and (c['ma'] not in (0, 1, 3, 4, 130) or (c['ma'] == 1 and not (c['dong'] or '').startswith('HET_DUONG'))):
         return 'TT_CAN_GIUP', 'LOI_THOAT ma %s: %s' % (c['ma'], (c['dong'] or '')[:120])
     if c['ket_qua'] == 'DEN_NOI':
@@ -701,12 +708,15 @@ def _goi_teleop(method, path, body, ctype, cookie=None):
         c.close()
 
 
-def lai_tay(l, a):
-    """Mot lenh pad -> teleop_web /cmd. Tra (ma HTTP, json). Khong tra ma truy cap trong bat ky truong hop nao."""
+def lai_tay(l, a, co_chuyen=False):
+    """Mot lenh pad -> teleop_web /cmd. Tra (ma HTTP, json). Khong tra ma truy cap trong bat ky truong hop nao.
+    07/11 111-Q2: co_chuyen (dang co chuyen chay) => lenh khac 0 bi khoa (409); lenh 0 (tha nut) van gui."""
     try:
         l, a = max(-1.0, min(1.0, float(l))), max(-1.0, min(1.0, float(a)))
     except (TypeError, ValueError):
         return 400, {'loi': 'l, a phai la so trong -1..1'}
+    if co_chuyen and (l != 0.0 or a != 0.0):
+        return 409, {'loi': 'dang co chuyen: bam 정지 truoc khi lai tay', 'khoa': True}
     than = json.dumps({'linear': l, 'angular': a})
     with _TELEOP['lock']:
         try:
@@ -773,7 +783,9 @@ def lenh(h, C, ten):
         if not C.pin_dung(h.headers.get('X-Pin')):
             return h._gui(401, {'loi': 'can PIN'})
         d = doc_than(h)
-        st, kq = lai_tay(d.get('l', 0), d.get('a', 0))
+        with C.LOCK:
+            co_chuyen = C.CHUYEN['chay']
+        st, kq = lai_tay(d.get('l', 0), d.get('a', 0), co_chuyen)
         return h._gui(st, kq)
     if ten == 'thu_lai':                                         # M7 다시 시도: gui lai chuyen vua roi qua duong /nut
         with C.LOCK:

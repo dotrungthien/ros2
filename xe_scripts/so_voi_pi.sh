@@ -7,7 +7,7 @@
 # Bang duong dan lay tu VI_TRI_TREN_PI.md. "?" = chua ro duong dan tren Pi.
 # Cot 3 cua bang: "tuychon" = tep chua bat buoc phai co tren Pi; thieu thi in THIEU_TREN_PI va KHONG tinh vao y.
 # Dong tong: GIONG x/y, y = so tep co duong dan Pi (tru THIEU_TREN_PI); CHUA_RO khong tinh vao y.
-# cau_noi_xe.py va chon_b_v4.html so voi ban da cai (~/cau_noi/), la ban dich vu dang chay.
+# cau_noi_xe.py, chon_b_v4.html, trang_v10.py, trang_v10.html (111-Q2) so voi ban da cai (~/cau_noi/), la ban dich vu dang chay.
 # Tep trong kho (du_lieu_0111/) co ten trong bang la duong dan tuong doi so voi xe_scripts/.
 #
 # TU NHAC: moi .py/.sh/.yaml/.xml trong xe_scripts/ chua co trong bang ma khong thuoc LUAT LOAI TRU
@@ -28,6 +28,8 @@ nav2_params_cho.yaml|~/nav2_params_cho.yaml
 cai_cau_noi.sh|~/cai_cau_noi.sh
 cau_noi_xe.py|~/cau_noi/cau_noi_xe.py
 chon_b_v4.html|~/cau_noi/chon_b.html
+trang_v10.py|~/cau_noi/trang_v10.py
+trang_v10.html|~/cau_noi/trang_v10.html
 lai_xe_lidar.py|~/lai_xe_lidar.py
 sep.py|~/sep.py
 gui_duong.py|~/gui_duong.py

@@ -82,7 +82,7 @@ function chip(t,ok){var e=$('chip');e.textContent=t;e.style.background=ok?'var(-
 // M7: 정지 trong 도움이 필요해요 sau khi chuyen da ket thuc (HET_DUONG / DUNG_SEP) = da xem, ve 준비 완료 cho toi chuyen sau
 var BO_QUA=null;
 function khoa_chuyen(){var c=S.chuyen||{};return [c.huong,c.ma,c.ket_qua,c.dong].join('|');}
-function ma(){if(LOCAL)return LOCAL;if(S.ma==='TT_CAN_GIUP'&&!(S.chuyen||{}).chay&&BO_QUA===khoa_chuyen()&&(S.ly_do||'').indexOf('LOI_THOAT')!==0)return 'TT_SAN_SANG';return S.ma;}
+function ma(){if(LOCAL==='TT_LAI_TAY'&&(S.chuyen||{}).chay){tha();LOCAL=null;}if(LOCAL)return LOCAL;if(S.ma==='TT_CAN_GIUP'&&!(S.chuyen||{}).chay&&BO_QUA===khoa_chuyen()&&(S.ly_do||'').indexOf('LOI_THOAT')!==0&&(S.ly_do||'').indexOf('LOI_DA_HUY')!==0)return 'TT_SAN_SANG';return S.ma;}
 function phu(m){
   var c=S.chuyen||{};
   switch(m){
@@ -98,7 +98,8 @@ function phu(m){
   case 'TT_DANG_THOAT':return '보조 운전이 차량을 빼내고 있어요 ('+han(S.ly_do)+')';
   case 'TT_DANG_XOAY':return '제자리에서 회전해요 ('+han(S.ly_do)+')';
   case 'TT_DA_DEN':return '새 목적지를 고르세요\n'+(han(c.dong)||'');
-  case 'TT_CAN_GIUP':return (S.ly_do||'').indexOf('LOI_THOAT')===0?'주행 프로그램이 오류로 끝났어요. Nav2 목표가 아직 살아 있을 수 있어요: 모터 스위치를 끄세요\n'+S.ly_do
+  case 'TT_CAN_GIUP':return (S.ly_do||'').indexOf('LOI_DA_HUY')===0?'오류로 주행을 멈췄어요. 목표는 취소됐어요\n'+S.ly_do
+      :(S.ly_do||'').indexOf('LOI_THOAT')===0?'주행 프로그램이 오류로 끝났어요. Nav2 목표가 아직 살아 있을 수 있어요: 모터 스위치를 끄세요\n'+S.ly_do
       :'통로가 막혔어요. 확인 후 수동 조종하거나 다시 시도하세요 ('+han(S.ly_do)+')';
   case 'TT_LAI_TAY':return '누르고 있는 동안만 움직여요';
   case 'TT_DANG_NGAT':return '모든 프로세스 종료 중';
@@ -106,6 +107,8 @@ function phu(m){
   }
   return '';
 }
+// 111-Q2: bo nut sau 정지 (va man ma 5 da huy dich): 다시 시도, 수동 조종, 연결 해제
+function SAU_DUNG(){return nut([['다시 시도',"lenh('thu_lai')"],['수동 조종',"vao_lai_tay()"],['연결 해제',"lenh('tat')"]]);}
 function nut(ds){return '<div class="btns">'+ds.map(function(d){return '<button'+(d[1]?' onclick="'+d[1]+'"':' disabled')+(d[2]?' style="'+d[2]+'"':'')+'>'+d[0]+'</button>';}).join('')+'</div>';}
 var DO='border-color:var(--bddg);color:var(--txdg)';
 function ui(){
@@ -116,11 +119,13 @@ function ui(){
   if(m==='TT_KHONG_KET_NOI'||m==='TT_DA_NGAT')h=nut([['차량 연결',"lenh('bat')"]]);
   else if(m==='TT_DANG_KET_NOI')h=nut([['연결 중…']]);
   else if(m==='TT_DANG_NGAT')h=nut([['종료 중…']]);
+  else if(m==='TT_SAN_SANG'&&(S.chuyen||{}).ket_qua==='NGAT')h=SAU_DUNG();
   else if(m==='TT_SAN_SANG'||m==='TT_DA_DEN')h=nut([['수동 조종',"vao_lai_tay()"],['연결 해제',"lenh('tat')"]]);
   else if(m==='TT_XEM_TUYEN')h=nut([['출발',"lenh('di')"],['취소',"huy_chon()"]]);
-  else if(['TT_DANG_DI','TT_DANG_CHO','TT_DANG_THOAT','TT_DANG_XOAY'].indexOf(m)>=0)h=nut([['정지',"lenh('dung')",DO],['수동 조종',"vao_lai_tay()"]]);
-  else if(m==='TT_CAN_GIUP')h=nut([['수동 조종',"vao_lai_tay()"],['다시 시도',"lenh('thu_lai')"],['정지',"lenh('dung')",DO]]);
-  else if(m==='TT_LAI_TAY')h=PAD+((S.chuyen||{}).chay?nut([['주행 정지',"lenh('dung')",DO],['자동으로',"ra_lai_tay()"]]):nut([['자동으로',"ra_lai_tay()"],['연결 해제',"lenh('tat')"]]));
+  else if(['TT_DANG_DI','TT_DANG_CHO','TT_DANG_THOAT','TT_DANG_XOAY'].indexOf(m)>=0)h=nut([['정지',"lenh('dung')",DO]]);
+  else if(m==='TT_CAN_GIUP')h=(S.chuyen||{}).chay?nut([['정지',"lenh('dung')",DO]]):(S.ly_do||'').indexOf('LOI_DA_HUY')===0?SAU_DUNG()
+      :nut([['수동 조종',"vao_lai_tay()"],['다시 시도',"lenh('thu_lai')"],['정지',"lenh('dung')",DO]]);
+  else if(m==='TT_LAI_TAY')h=(S.chuyen||{}).chay?nut([['정지',"lenh('dung')",DO]]):(PAD+nut([['자동으로',"ra_lai_tay()"],['연결 해제',"lenh('tat')"]]));
   if($('ctl').getAttribute('data-h')!==h){$('ctl').innerHTML=h;$('ctl').setAttribute('data-h',h);if(m==='TT_LAI_TAY')gan_pad();}
   ve();bang();canh_bao();
 }
@@ -168,7 +173,7 @@ function gan_pad(){
   });
 }
 window.addEventListener('blur',tha);document.addEventListener('visibilitychange',function(){if(document.hidden)tha();});
-function vao_lai_tay(){LOCAL='TT_LAI_TAY';CHON=null;set('kmsg',(S.chuyen||{}).chay?'주행 중이에요: 조종 전에 주행 정지를 누르세요 (사람 조종이 우선순위가 높음)':'');ui();}
+function vao_lai_tay(){if((S.chuyen||{}).chay){set('kmsg','주행 중에는 수동 조종을 할 수 없어요. 먼저 정지를 누르세요');return;}LOCAL='TT_LAI_TAY';CHON=null;set('kmsg','');ui();}
 function ra_lai_tay(){tha();LOCAL=null;ui();}
 function huy_chon(){LOCAL=null;CHON=null;ui();}
 // ---- M2: ban do (/v10/ban_do: vung tu tep cua xe, khong so rieng) ----

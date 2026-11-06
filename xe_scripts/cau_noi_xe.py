@@ -375,7 +375,7 @@ var HAN=[['HUY_DICH_KHI_NGAT','목표 취소'],['DUNG_YEN_KHONG_RO','원인 불�
  ['NHAY_VI_TRI','위치 급변 재확인'],['VAT_LA_TRUOC','앞 장애물'],['KET_SAT_VAT','장애물에 막힘'],['TU_BAT_LAI','자동 재시작'],
  ['HET_DUONG','경로 없음'],['KHONG_DAT','실패-재시도'],['DI_THUONG','정상 주행'],['MAT_SCAN','라이다 대기'],
  ['KHONG BAT','이미 실행 중'],['SAN SANG','준비 완료'],['DEN_NOI','도착'],['DA_DUNG','정지 완료'],['VAT_LA','장애물 감지'],
- ['NGAT','중단됨'],['DUNG','정지'],['CHO','대기'],['DI','진행'],['cach dich','목표까지'],['giay','초']];
+ ['NGAT','중단됨'],['LOI','오류'],['DUNG','정지'],['CHO','대기'],['DI','진행'],['cach dich','목표까지'],['giay','초']];
 var HAN_TU={};HAN.forEach(function(x){HAN_TU[x[0]]=x[1];});
 var HAN_RE=new RegExp('\\\\b(CHUA )?('+HAN.map(function(x){return x[0];}).join('|')+')\\\\b','g');
 function han(s){

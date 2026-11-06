@@ -898,7 +898,7 @@ class Sep:
             self.het_luot = False
             self.thoat_khong_chay = 0
             ghi('CHUYEN', 'BAT_DAU', kiem=r['huong'], se='dem lai: Nav2 0/%d; thoat 0/%d' % (NAV2_LAN_MAX, LUOT_THOAT_MAX))
-        elif kq in ('DEN_NOI', 'HET_DUONG', 'SAI_VI_TRI', 'DUNG_SEP', 'NGAT') and self.chuyen is not None:
+        elif kq in ('DEN_NOI', 'HET_DUONG', 'SAI_VI_TRI', 'DUNG_SEP', 'NGAT', 'LOI_GUI_DUONG') and self.chuyen is not None:   # 06/11 viec 121: + LOI_GUI_DUONG (ma 5)
             ghi('CHUYEN', 'KET_THUC', kiem=self.chuyen, kq=kq)
             self.chuyen = None
 

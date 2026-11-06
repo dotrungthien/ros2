@@ -45,7 +45,7 @@ sys.path.insert(0, HERE)
 import cau_noi_xe as C  # noqa: E402
 
 # md5 cua TRANG_NUT @579cda5 (trang /nut phai giu nguyen tung byte)
-MD5_TRANG_NUT = '9a96075bd5ab866540f71e027608bcf1'
+MD5_TRANG_NUT = 'e9a2b1da9c7deafdcc48862fad7a57d5'   # 06/11 viec 121: /nut them ['LOI','오류'] vao HAN (chi chu hien thi)
 
 
 def http(port, method, path, body=None, pin=None):

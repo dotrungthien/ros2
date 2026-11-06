@@ -18,6 +18,7 @@ Mot tien trinh rclpy, KHONG goi ros2 CLI. Chay (chuyen.sh BANG=day goi):  python
   CSV: ~/ket_qua_chuyen.csv cung cot va cung chu voi chuyen.sh (KIEM_DAT, SUCCEEDED, KHONG_DAT, DEN_NOI, HET_DUONG,
   SAI_VI_TRI, DUNG_SEP) va NGAT (bi ngat, dong ket thuc chuyen); cot 2 = "<huong>_day".
   Ma thoat: 0 den noi, 1 het duong, 2 sai doi so, 3 sai vi tri, 4 sep bao dung, 130 bi ngat (NGAT).
+  06/11 viec 121: 5 = loi khac (LOI_GUI_DUONG, khong bi ngat); van huy dich dang chay truoc khi thoat.
 Bien moi truong: LUOT (3), CHO_HONG (30 s), TO (130 s/lan gui), TOI_SAI_SO (0,20 m); cung ten voi chuyen.sh: SEP_CHO_S (10 s),
   SEP_TUOI_MAX (3 s). Phu lai lai mai thi tong thoi gian cho giua hai lan gui toi da 3 x CHO_HONG.
 04/11 lop 2: truoc MOI lan gui ghi ~/gui_duong_luot (SAP_GUI); sep tra loi trong ~/sep_thoat: KHONG_CAN => gui; RA_LUI (06/11: hoac RA_TIEN) => cho phu
@@ -164,17 +165,38 @@ def dung_sep(io, nhan, r, lan):
     return 4
 
 
-def chay_co_ngat(io, huong, tuyen_dau, cfg, bo_qua_ngat=lambda: None):
+MA_LOI = 5                 # 06/11 viec 121: loi khac khi khong bi ngat (khong trung 0, 1, 2, 3, 4, 130)
+DA_NGAT = [False]          # 06/11 viec 121: ngat() dat co TRUOC khi raise
+
+
+def ngat(signum, frame):
+    """Bat SIGINT/SIGTERM (main dang ky). 06/11 viec 121: dat co roi moi raise: neu KeyboardInterrupt roi vao luc rclpy
+    dang lay tin (take_message), pybind doi no thanh RuntimeError; co nay van cho biet la bi ngat."""
+    DA_NGAT[0] = True
+    raise KeyboardInterrupt
+
+
+def chay_co_ngat(io, huong, tuyen_dau, cfg, bo_qua_ngat=lambda: None, da_ngat=lambda: DA_NGAT[0]):
     """chay(); bi ngat (SIGINT/SIGTERM => KeyboardInterrupt) thi huy dich dang chay, ghi dong NGAT (dong ket thuc chuyen,
-    sep.py dong chuyen), tra 130. bo_qua_ngat: tat bat tin hieu lan 2 trong luc huy (main dat SIG_IGN)."""
+    sep.py dong chuyen), tra 130. bo_qua_ngat: tat bat tin hieu lan 2 trong luc huy (main dat SIG_IGN).
+    06/11 viec 121 (gia lap 03:56: SIGINT thanh RuntimeError, khong huy dich, xe di tiep 26 s): bat MOI loi (BaseException).
+    Bi ngat (KeyboardInterrupt hoac co da_ngat) => nhu cu (HUY, huy dich, NGAT, 130). Loi khac => van huy dich dang chay
+    (con dich thi ghi HUY truoc), in + ghi LOI_GUI_DUONG, tra MA_LOI."""
     try:
         return chay(io, huong, tuyen_dau, cfg)
-    except KeyboardInterrupt:
+    except BaseException as e:             # noqa: B036 (co y: ca KeyboardInterrupt lan RuntimeError cua rclpy)
+        bi_ngat = isinstance(e, KeyboardInterrupt) or da_ngat()
         bo_qua_ngat()
-        io.huy_luot()                      # 05/11 lop 2: ghi HUY vao ~/gui_duong_luot truoc (phu lai dung lui lop 2 <= 1 s)
-        io.bao('HUY_DICH_KHI_NGAT %s' % io.huy_khi_ngat())
-        io.ghi('%s_day' % huong, '-', 'ngat', 0, 'NGAT', 0)
-        return 130
+        if bi_ngat or io.co_dich():
+            io.huy_luot()                  # 05/11 lop 2: ghi HUY vao ~/gui_duong_luot truoc (phu lai dung lui lop 2 <= 1 s)
+        kq = io.huy_khi_ngat()
+        if bi_ngat:
+            io.bao('HUY_DICH_KHI_NGAT %s' % kq)
+            io.ghi('%s_day' % huong, '-', 'ngat', 0, 'NGAT', 0)
+            return 130
+        io.bao('LOI_GUI_DUONG %s: %s; HUY_DICH %s' % (e.__class__.__name__, str(e)[:160], kq))
+        io.ghi('%s_day' % huong, '-', 'loi', 0, 'LOI_GUI_DUONG', 0)
+        return MA_LOI
 
 
 def cho_truoc_khi_gui(io, cfg):
@@ -498,6 +520,10 @@ if rclpy is not None:
                 while not fut.done() and time.monotonic() < t_het:
                     self.ngu(0.05)
 
+        def co_dich(self):
+            """06/11 viec 121: con dich /follow_path dang chay (da gui, chua co ket qua)."""
+            return self.goal is not None and self.kq is None
+
         def huy_khi_ngat(self):
             """Bi ngat (SIGINT/SIGTERM): huy dich /follow_path dang chay (handle hien co) khi context con song, cho <= 2 s."""
             if self.goal is None or self.kq is not None:
@@ -516,11 +542,7 @@ if rclpy is not None:
         # 03/11 (viec 5): rclpy KHONG cai bo bat tin hieu (no tat context truoc, huy dich khong di duoc);
         # SIGINT/SIGTERM => KeyboardInterrupt, huy dich khi context con song, roi thoat 130
         rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
-
-        def ngat(signum, frame):
-            raise KeyboardInterrupt
-
-        signal.signal(signal.SIGINT, ngat)
+        signal.signal(signal.SIGINT, ngat)            # 06/11 viec 121: ngat() o phan thuan (dat co DA_NGAT roi raise)
         signal.signal(signal.SIGTERM, ngat)
         node = GuiDuongNode(cau_hinh())
 

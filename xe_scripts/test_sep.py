@@ -624,6 +624,19 @@ def test_41_NGAT_dong_chuyen_chuyen_sau_dem_lai_tu_0():
     assert c.s.chuyen == 've_A_day' and c.s.nav2_lan == 0 and c.s.luot_thoat == 0 and co(log, 'BAT_DAU')
 
 
+def test_47_LOI_GUI_DUONG_dong_chuyen_chuyen_sau_dem_lai_tu_0():
+    c = Chay(vao())                                                   # 06/11 viec 121: gui_duong.py ma 5 (loi khac, da huy dich)
+    c(csv=['2026-11-06 10:00:00,di_B_day,1,1,0,KIEM_DAT,0,-,-,-'])
+    assert c.s.chuyen == 'di_B_day'
+    c(rosout=[('lifecycle_manager_navigation', CRIT)])
+    c.s.luot_thoat, c.s.het_luot = 3, True                            # chuyen hong: da het luot thoat
+    assert c.s.nav2_lan == 1
+    _, log = c(csv=['2026-11-06 10:00:05,di_B_day,-,loi,0,LOI_GUI_DUONG,0,-,-,-'])   # dong gui_duong.py ghi khi loi khac
+    assert c.s.chuyen is None and any('KET_THUC' in d and 'LOI_GUI_DUONG' in d for d in log)
+    _, log = c(csv=['2026-11-06 10:00:09,ve_A_day,1,1,0,KIEM_DAT,0,-,-,-'])
+    assert c.s.chuyen == 've_A_day' and c.s.nav2_lan == 0 and c.s.luot_thoat == 0 and not c.s.het_luot and co(log, 'BAT_DAU')
+
+
 # ---------- G3 (dong 9): ong O18 la chan giua duong, BANG=day (dich qua kenh fp), muc B (ra_lenh, ra_thoat) ----------
 XE_ONG = (0.40, 0.09, 0.0)                                            # mui o x = 0,545
 ONG_8CM = (0.625, 0.80, 0.0, 0.18)                                    # ong O18 khong co trong ban do, cach mui 8 cm (nhu test_17)

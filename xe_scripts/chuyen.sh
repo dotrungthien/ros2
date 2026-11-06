@@ -37,6 +37,7 @@
 #   Moi buoc ghi mot dong vao ~/ket_qua_chuyen.csv de dem x/n.
 # Ma thoat: 0 den noi; 1 het duong; 2 sai doi so; 3 Nav2 thay sai vi tri xe (khong gui them lenh nao); 4 sep bao DUNG;
 #   130 = bi ngat (NGAT): BANG=day, gui_duong.py huy dich, ghi dong NGAT vao CSV.
+#   5 = loi khac (LOI_GUI_DUONG, khong bi ngat): BANG=day, gui_duong.py van huy dich dang chay, ghi dong LOI_GUI_DUONG vao CSV (06/11 viec 121).
 # Dung khan: TAT CONG TAC MOTOR (BANG=day: Ctrl+C/SIGTERM huy dich, ma 130; BANG=tt/cu/xs: Ctrl+C chua chac huy muc tieu).
 #
 # Toa do (map, goc A = tam xe o vach A; doc tu ban do map_xuong_v2, sai so ~ +-5 cm):

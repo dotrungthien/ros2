@@ -8,6 +8,8 @@ import io as _io
 import math
 import os
 import re
+import signal
+import time
 
 import gui_duong as G
 import tinh_tuyen as T
@@ -92,6 +94,9 @@ class IOGia:
 
     def huy_luot(self):
         self.huy_luot_t = self.t
+
+    def co_dich(self):                                   # 06/11 viec 121
+        return self.dang is not None
 
     def tra_lop2(self):
         return self.lop2(self.t, len(self.sap_gui), self.sap_gui[-1][0])[0] if self.sap_gui else None
@@ -482,6 +487,89 @@ def test_22_bi_ngat_huy_dich_ghi_NGAT_ma_130():
     assert G.chay_co_ngat(io2, 'di_B', 1, CFG) == 0 and CUA(io2.rows)[-1] == 'DEN_NOI'
     assert getattr(io2, 'huy_luot_t', None) is None                   # khong bi ngat: khong ghi HUY
     assert G.dong_huy(12.345) == '12.35 HUY'
+
+
+# ---------- 06/11 viec 121: SIGINT roi vao rclpy take_message => pybind doi KeyboardInterrupt thanh RuntimeError ----------
+class _LoiGiua(_NgatGiua):
+    """Luc t >= 5 s (dich dang chay): tin_hieu=True: gui SIGINT THAT cho chinh tien trinh (G.ngat dang ky), bat
+    KeyboardInterrupt roi nem RuntimeError nhu pybind; tin_hieu=False: chi nem RuntimeError (loi khac, khong ngat)."""
+
+    def __init__(self, *a, tin_hieu=True, t_loi=5, **k):
+        _NgatGiua.__init__(self, *a, **k)
+        self.tin_hieu, self.t_loi = tin_hieu, t_loi
+
+    def ngu(self, s):
+        IOGia.ngu(self, s)
+        if self.t >= self.t_loi and not getattr(self, 'da_ngat', False):
+            self.da_ngat = True
+            if self.tin_hieu:
+                try:
+                    os.kill(os.getpid(), signal.SIGINT)
+                    time.sleep(1.0)                          # tin hieu toi trong luc ngu; khong toi thi test hong
+                except KeyboardInterrupt:
+                    pass
+            raise RuntimeError('Unable to convert call argument to Python object (compile in debug mode for details)')
+
+    def huy_khi_ngat(self):
+        if self.dang:
+            assert getattr(self, 'huy_luot_t', None) is not None      # con dich: HUY ghi truoc khi huy dich
+        self.huy_ngat = getattr(self, 'huy_ngat', 0) + 1
+        kq = 'ok' if self.dang else 'khong_co_dich'
+        self.dang = None
+        return kq
+
+
+def _voi_ngat(f):
+    cu = signal.signal(signal.SIGINT, G.ngat)
+    G.DA_NGAT[0] = False
+    try:
+        return f()
+    finally:
+        signal.signal(signal.SIGINT, cu)
+        G.DA_NGAT[0] = False
+
+
+def test_31_ngat_thanh_runtimeerror_khi_co_dich_van_huy_NGAT_130():
+    try:
+        G.ngat(signal.SIGINT, None)
+        assert False, 'ngat phai raise KeyboardInterrupt'
+    except KeyboardInterrupt:
+        assert G.DA_NGAT[0] is True                                   # co dat TRUOC khi raise
+    G.DA_NGAT[0] = False
+    io = _LoiGiua([('SUCCEEDED', 60, Bp)])
+    bo = []
+    ma = _voi_ngat(lambda: G.chay_co_ngat(io, 'di_B', 1, CFG, lambda: bo.append(1)))
+    assert ma == 130, ma
+    assert bo == [1] and io.huy_ngat == 1 and 'HUY_DICH_KHI_NGAT ok' in io.cau
+    assert io.huy_luot_t is not None
+    assert CUA(io.rows) == ['KIEM_DAT', 'NGAT'] and io.rows[-1] == ['di_B_day', '-', 'ngat', '0', 'NGAT', '0']
+
+
+def test_32_loi_khac_khi_co_dich_van_huy_dich_ma_5():
+    io = _LoiGiua([('SUCCEEDED', 60, Bp)], tin_hieu=False)
+    bo = []
+    ma = _voi_ngat(lambda: G.chay_co_ngat(io, 'di_B', 1, CFG, lambda: bo.append(1)))
+    assert ma == G.MA_LOI == 5, ma
+    assert bo == [1] and io.huy_ngat == 1 and io.huy_luot_t is not None
+    assert any(c.startswith('LOI_GUI_DUONG RuntimeError: Unable to convert') and c.endswith('; HUY_DICH ok') for c in io.cau), io.cau
+    assert io.rows[-1] == ['di_B_day', '-', 'loi', '0', 'LOI_GUI_DUONG', '0']
+    assert not any(r[4] == 'NGAT' for r in io.rows)
+
+
+def test_33_loi_khi_chua_co_dich_khong_ghi_HUY_ma_5_va_D1():
+    io = _LoiGiua([('SUCCEEDED', 60, Bp)], tin_hieu=False)
+
+    def hong():                                                       # loi o buoc KIEM (truoc khi gui dich)
+        raise RuntimeError('loi gia truoc khi gui')
+    io.cho_san_sang = hong
+    ma = _voi_ngat(lambda: G.chay_co_ngat(io, 'di_B', 1, CFG))
+    assert ma == 5 and getattr(io, 'huy_luot_t', None) is None and io.gui_ds == []
+    assert 'LOI_GUI_DUONG RuntimeError' in io.cau[-1] and io.cau[-1].endswith('; HUY_DICH khong_co_dich')
+    # luat G: ma 5 khong trung ma co san cua chuyen.sh; cau noi doi ma la 'LOI', dong log khop DONG_CHUYEN
+    sh = open(os.path.join(DAY, 'chuyen.sh')).read()
+    assert 'exec python3 "$HOME/gui_duong.py"' in sh and 'exit 5' not in sh
+    cn = open(os.path.join(DAY, 'cau_noi_xe.py')).read()
+    assert 'MA_CHUYEN.get(rc, "LOI")' in cn and '|LOI|' in cn
 
 
 # ---------- G3 (dong 9): ong O18 chan giua duong. Phan Nav2 (RPP dung vi va cham phia truoc, FollowPath ABORTED) dat san

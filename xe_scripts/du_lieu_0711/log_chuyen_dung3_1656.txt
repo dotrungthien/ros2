@@ -1,0 +1,3 @@
+== cau_noi_xe 16:55:52: di_B (BANG=day) ==
+-- tuyen 1, lan 1/3: 32 diem tu (0.88; -0.01) toi (1.60; 0.82)
+HUY_DICH_KHI_NGAT ok

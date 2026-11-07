@@ -1,0 +1,5 @@
+== cau_noi_xe 17:51:06: ve_A (BANG=day) ==
+   tuyen 1: khong tim duoc duong (40, 23) -> (11, 8) => doi tuyen
+== Tuyen 1 hong. ==
+-- tuyen 2, lan 1/3: 45 diem tu (1.47; 0.77) toi (0.00; 0.00)
+DEN_NOI: ve_A xong theo tuyen 2 (cach dich 0.14 m).

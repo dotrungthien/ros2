@@ -114,6 +114,11 @@ def generate_launch_description():
         'bat_mo_hinh_san', default_value='false',
         description='Enable odom_tu_lenh floor dead-zone model (mo_hinh_san)')
 
+    # viec 118 B12: v_banh_nang [m/s] = toc do odom tinh cho banh bi nang (do 07/11 do_toc_do 3 lan); '-1' = nhu cu (duty_min x max_wheel_speed)
+    declare_v_banh_nang_cmd = DeclareLaunchArgument(
+        'v_banh_nang', default_value='0.121',
+        description='odom_tu_lenh v_banh_nang [m/s] (measured 07/11, 3 runs); -1 = old behaviour')
+
     # 로봇 모델 (robot_state_publisher + joint_state_publisher). 지도 작성은 항상 실제 시계 사용
     rsp_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(bringup_dir, 'launch', 'rsp.launch.py')),
@@ -137,7 +142,8 @@ def generate_launch_description():
             value_type=str),
             'mo_hinh_san': ParameterValue(
                 PythonExpression(["'", bat_mo_hinh_san, "'.lower() in ('true', '1')"]),
-                value_type=bool)}])
+                value_type=bool),
+            'v_banh_nang': ParameterValue(LaunchConfiguration('v_banh_nang'), value_type=float)}])
 
     # SLAM Toolbox online async. 샘플 launch 의 use_sim_time 기본값은 'true' 이므로 반드시 'false' 로 덮어쓴다
     slam_cmd = IncludeLaunchDescription(
@@ -221,6 +227,7 @@ def generate_launch_description():
     ld.add_action(declare_gyro_scale_cmd)
     ld.add_action(declare_bat_ket_detector_cmd)
     ld.add_action(declare_bat_mo_hinh_san_cmd)
+    ld.add_action(declare_v_banh_nang_cmd)
 
     # access_code 검사를 가장 먼저 둔다 (없으면 다른 노드가 하나도 뜨기 전에 중단)
     ld.add_action(OpaqueFunction(function=start_teleop_web))

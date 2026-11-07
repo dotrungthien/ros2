@@ -152,6 +152,10 @@ def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch):
             return 'TT_DANG_XOAY', pl[0]
         if (pl and (pl[0] in PHU_LAI_CHO or pl[0].startswith('CHO_'))) or chuyen_log == 'CHO':
             return 'TT_DANG_CHO', pl[0] if pl and (pl[0] in PHU_LAI_CHO or pl[0].startswith('CHO_')) else 'gui_duong cho'
+        # 08/11 111-Q3: log chuyen chua co dong co nghia (chi dong dau '== cau_noi_xe ...', hoac 'doi tuyen' / CANH BAO truoc
+        # '-- tuyen'): gui_duong con cho vi tri + costmap, SAP_GUI, tinh duong => "경로 계산 중" (truoc day trang hien 이동 중)
+        if chuyen_log is None:
+            return 'TT_DANG_DI', 'CHUAN_BI'
         return 'TT_DANG_DI', ''
     # D(1) gia lap 06/11 03:56: SIGINT roi vao rclpy take_message => gui_duong.py chet vi RuntimeError (ma 1, khong HUY, khong NGAT);
     # /nut ghi HET_DUONG + DA_DUNG nhung dich FollowPath con song, xe di tiep 26 s toi B. Trang bao rieng, khong cho bo qua.
@@ -205,6 +209,7 @@ def trang_thai(C):
     return {
         'ma': ma, 'ly_do': ly, 'link': link['link'], 'thieu': link['thieu'], 'chi_tiet': link['chi_tiet'],
         'han_s': link['han_s'], 'viec': nut['viec'], 'connect_s': link['connect_s'],
+        'han_het': link['han_s'] is not None and link['han_s'] <= 0,      # 08/11 111-Q3: het 8 phut tu luc con quay lay so 0
         'chuyen': nut['chuyen'], 'bat': nut['bat'], 'tat': nut['tat'], 'dung': nut['dung'],
         'pin': os.path.exists(C.CFG['pin_file']),
         'pose': None if not sep['pose'] else dict(zip(('x', 'y', 'goc_do', 'gio'), sep['pose'])),   # M2: dong cuoi co x, y cua sep

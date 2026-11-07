@@ -31,6 +31,7 @@ exit 0
 '''
 CHUYEN = r'''#!/usr/bin/env bash
 trap 'echo "HUY_DICH_KHI_NGAT gia"; exit 130' INT TERM
+if [ -n "$GIA_TRE" ]; then sleep "$GIA_TRE" & wait; fi
 echo "-- tuyen 1, lan 1/3: 30 diem tu (0.00; 0.00) toi (1.60; 0.82) [$1]"
 [ -n "$GIA_IN" ] && echo "$GIA_IN"
 sleep "${GIA_CHUYEN_S:-30}" &
@@ -117,6 +118,7 @@ class Nen(unittest.TestCase):
         os.environ.pop('GIA_KET', None)
         os.environ.pop('GIA_MA', None)
         os.environ.pop('GIA_CHUYEN_S', None)
+        os.environ.pop('GIA_TRE', None)
 
     def ma(self):
         st, j = js(self.port, 'GET', '/v10/trang_thai')
@@ -957,6 +959,91 @@ class Q2D1(unittest.TestCase):
         r = subprocess.run(['bash', os.path.join(HERE, 'so_voi_pi.sh'), '--nhac'], capture_output=True, text=True, timeout=30)
         self.assertEqual(r.returncode, 0)
         self.assertFalse('trang_v10' in r.stdout, 'so_voi_pi.sh --nhac con nhac trang_v10')
+
+
+# ---------------- 111-Q3 (08/11): (1) 경로 계산 중 (CHUAN_BI), (2) 시간 초과 (han_het) ----------------
+# Dong log THAT: git show origin/odom-118:xe_scripts/du_lieu_0711/log_khe_tren_v1_1741.txt (md5 ad846080), xe 07/11 17:41,
+# chinh la ~/log_nut_chuyen.txt cua cau noi (dong dau cau_noi_xe.py:261, cac dong sau la stdout gui_duong.py).
+LOG_THAT_0711 = [
+    '== cau_noi_xe 17:41:08: di_B (BANG=day) ==',
+    '   tuyen 1: khong tim duoc duong (11, 8) -> (43, 24) => doi tuyen',
+    '== Tuyen 1 hong. ==',
+    '   CANH BAO: dinh re (0.66; 0.71) chi cach o do 0.15 m (< 0.24), khong doi duoc',
+    '-- tuyen 2, lan 1/3: 50 diem tu (0.01; 0.00) toi (1.60; 0.82)',
+    'DEN_NOI: di_B xong theo tuyen 2 (cach dich 0.15 m).',
+]
+
+
+class Q3ChuanBi(unittest.TestCase):
+    def test_chuan_bi_khi_log_rong(self):
+        f = V.suy_trang_thai
+        n = nut(chuyen_chay=True)
+        self.assertEqual(f(link('on'), n, SEP0, None, None, None, 1000.0), ('TT_DANG_DI', 'CHUAN_BI'))
+        # sep con dong TU_THE cu CHO / KHONG_CO_DICH (= 목표 없음) va phu lai KHONG_CO_DICH: van CHUAN_BI
+        self.assertEqual(f(link('on'), n, dict(SEP0, tu_the=('CHO', 'KHONG_CO_DICH', '')), ('KHONG_CO_DICH', '', 1000.0), None, None, 1000.0),
+                         ('TT_DANG_DI', 'CHUAN_BI'))
+        self.assertEqual(f(link('on'), n, SEP0, None, 'DI', None, 1000.0), ('TT_DANG_DI', ''))       # da co '-- tuyen'
+        self.assertEqual(f(link('on'), n, SEP0, None, 'CHO', None, 1000.0)[0], 'TT_DANG_CHO')        # sep bao CHO truoc SAP_GUI
+        self.assertEqual(f(link('on'), n, SEP0, None, None, 'RA_LUI', 1000.0)[0], 'TT_DANG_THOAT')   # lop 2 truoc '-- tuyen'
+        self.assertEqual(f(link('on'), nut(), SEP0, None, None, None, 1000.0), ('TT_SAN_SANG', ''))  # khong co chuyen: khong CHUAN_BI
+
+    def test_ranh_gioi_chuan_bi_den_dang_di_log_that(self):
+        f = V.suy_trang_thai
+        n = nut(chuyen_chay=True)
+        for k in range(1, len(LOG_THAT_0711) + 1):
+            ly = f(link('on'), n, SEP0, None, V.dong_chuyen_cuoi(LOG_THAT_0711[:k]), None, 1000.0)
+            self.assertEqual(ly, ('TT_DANG_DI', 'CHUAN_BI' if k <= 4 else ''), 'dong %d: %s' % (k, LOG_THAT_0711[k - 1]))
+        self.assertEqual(V.dong_chuyen_cuoi(LOG_THAT_0711[:4]), None)
+        self.assertEqual(V.dong_chuyen_cuoi(LOG_THAT_0711[:5]), 'DI')
+        self.assertEqual(V.lan_thu(LOG_THAT_0711), (2, 1, 3))
+
+
+class Q3ChuanBiHttp(Nen):
+    def test_chuan_bi_co_dung_va_khoa_pad(self):
+        LINK['on'] = True
+        os.environ['GIA_TRE'] = '30'                       # chuyen.sh gia: chua in '-- tuyen' (gui_duong dang chuan bi)
+        self.assertTrue(C.bat_dau_chuyen('di_B'))
+        try:
+            st, j = js(self.port, 'GET', '/v10/trang_thai')
+            self.assertEqual((j['ma'], j['ly_do']), ('TT_DANG_DI', 'CHUAN_BI'))
+            st, j = js(self.port, 'POST', '/v10/api/lai_tay', {'l': 1, 'a': 0})
+            self.assertEqual((st, j.get('khoa')), (409, True))                          # pad khoa (server)
+        finally:
+            C.dung_chuyen()
+            self.assertTrue(cho(lambda: not C.trang_thai_nut()['chuyen']['chay']))
+        t = http_tinh()
+        self.assertIn("function chuan_bi(){return ma()==='TT_DANG_DI'&&S.ly_do==='CHUAN_BI';}", t)
+        self.assertIn("set('tt',chuan_bi()?'경로 계산 중':ten(m))", t)                  # o trang thai
+        self.assertIn("set('p0',chuan_bi()?'경로 계산 중':", t)                         # 단계
+        self.assertIn("var nt=chuan_bi()?'두뇌: 출발 준비 대기':", t)                    # dong 두뇌 khong in TU_THE cu (목표 없음)
+        chay = [l for l in t.split('\n') if "['TT_DANG_DI','TT_DANG_CHO','TT_DANG_THOAT','TT_DANG_XOAY'].indexOf(m)>=0" in l][0]
+        self.assertIn("['정지',\"lenh('dung')\",DO]", chay)                             # CHUAN_BI = TT_DANG_DI: chi 정지
+        self.assertNotIn('vao_lai_tay', chay)
+        self.assertIn('if((S.chuyen||{}).chay){', [l for l in t.split('\n') if l.startswith('function vao_lai_tay(')][0])   # pad khoa (trang)
+
+
+class Q3HanHet(Nen):
+    def test_han_het_o_600_s(self):
+        LINK['on'] = True
+        try:
+            with C.LOCK:
+                C.JOB['t0'] = time.monotonic() - 600
+            j = V.trang_thai(C)
+            self.assertLess(j['han_s'], 0)
+            self.assertTrue(j['han_het'])
+            with C.LOCK:
+                C.JOB['t0'] = time.monotonic() - 10
+            j = V.trang_thai(C)
+            self.assertGreater(j['han_s'], 0)
+            self.assertFalse(j['han_het'])
+            with C.LOCK:
+                C.JOB['t0'] = None
+            self.assertFalse(V.trang_thai(C)['han_het'])                                 # chua co moc con quay
+        finally:
+            with C.LOCK:
+                C.JOB['t0'] = None
+        t = http_tinh()
+        self.assertIn("(S.han_het?' (시간 초과)':S.han_s!==null&&S.han_s!==undefined?' (남은 시간 '+S.han_s+'초)':'')", t)
 
 
 if __name__ == '__main__':

@@ -39,6 +39,8 @@ Phan thuan (khong ROS) o nua tren, thu bang test_gui_duong.py.
   KHONG_DAT, tuyen kia. Moi loi ra (0, 1, 3, 4, 5, 130): /chon_tuyen "0"; loi ra != 0 chup ~/chup/<HHMMSS>_<huong>.txt;
   noi moi dong da in vao ~/log_gui_duong.txt; CSV + ma thoat nhu cu.
   Bien moi: CHO_KHE (30 s), TIEN_MIN (0,10 m).
+  08/11 buoc 2c: truoc khi gui tuyen kia: Nav2 BackUp (/backup) 0,35 m o 0,10 m/s, in "LUI_RA ..."; sep DUNG luc lui => DUNG_SEP.
+  behavior_server ra cmd_vel_nav_raw -> velocity_smoother -> collision_monitor (nhu lenh controller).
 """
 import math
 import os
@@ -59,7 +61,9 @@ def cau_hinh(env=os.environ):
                 toi_sai_so=f('TOI_SAI_SO', 0.20), sep_tuoi=f('SEP_TUOI_MAX', 3.0), tf_tuoi=1.0,
                 lop2_cho=12.0, lop2_tra=2.0,      # 04/11 lop 2: cho RA_XONG toi da / cho sep tra loi SAP_GUI toi da (s)
                 # 08/11 bo 1e kieu mat: dong ho bo khe (s), muc tien toi thieu (m), cho sau /chon_tuyen (s), nhip in CHO_VAT (s)
-                cho_khe=f('CHO_KHE', 30.0), tien_min=f('TIEN_MIN', 0.10), cho_chon=2.0, nhip_cho=5.0)
+                cho_khe=f('CHO_KHE', 30.0), tien_min=f('TIEN_MIN', 0.10), cho_chon=2.0, nhip_cho=5.0,
+                # 08/11 buoc 2c: truoc khi gui tuyen kia lui thang bang Nav2 BackUp (m, m/s): gia lap xe khong tu quay dau trong khe
+                lui_m=0.35, lui_v=0.10)
 
 
 # ---------- 08/11 bo 1e: kieu mat (phan thuan) ----------
@@ -274,6 +278,12 @@ def chay_mat(io, huong, tuyen_dau, cfg):
     for r in thu_tu:
         if hoi_sep_mat(io, cfg, gui_lai) == 'DUNG':
             return dung_sep(io, nhan, r, 1)
+        if gui_lai:                                      # 08/11 buoc 2c: lui ra khoi khe vua bo truoc khi /chon_tuyen tuyen kia
+            kq_lui, quang = io.lui(cfg['lui_m'], cfg['lui_v'])
+            io.bao('   LUI_RA truoc tuyen %d: /backup %.2f m, %.2f m/s => %s%s.' % (
+                r, cfg['lui_m'], cfg['lui_v'], kq_lui, '' if quang is None else ' (xe lui %.2f m)' % quang))
+            if kq_lui == 'DUNG':
+                return dung_sep(io, nhan, r, 1)
         gui_lai = True
         p = io.pose()
         if p is None:
@@ -551,7 +561,7 @@ try:
     from action_msgs.msg import GoalStatus
     from geometry_msgs.msg import PoseStamped
     from nav_msgs.msg import OccupancyGrid, Path
-    from nav2_msgs.action import FollowPath, NavigateToPose
+    from nav2_msgs.action import BackUp, FollowPath, NavigateToPose
     from rcl_interfaces.msg import Log
     from std_msgs.msg import String
     import tf2_ros
@@ -588,6 +598,7 @@ if rclpy is not None:
                 self.pub_chon = self.create_publisher(String, '/chon_tuyen', QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE))
                 self.create_subscription(Path, '/plan', self._on_plan, QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE))
                 self.ac_nav = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+                self.ac_lui = ActionClient(self, BackUp, 'backup')      # 08/11 buoc 2c: behavior_server
                 self.fb, self.plan_cuoi = None, []
                 self.tep_kinh_nghiem = os.path.expanduser('~/kinh_nghiem.csv')
                 self.thu_muc_chup = os.path.expanduser('~/chup')
@@ -812,6 +823,41 @@ if rclpy is not None:
             self.goal = fut.result()
             self.goal.get_result_async().add_done_callback(self._on_result)
             return True
+
+        def lui(self, m, v):
+            """08/11 buoc 2c: Nav2 BackUp m met o v m/s. Tra (ket qua, quang xe lui theo tf | None). Sep DUNG giua chung => huy, 'DUNG'."""
+            if not self.ac_lui.wait_for_server(timeout_sec=5.0):
+                self.bao('   khong thay may chu /backup (behavior_server)')
+                return 'TU_CHOI', None
+            p0 = self.pose()
+            g = BackUp.Goal()
+            g.target.x, g.speed = float(m), float(v)
+            han = m / v * 2.0 + 5.0
+            g.time_allowance.sec = int(math.ceil(han))
+            self.goal, self.kq = None, None
+            fut = self.ac_lui.send_goal_async(g)
+            t_het = time.monotonic() + 5.0
+            while not fut.done() and time.monotonic() < t_het:
+                self.ngu(0.05)
+            if not fut.done() or not fut.result().accepted:
+                return 'TU_CHOI', None
+            self.goal = fut.result()
+            self.goal.get_result_async().add_done_callback(self._on_result)
+            t_het = time.monotonic() + han + 5.0
+            kq = None
+            while kq is None:
+                kq = self.kq
+                lenh = self.lenh_sep()
+                if kq is None and lenh and lenh[0] == 'DUNG':
+                    self.huy()
+                    kq = 'DUNG'
+                elif kq is None and time.monotonic() > t_het:
+                    self.huy()
+                    kq = 'QUA_GIO'
+                if kq is None:
+                    self.ngu(0.1)
+            p1 = self.pose()
+            return kq, (None if p0 is None or p1 is None else math.hypot(p1[0] - p0[0], p1[1] - p0[1]))
 
         def ghi_kinh_nghiem(self, x, y, huong, tuyen, ly_do):
             ghi_kinh_nghiem(self.tep_kinh_nghiem, time.strftime('%Y-%m-%d %H:%M:%S'), x, y, huong, tuyen, ly_do)

@@ -1089,6 +1089,18 @@ class MatLai(Nen):
         self.assertIn("'node_names': ['map_server'] + lifecycle_nodes + ['collision_monitor']", launch)
         self.assertIn('map_topic: /map_tinh', pm)
         self.assertIn('map_topic: /lop_huong_dan', pm)
+        # 08/11 buoc 2c: gui_duong goi /backup (behavior_server) => lenh lui qua velocity_smoother -> collision_monitor nhu controller
+        import re as _re
+        bs = launch[launch.index("executable='behavior_server'"):]
+        bs = bs[:bs.index('Node(')]
+        self.assertIn("remappings=remappings + [('cmd_vel', 'cmd_vel_nav_raw')]", bs)
+        self.assertIn('''ra_smoother = PythonExpression(["'cmd_vel_nav_tho' if '", mat_lai, "'.lower() in ('true', '1') else 'cmd_vel_nav'"])''', launch)
+        self.assertIn('behavior_plugins: ["spin", "backup", "wait"]', pm)
+        mv = _re.search(r'^velocity_smoother:(?:\n .*)*?\n +min_velocity: \[([-0-9.]+),', pm, _re.M)
+        self.assertTrue(mv and float(mv.group(1)) <= -0.10, 'velocity_smoother min_velocity x phai <= -0.10 cho /backup 0.10 m/s')
+        G = V.nap(C, 'gui_duong')
+        self.assertIn("ActionClient(self, BackUp, 'backup')", doc('gui_duong.py'))
+        self.assertEqual((G.cau_hinh({})['lui_m'], G.cau_hinh({})['lui_v']), (0.35, 0.10))
 
     def test_cau_noi_env_muc_b(self):
         self.assertIs(C.env_muc_b({}), C.ENV_MUC_B)                                      # khong MAT_LAI: nhu cu

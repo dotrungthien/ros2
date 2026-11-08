@@ -165,7 +165,8 @@ bool_ok() { case "$2" in true|false) ;; *) echo "LOI: $1='$2' (chi true hoac fal
 SEP_RA_LENH="${SEP_RA_LENH:-false}"; SEP_RA_THOAT="${SEP_RA_THOAT:-false}"; PHU_LAI_PHAT_LENH="${PHU_LAI_PHAT_LENH:-false}"
 bool_ok SEP_RA_LENH "$SEP_RA_LENH"; bool_ok SEP_RA_THOAT "$SEP_RA_THOAT"; bool_ok PHU_LAI_PHAT_LENH "$PHU_LAI_PHAT_LENH"
 # 08/11 bo 1e buoc 2g: MAT_LAI=true => /cmd_vel_avoid (twist_mux 60) danh cho behavior_server (BackUp); phu lai phai chi nhin
-if [ "${MAT_LAI:-false}" = "true" ] && [ "$PHU_LAI_PHAT_LENH" = "true" ]; then echo "LOI: MAT_LAI=true thi PHU_LAI_PHAT_LENH phai false (/cmd_vel_avoid chi cho behavior_server)"; exit 1; fi
+# 09/11 buoc 3 #8: thay vi dung (LOI) thi EP PHU_LAI_PHAT_LENH=false va in canh bao
+if [ "${MAT_LAI:-false}" = "true" ] && [ "$PHU_LAI_PHAT_LENH" = "true" ]; then echo "CANH BAO: MAT_LAI=true => ep PHU_LAI_PHAT_LENH=false (/cmd_vel_avoid chi cho behavior_server)"; PHU_LAI_PHAT_LENH=false; fi
 
 # ---------- chinh gio ----------
 if [ -n "$1" ]; then

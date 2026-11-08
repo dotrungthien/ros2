@@ -36,9 +36,11 @@ sed "s#/home/project1/#$XS/#g" "$XS/nav2_params_cho.yaml" > "$TAM/nav2.yaml"
 # 08/11 bo 1e: MAT_LAI=true => nav2_params_mat.yaml (bt_mat, collision_monitor, map_server /map_tinh, lop_huong_dan) va tep
 # launch CUA KHO (mat_lai:=true; ban da cai co the cu). ~/goc_dang_chay ghi de nhu bat_xe.sh. Mac dinh (false) y nhu cu.
 MAT_LAI="${MAT_LAI:-false}"
+NAV_MAT="${NAV_MAT:-nav2_params_mat.yaml}"   # 08/11 buoc 2e: tep tham so kieu mat (vd nav2_params_mat_rpp.yaml)
 if [ "$MAT_LAI" = "true" ]; then
   sed -e "s#/home/project1/map_xuong_v3.yaml#$XS/du_lieu_0111/map_xuong_v3.yaml#g" -e "s#/home/project1/#$XS/#g" \
-    "$XS/nav2_params_mat.yaml" > "$TAM/nav2.yaml"
+    "$XS/$NAV_MAT" > "$TAM/nav2.yaml"
+  echo "NAV_MAT=$NAV_MAT"
   export LOP_HUONG_DAN_PY="$XS/lop_huong_dan.py" LOP_HUONG_DAN_YAML="$XS/du_lieu_0111/map_xuong_v3.yaml"
   echo mat > ~/goc_dang_chay
 else

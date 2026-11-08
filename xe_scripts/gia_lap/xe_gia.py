@@ -48,15 +48,17 @@ TEP_VET = '/tmp/gia_lap/vet_that.csv'     # 10 Hz: that va tin
 
 
 def doc_ong(path):
-    """(x, y) cua ong trong ~/ong_gia; None neu khong co tep. Tep hong (khong phai 2 so) => ValueError."""
+    """[(x, y), ...] cac ong trong ~/ong_gia ("x y", 08/11 bo 1e: them "x1 y1 x2 y2 ..." = nhieu ong); None neu khong co tep.
+    Tep hong (so chan so, khong rong) => ValueError."""
     try:
         with open(path) as f:
             o = f.read().split()
     except FileNotFoundError:
         return None
-    if len(o) != 2:
-        raise ValueError('~/ong_gia can "x y", co %r' % o)
-    return float(o[0]), float(o[1])
+    if not o or len(o) % 2:
+        raise ValueError('~/ong_gia can "x y" (hoac nhieu cap), co %r' % o)
+    v = [float(t) for t in o]
+    return list(zip(v[0::2], v[1::2]))
 
 
 def tia_cat_tron(lx, ly, goc, cx, cy, r):
@@ -228,15 +230,15 @@ class XeGia(Node):
                 self.get_logger().error(str(e))
                 self.ong_loi = str(e)
             ong = None
-        if ong is not None:
-            rr = np.minimum(rr, tia_cat_tron(lx, ly, a[:, 0], ong[0], ong[1], R_ONG))
+        for cx, cy in ong or ():
+            rr = np.minimum(rr, tia_cat_tron(lx, ly, a[:, 0], cx, cy, R_ONG))
         m.ranges = rr.astype(np.float32).tolist()
         self.pub.publish(m)
         self.d_min = min(self.d_min, self.cach_o_chiem())
-        if ong is not None:
-            than, mui = cach_ong(self.x, self.y, self.th, ong[0], ong[1], R_ONG)
+        if ong:                                    # nhieu ong: ghi ong gan THAN xe nhat (sap theo than, roi mui)
+            than, mui, cx, cy = min(cach_ong(self.x, self.y, self.th, cx, cy, R_ONG) + (cx, cy) for cx, cy in ong)
             with open(TEP_ONG_CSV, 'a') as f:
-                f.write('%.3f,%.3f,%.3f,%.4f,%.4f,%.2f,%.1f,%.1f\n' % (time.time(), ong[0], ong[1], self.x, self.y,
+                f.write('%.3f,%.3f,%.3f,%.4f,%.4f,%.2f,%.1f,%.1f\n' % (time.time(), cx, cy, self.x, self.y,
                                                                      math.degrees(self.th), than * 100, mui * 100))
 
     def theo_doi(self):

@@ -114,7 +114,7 @@ controller_server:
     FollowPath:
       plugin: "nav2_rotation_shim_controller::RotationShimController"
       primary_controller: "dwb_core::DWBLocalPlanner"
-      angular_dist_threshold: 1.57
+      angular_dist_threshold: 0.5      # 08/11 buoc 2c: 1.57 -> 0.5 (gia lap: quay dau trong khe duoi, tuyen 2 xe chi xoay, v = 0)
       forward_sampling_distance: 0.5
       rotate_to_heading_angular_vel: 0.6
       max_angular_accel: 3.2

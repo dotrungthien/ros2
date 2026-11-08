@@ -768,6 +768,266 @@ def test_30_lop2_ra_tien_cho_ra_xong_roi_moi_gui():
     assert (chu, ly) == ('RA_TIEN', '12345 777') and tra == dict(chu='RA_TIEN', ma_luot=12345, ma=777)
     assert 'RA_TIEN' in G.PHU_LAI_BAN and 'RA_TIEN' in S.DANG_LAM                # ten trang thai phu lai luc tien (cu, khong doi)
 
+# ---------------- 08/11 bo 1e: kieu mat (chay_mat, DongHo, don_sau_chuyen) ----------------
+class IOMat:
+    """IO gia kieu mat. kich: danh sach kich ban cho tung lan gui navigate_to_pose: dict(
+      ket=(ket_qua, t_ket) | None (khong tu ket thuc), fb=lambda t: (distance_remaining, recoveries) | None, pose=lambda t: (x, y, yaw))."""
+
+    def __init__(self, kich, pose=(0.0, 0.0, 0.0), lenh=None, ban=BAN, kiem_pose=True):
+        self.t, self.p0, self.kich, self.b = 0.0, pose, list(kich), ban
+        self.lenh = lenh or (lambda t: None)
+        self.kiem_pose = kiem_pose
+        self.cau, self.rows, self.chon, self.kn, self.chup_ds, self.log_ds = [], [], [], [], [], []
+        self.dang, self.t_gui, self.da_huy = None, None, 0
+
+    def now(self):
+        return self.t
+
+    def ngu(self, s):
+        self.t += s
+
+    def bao(self, c):
+        self.cau.append(c)
+
+    def ghi(self, *a):
+        self.rows.append([str(x) for x in a])
+
+    def _pose_luc(self):
+        if self.dang is not None:
+            return self.dang['pose'](self.t - self.t_gui)
+        return self.p0
+
+    def cho_san_sang(self):
+        return (self._pose_luc() if self.kiem_pose else None), self.b
+
+    def pose(self):
+        return self._pose_luc()
+
+    def lenh_sep(self):
+        return self.lenh(self.t)
+
+    def chon_tuyen(self, s):
+        self.chon.append((round(self.t, 1), s))
+
+    def gui_nav(self, dich, yaw):
+        k = self.kich.pop(0)
+        if k is None:
+            return False
+        self.dang, self.t_gui = dict(k), self.t
+        self.dang.setdefault('pose', lambda dt: self.p0)
+        return True
+
+    def feedback(self):
+        return None if self.dang is None else self.dang['fb'](self.t - self.t_gui)
+
+    def ket_qua(self):
+        if self.dang and self.dang.get('ket') and self.t - self.t_gui >= self.dang['ket'][1]:
+            kq, p = self.dang['ket'][0], self.dang['pose'](self.t - self.t_gui)
+            self.dang, self.p0 = None, p
+            return kq
+        return None
+
+    def huy(self):
+        if self.dang is not None:
+            self.p0 = self.dang['pose'](self.t - self.t_gui)
+        self.da_huy += 1
+        self.dang = None
+
+    def co_dich(self):
+        return self.dang is not None
+
+    def huy_luot(self):
+        pass
+
+    def huy_khi_ngat(self):
+        if self.dang is None:
+            return 'khong_co_dich'
+        self.huy()
+        return 'ok'
+
+    def ghi_kinh_nghiem(self, x, y, huong, tuyen, ly):
+        self.kn.append((round(x, 2), round(y, 2), huong, tuyen, ly))
+
+    def chup(self, huong, ly):
+        self.chup_ds.append((huong, ly))
+        return '/tmp/chup_gia.txt'
+
+    def noi_log(self, huong, ma):
+        self.log_ds.append((huong, ma, list(self.cau)))
+
+
+TOI_B = lambda dt: (1.60, 0.82, 0.0)
+DUNG_A = lambda dt: (0.0, 0.0, 0.0)
+
+
+def test_34_mat_doc_goc_hai_kieu():
+    import tempfile
+    d = tempfile.mkdtemp()
+    p = os.path.join(d, 'goc_dang_chay')
+    assert G.doc_goc(p) == 'cu'                                    # khong co tep => kieu cu
+    for nd, mong in (('mat\n', 'mat'), ('cu\n', 'cu'), ('mat_lai\n', 'cu'), ('', 'cu'), ('  mat  \n', 'mat')):
+        with open(p, 'w') as f:
+            f.write(nd)
+        assert G.doc_goc(p) == mong, (nd, G.doc_goc(p))
+    assert G.chay_co_ngat.__defaults__[-1] is None                 # mac dinh chay_fn = None => chay() kieu cu y het
+
+
+def test_35_mat_toi_noi_lan_dau_va_chon_tuyen():
+    io = IOMat([dict(ket=('SUCCEEDED', 20.0), fb=lambda dt: (max(0.05, 1.8 - 0.09 * dt), 0), pose=lambda dt: TOI_B(dt) if dt >= 20 else (0.05 * dt, 0.0, 0.0))])
+    ma = G.chay_mat(io, 'di_B', 1, CFG)
+    assert ma == 0, io.cau
+    assert [s for _, s in io.chon] == ['0', '1 0.000 0.000'], io.chon        # "0" o DAU chuyen, roi tuyen 1 tai vi tri xe
+    assert io.chon[1][0] - io.chon[0][0] >= CFG['cho_chon']                  # KIEM sau khi cho 2 s
+    assert io.cau[0].startswith('-- tuyen 1, lan 1/1: navigate_to_pose tu (0.00; 0.00) toi (1.60; 0.82)'), io.cau
+    assert CUA(io.rows) == ['KIEM_DAT', 'SUCCEEDED', 'DEN_NOI'] and io.cau[-1].startswith('DEN_NOI: di_B xong theo tuyen 1')
+    assert not any(c.startswith('CHO_VAT') for c in io.cau) and io.kn == [] and io.chup_ds == []
+
+
+def test_36_mat_dong_ho_30s_bo_khe_roi_tuyen_kia():
+    ket_khe = (0.70, 0.80, 0.0)
+    lenh = lambda t: ('CHO', 'ABORT_NHANH 1s truoc') if t < 200 else None       # sep con bao CHO vi khe vua bi chan
+    io = IOMat([dict(ket=None, fb=lambda dt: (1.20, 0), pose=lambda dt: ket_khe),
+                dict(ket=('SUCCEEDED', 25.0), fb=lambda dt: (max(0.05, 1.5 - 0.06 * dt), 0), pose=lambda dt: TOI_B(dt) if dt >= 25 else ket_khe)],
+               lenh=lambda t: lenh(t) if t > 3 else None)
+    ma = G.chay_mat(io, 'di_B', 1, CFG)
+    assert ma == 0, io.cau
+    cho = [c for c in io.cau if c.startswith('CHO_VAT:')]
+    assert [c.split()[1] for c in cho] == ['5/30', '10/30', '15/30', '20/30', '25/30'], cho
+    assert any(c.startswith('   khong den duoc (CHO_VAT_30s, cach dich ') for c in io.cau), io.cau
+    assert io.kn == [(0.7, 0.8, 'di_B', 1, 'CHO_VAT_30s')] and io.chup_ds == [('di_B', 'bo khe tuyen 1 (CHO_VAT_30s)')]
+    assert '   sep bao CHO (ABORT_NHANH 1s truoc): bo qua (khe vua bo).' in io.cau                 # gui lai: bo qua ABORT_NHANH
+    assert [s.split()[0] for _, s in io.chon] == ['0', '1', '2'] and io.da_huy == 1
+    assert CUA(io.rows) == ['KIEM_DAT', 'KHONG_DAT', 'SUCCEEDED', 'DEN_NOI']
+    assert '== Tuyen 1 hong. ==' in io.cau
+
+
+def test_37_mat_dong_ho_tien_dat_lai_va_DI_TIEP():
+    # giam nhe 0,05 < TIEN_MIN khong tinh; dung 16 s (moc 1,80 -> can <= 1,70 o dt 16: in CHO_VAT 5, 10, 15) roi tien lai: DI_TIEP
+    def fb(dt):
+        if dt < 3:
+            return (1.80, 0)
+        if dt < 15:
+            return (1.75, 0)                                        # giam 0,05 < TIEN_MIN: van dung
+        return (max(0.05, 1.75 - 0.05 * (dt - 15)), 0)
+    io = IOMat([dict(ket=('SUCCEEDED', 60.0), fb=fb, pose=lambda dt: TOI_B(dt) if dt >= 60 else (0.0, 0.0, 0.0))])
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 0, io.cau
+    cho = [c.split()[1] for c in io.cau if c.startswith('CHO_VAT:')]
+    assert cho[:3] == ['5/30', '10/30', '15/30'] and '20/30' not in cho[:4], cho
+    i_tiep = io.cau.index('   DI_TIEP: xe tien lai.')
+    assert io.cau[i_tiep - 1].startswith('CHO_VAT: 15/30') and io.kn == [] and io.da_huy == 0
+
+
+def test_38_mat_dong_ho_bo_so_0_nhay_dai_va_tf():
+    T = 100.0
+    dh = G.DongHo(0.0, 30.0, 0.10)
+    assert dh.cap_nhat(1.0, None, None)[0] == 'CHUA'
+    assert dh.cap_nhat(2.0, 1.0, 0.0) == ('DI', None, 0.0)           # feedback dau (0 = chua co duong): moc bat dau, bo so 0
+    assert dh.cap_nhat(10.0, 1.0, 1.5)[0] == 'DI'                    # fb dau tien khac 0 lam moc
+    assert dh.cap_nhat(12.0, 1.0, 2.5)[0] == 'DI'                    # tinh lai duong dai hon: khong lui moc
+    assert dh.cap_nhat(14.0, 1.0, 1.45)[0] == 'DI'                   # giam 0,05 so voi moc 1,5: chua tien
+    assert dh.cap_nhat(16.0, 0.89, 1.45)[0] == 'TIEN'                # tf giam 0,11: tien (mot trong hai la du)
+    st = dh.cap_nhat(16.0 + 29.9, 0.89, 1.45)
+    assert st[0] == 'DI' and abs(st[2] - 29.9) < 1e-9
+    assert dh.cap_nhat(46.0, 0.89, 1.45) == ('BO_KHE', 'CHO_VAT_30s', 30.0)
+    dh2 = G.DongHo(T, 30.0, 0.10)                                     # khong co feedback 30 s tu luc gui => bo khe
+    assert dh2.cap_nhat(T + 29.0, 1.0, None)[0] == 'CHUA'
+    assert dh2.cap_nhat(T + 30.0, 1.0, None) == ('BO_KHE', 'KHONG_FEEDBACK', 30.0)
+
+
+def test_39_mat_khong_feedback_va_recoveries():
+    io = IOMat([dict(ket=None, fb=lambda dt: None),
+                dict(ket=('ABORTED', 40.0), fb=lambda dt: (1.4 - 0.2 * min(dt, 5), 1 if dt > 10 else 0) if dt < 12 else (0.4, 3))])
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 1, io.cau
+    assert any(c.startswith('   khong den duoc (KHONG_FEEDBACK') for c in io.cau)
+    assert io.kn[0][4] == 'KHONG_FEEDBACK'
+    rec = [c for c in io.cau if 'number_of_recoveries' in c]
+    assert rec == ['   Nav2 hoi phuc: number_of_recoveries = 1.', '   Nav2 hoi phuc: number_of_recoveries = 3.'], rec
+    assert io.cau[-1].startswith('HET_DUONG') and CUA(io.rows)[-1] == 'HET_DUONG'
+
+
+def test_40_mat_don_sau_chuyen_moi_loi_ra_24_o():
+    """6 loi ra (0, 1, 3, 4, 5, 130) x 4 viec don (mask 0, chup, log noi, CSV) = 24 o."""
+    ok_ket = dict(ket=('SUCCEEDED', 5.0), fb=lambda dt: (1.0 - 0.15 * dt, 0), pose=lambda dt: TOI_B(dt) if dt >= 5 else (0.0, 0.0, 0.0))
+    hong = lambda: dict(ket=('ABORTED', 5.0), fb=lambda dt: (1.0, 0))
+
+    class Ngat(IOMat):
+        def __init__(self, loi, *a, **k):
+            super().__init__(*a, **k)
+            self.loi = loi
+
+        def ngu(self, s):
+            super().ngu(s)
+            if self.dang is not None and self.t - self.t_gui > 3:
+                raise self.loi
+    ca = {0: IOMat([ok_ket]), 1: IOMat([hong(), hong()]), 3: IOMat([], kiem_pose=False),
+          4: IOMat([dict(ket=None, fb=lambda dt: (1.0, 0))], lenh=lambda t: ('DUNG', 'x') if t > 8 else None),
+          5: Ngat(RuntimeError('loi gia'), [dict(ket=None, fb=lambda dt: (1.0, 0))]),
+          130: Ngat(KeyboardInterrupt(), [dict(ket=None, fb=lambda dt: (1.0, 0))])}
+    csv_cuoi = {0: 'DEN_NOI', 1: 'HET_DUONG', 3: 'SAI_VI_TRI', 4: 'DUNG_SEP', 5: 'LOI_GUI_DUONG', 130: 'NGAT'}
+    bang = []
+    for mong, io in ca.items():
+        ma = G.chay_co_ngat(io, 'di_B', 1, CFG, da_ngat=lambda: False, chay_fn=G.chay_mat)
+        assert ma == mong, (mong, ma, io.cau)
+        don = dict(G.don_sau_chuyen(io, ma, 'di_B'))
+        mask0 = io.chon[-1][1] == '0' and don['mask0'] == 'ok'
+        chup = (don['chup'] == 'ok' and io.chup_ds[-1] == ('di_B', 'ket thuc ma %d' % ma)) if ma else (don['chup'] == 'khong can')
+        log = don['log'] == 'ok' and io.log_ds[-1][:2] == ('di_B', ma)
+        csv = CUA(io.rows)[-1] == csv_cuoi[mong]
+        bang.append((mong, mask0, chup, log, csv))
+        if mong in (5, 130):
+            assert io.da_huy >= 1                                    # dich dang chay da huy
+    assert all(all(o[1:]) for o in bang), bang
+    assert len(bang) * 4 == 24
+
+
+def test_41_mat_don_loi_mot_viec_khong_chan_viec_sau():
+    io = IOMat([])
+
+    def hong(s):
+        raise RuntimeError('context da tat')
+    io.chon_tuyen = hong
+    don = dict(G.don_sau_chuyen(io, 130, 've_A'))
+    assert don['mask0'].startswith('LOI RuntimeError') and don['chup'] == 'ok' and don['log'] == 'ok', don
+
+
+def test_42_mat_kinh_nghiem_ghi_doc_khop_lop_huong_dan():
+    import tempfile
+    import lop_huong_dan as LH
+    p = os.path.join(tempfile.mkdtemp(), 'kinh_nghiem.csv')
+    for k in range(3):
+        G.ghi_kinh_nghiem(p, '2026-11-08 20:0%d:00' % k, 0.70 + 0.01 * k, 0.80, 'di_B', 1, 'CHO_VAT_30s')
+    with open(p) as f:
+        dong = f.read().splitlines()
+    assert dong[0] == G.COT_KINH_NGHIEM == 'gio,x,y,huong,tuyen,ly_do' and len(dong) == 4
+    with open(p, 'a') as f:
+        f.write('hong,khong,phai,so\n,,,\n')
+    assert LH.doc_kinh_nghiem(p) == [(0.70, 0.80), (0.71, 0.80), (0.72, 0.80)]
+
+
+def test_43_mat_noi_dung_chup():
+    t = G.noi_dung_chup('ket thuc ma 1', '2026-11-08 20:00:00', (0.5, 0.6, 0.0), (1.2, 2), [(0.0, 0.0), (0.5, 0.6)],
+                        (3, 2, 0.05, -0.1, -0.1, [0, 49, 50, 100, 0, -1]))
+    d = t.splitlines()
+    assert d[1] == 'pose 0.500 0.600 0.0' and d[2] == 'feedback distance_remaining 1.200 number_of_recoveries 2'
+    assert d[3] == 'plan 2 diem' and d[6].endswith('2 o >= 50 (x y gia_tri)') and d[7:] == ['0.025 -0.075 50', '-0.075 -0.025 100']
+    assert 'feedback chua co' in G.noi_dung_chup('x', 'g', None, None, [], None)
+
+
+def test_44_mat_dong_log_khop_cau_noi_va_trang():
+    import trang_v10 as V
+    import re as _re
+    src = open(os.path.join(DAY, 'cau_noi_xe.py')).read()
+    dong_chuyen = _re.compile(_re.search(r'DONG_CHUYEN = re\.compile\(r"(.+?)"\)', src).group(1))
+    for c in ('DEN_NOI: di_B xong theo tuyen 2 (cach dich 0.10 m).', 'HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.',
+              'DUNG_SEP: sep bao dung. Xe dung yen, khong gui them lenh.', 'DUNG: SAI_VI_TRI (x). KHONG gui lenh nao.'):
+        assert dong_chuyen.match(c), c                                 # chu ket thuc kieu mat = kieu cu (cau_noi_xe.DONG_CHUYEN)
+    assert V.dong_chuyen_cuoi(['KIEU gui_duong: mat (~/goc_dang_chay)']) is None   # dong dau: trang van "경로 계산 중"
+    assert V.dong_chuyen_cuoi(['-- tuyen 2, lan 1/1: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)']) == 'DI'
+    assert V.lan_thu(['-- tuyen 2, lan 1/1: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)']) == (2, 1, 1)
+    assert V.dong_chuyen_cuoi(['-- tuyen 1, lan 1/1: x', 'CHO_VAT: 5/30 s (cach dich 1.20 m)']) == 'CHO'
+    assert V.dong_chuyen_cuoi(['CHO_VAT: 10/30 s', '   DI_TIEP: xe tien lai.']) == 'DI'
+    assert V.dong_chuyen_cuoi(['   khong den duoc (CHO_VAT_30s, cach dich 0.95 m).']) == 'CHO'
+
 if __name__ == '__main__':
     import sys
     import traceback

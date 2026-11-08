@@ -30,6 +30,18 @@ source ~/ros2_ws/install/setup.bash
 
 sed "s#/home/project1/#$XS/du_lieu_0111/#g" "$XS/du_lieu_0111/slam_dinh_vi_xuong.yaml" > "$TAM/slam.yaml"
 sed "s#/home/project1/#$XS/#g" "$XS/nav2_params_cho.yaml" > "$TAM/nav2.yaml"
+# 08/11 bo 1e: MAT_LAI=true => nav2_params_mat.yaml (bt_mat, collision_monitor, map_server /map_tinh, lop_huong_dan) va tep
+# launch CUA KHO (mat_lai:=true; ban da cai co the cu). ~/goc_dang_chay ghi de nhu bat_xe.sh. Mac dinh (false) y nhu cu.
+MAT_LAI="${MAT_LAI:-false}"
+if [ "$MAT_LAI" = "true" ]; then
+  sed -e "s#/home/project1/map_xuong_v3.yaml#$XS/du_lieu_0111/map_xuong_v3.yaml#g" -e "s#/home/project1/#$XS/#g" \
+    "$XS/nav2_params_mat.yaml" > "$TAM/nav2.yaml"
+  export LOP_HUONG_DAN_PY="$XS/lop_huong_dan.py" LOP_HUONG_DAN_YAML="$XS/du_lieu_0111/map_xuong_v3.yaml"
+  echo mat > ~/goc_dang_chay
+else
+  echo cu > ~/goc_dang_chay
+fi
+echo "MAT_LAI=$MAT_LAI ~/goc_dang_chay=$(cat ~/goc_dang_chay)"
 sed -i -E "s/^( *inflation_radius:) .*/\1 $INFLATION/" "$TAM/nav2.yaml"
 [ -n "$ROTATE_MIN" ] && sed -i -E "s/^( *rotate_to_heading_min_angle:) .*/\1 $ROTATE_MIN/" "$TAM/nav2.yaml"
 echo "rotate_to_heading_min_angle dung: $(sed -n 's/^ *rotate_to_heading_min_angle: *\([^ ]*\).*/\1/p' "$TAM/nav2.yaml") (ROTATE_MIN=${ROTATE_MIN:-khong dat, giu yaml})"
@@ -73,8 +85,13 @@ setsid nohup python3 ~/ros2_ws/install/my_bot/lib/my_bot/odom_tu_lenh.py --ros-a
   -p yaw_nguon:=gyro -p mo_hinh_san:=true > "$TAM/log_odom.txt" 2>&1 < /dev/null &
 echo "odom_tu_lenh (yaw_nguon=gyro) PID $!"
 sleep 5
+if [ "$MAT_LAI" = "true" ]; then
+  setsid nohup ros2 launch "$XS/../dev_ws/src/my_bot/launch/navigation_my_bot.launch.py" params_file:="$TAM/nav2.yaml" mat_lai:=true \
+    > "$TAM/log_nav.txt" 2>&1 < /dev/null &
+else
 setsid nohup ros2 launch my_bot navigation_my_bot.launch.py params_file:="$TAM/nav2.yaml" \
   > "$TAM/log_nav.txt" 2>&1 < /dev/null &
+fi
 for i in $(seq "$T_CHO"); do
   if grep -q "Managed nodes are active" "$TAM/log_nav.txt"; then
     grep -h "Managed nodes are active" "$TAM/log_nav.txt"
@@ -89,9 +106,10 @@ for i in $(seq "$T_CHO"); do
 done
 # ---- sep va phu lai, nhu bat_xe.sh B2b (chay tu ban trong kho; ghi ~/sep_* nhu tren xe) ----
 echo "== bat sep (ra_lenh=$SEP_RA_LENH ra_thoat=$SEP_RA_THOAT) va phu lai (phat_lenh=$PHU_LAI_PHAT_LENH) =="
-setsid nohup python3 "$XS/sep.py" --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" \
+NGHE_FP=""; [ "$MAT_LAI" = "true" ] && NGHE_FP="-p nghe_follow_path:=false"   # 08/11 bo 1e, nhu bat_xe.sh
+setsid nohup python3 "$XS/sep.py" --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" $NGHE_FP \
   > "$TAM/log_sep.txt" 2>&1 < /dev/null &
-setsid nohup python3 "$XS/lai_xe_lidar.py" --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" -p sep_ra_thoat:="$SEP_RA_THOAT" \
+setsid nohup python3 "$XS/lai_xe_lidar.py" --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" -p sep_ra_thoat:="$SEP_RA_THOAT" $NGHE_FP \
   > "$TAM/log_phu_lai.txt" 2>&1 < /dev/null &
 sleep 5
 n=0

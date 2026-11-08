@@ -106,9 +106,10 @@ def dong_chuyen_cuoi(dong):
         s = l.strip()
         if 'lop 2: sep bao RA_' in s:
             return 'THOAT'
-        if 'sep bao CHO' in s or s.startswith('khong den duoc') or 'khong den duoc (' in s:
+        # 08/11 bo 1e: gui_duong kieu mat in 'CHO_VAT: n/30 s' khi dung yen, 'DI_TIEP: ...' khi tien lai
+        if 'sep bao CHO' in s or s.startswith('khong den duoc') or 'khong den duoc (' in s or s.startswith('CHO_VAT:'):
             return 'CHO'
-        if s.startswith('-- tuyen') or 'RA_XONG' in s or 'RA_HET_GIO' in s or 'tinh lai duong' in s:
+        if s.startswith('-- tuyen') or 'RA_XONG' in s or 'RA_HET_GIO' in s or 'tinh lai duong' in s or s.startswith('DI_TIEP:'):
             return 'DI'
     return None
 
@@ -128,9 +129,11 @@ def thoat_moi(dong, t_boot):
 DONG_DA_HUY = re.compile(r'^LOI_GUI_DUONG .*; HUY_DICH ok\s*$')
 
 
-def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch):
+def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch, phu_lai_lai=True):
     """Ma trang thai /v10 tu du lieu that. link: trang_thai() cua cau noi; nut: trang_thai_nut(); sep: sep_cuoi();
-    phu_lai: phu_lai_cuoi(); chuyen_log: dong_chuyen_cuoi(); thoat: thoat_moi(). Tra (ma, ly_do)."""
+    phu_lai: phu_lai_cuoi(); chuyen_log: dong_chuyen_cuoi(); thoat: thoat_moi(). Tra (ma, ly_do).
+    08/11 bo 1e: phu_lai_lai False (lai_xe_lidar chay voi phat_lenh false, kieu mat) => KHONG dung trang thai phu lai de hien
+    탈출 / 회전 / 대기 (no khong lai)."""
     if nut['tat']['chay']:
         return 'TT_DANG_NGAT', 'bat_xe.sh tat'
     if nut['bat']['chay'] or link['link'] == 'connecting':
@@ -145,7 +148,7 @@ def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch):
     if c['chay']:
         if sep['dung_va_bao']:
             return 'TT_CAN_GIUP', 'sep DUNG_VA_BAO'
-        pl = phu_lai if phu_lai and t_epoch - phu_lai[2] <= T_PHU_LAI_MOI else None
+        pl = phu_lai if phu_lai and phu_lai_lai and t_epoch - phu_lai[2] <= T_PHU_LAI_MOI else None
         if (pl and pl[0] in PHU_LAI_THOAT) or thoat in ('THOAT', 'RA_LUI', 'RA_TIEN') or chuyen_log == 'THOAT':
             return 'TT_DANG_THOAT', pl[0] if pl and pl[0] in PHU_LAI_THOAT else (thoat or 'gui_duong lop 2')
         if pl and pl[0] in PHU_LAI_XOAY:
@@ -204,7 +207,9 @@ def trang_thai(C):
     cl = dong_chuyen_cuoi(doc_duoi(C.CFG['log_chuyen'], 65536)) if nut['chuyen']['chay'] else None
     th = thoat_moi(doc_dong_dau(tep(C, 'sep_thoat')), boot_giay())
     now = time.time()
-    ma, ly = suy_trang_thai(link, nut, sep, pl, cl, th, now)
+    # 08/11 bo 1e: phu lai chi nhin (phat_lenh false doc tu /proc) => khong lay trang thai phu lai; khong thay tien trinh => nhu cu
+    pl_lai = tien_trinh_lai().get('lai_xe_lidar.py', {}).get('phat_lenh') != 'false'
+    ma, ly = suy_trang_thai(link, nut, sep, pl, cl, th, now, pl_lai)
     m5 = bang_m5(C, ma, sep, nut)
     return {
         'ma': ma, 'ly_do': ly, 'link': link['link'], 'thieu': link['thieu'], 'chi_tiet': link['chi_tiet'],

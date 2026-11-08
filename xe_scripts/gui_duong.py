@@ -26,6 +26,19 @@ Bien moi truong: LUOT (3), CHO_HONG (30 s), TO (130 s/lan gui), TOI_SAI_SO (0,20
 Dung khan: TAT CONG TAC MOTOR. Ctrl+C / SIGTERM: ghi HUY vao ~/gui_duong_luot (phu lai dung lui lop 2),
   huy dich dang chay (in HUY_DICH_KHI_NGAT ...), ghi dong NGAT, thoat 130.
 Phan thuan (khong ROS) o nua tren, thu bang test_gui_duong.py.
+
+08/11 bo 1e "mat lai" (thiet ke ban 3, CHUA CHAY TREN XE): ~/goc_dang_chay = "mat" (bat_xe.sh MAT_LAI=true ghi) => KIEU MAT
+(chay_mat); khac => kieu cu y het 82ab5d1 (chay). Dong dau in "KIEU gui_duong: mat|cu".
+  Kieu mat: dau chuyen /chon_tuyen "0", cho 2 s; KIEM nhu cu (tf <= 1 s, o >= 98) => SAI_VI_TRI; moi tuyen MOT lan:
+  hoi sep (DUNG / CHO 10 s x 2; gui lai sau khi bo khe: bo qua CHO vi PLAN_* / ABORT_NHANH) -> /chon_tuyen "r x y" -> cho 2 s
+  -> "-- tuyen r, lan 1/1: ..." -> navigate_to_pose. Dong ho DUY NHAT (cay bt_mat.xml khong tu bo cuoc): "tien" = khoang
+  cach thang xe->dich (tf) HOAC distance_remaining (bo so 0) giam >= TIEN_MIN so voi gia tri nho nhat tai moc; bat dau tu
+  feedback dau tien; CHO_KHE s khong tien => bo khe (CHO_VAT_30s); CHO_KHE s khong co feedback => bo khe (KHONG_FEEDBACK).
+  Dung >= 5 s: in "CHO_VAT: n/30 s" moi 5 s; tien lai sau do: in "DI_TIEP"; so recoveries tang: in 1 dong.
+  Bo khe: huy dich, 1 dong ~/kinh_nghiem.csv (gio,x,y,huong,tuyen,ly_do), chup ~/chup/, "khong den duoc (CHO_VAT_30s, ...)",
+  KHONG_DAT, tuyen kia. Moi loi ra (0, 1, 3, 4, 5, 130): /chon_tuyen "0"; loi ra != 0 chup ~/chup/<HHMMSS>_<huong>.txt;
+  noi moi dong da in vao ~/log_gui_duong.txt; CSV + ma thoat nhu cu.
+  Bien moi: CHO_KHE (30 s), TIEN_MIN (0,10 m).
 """
 import math
 import os
@@ -44,7 +57,91 @@ def cau_hinh(env=os.environ):
     f = lambda k, d: float(env.get(k, d))
     return dict(luot=int(env.get('LUOT', 3)), cho_hong=f('CHO_HONG', 30.0), to=f('TO', 130.0), cho_sep=f('SEP_CHO_S', 10.0),
                 toi_sai_so=f('TOI_SAI_SO', 0.20), sep_tuoi=f('SEP_TUOI_MAX', 3.0), tf_tuoi=1.0,
-                lop2_cho=12.0, lop2_tra=2.0)      # 04/11 lop 2: cho RA_XONG toi da / cho sep tra loi SAP_GUI toi da (s)
+                lop2_cho=12.0, lop2_tra=2.0,      # 04/11 lop 2: cho RA_XONG toi da / cho sep tra loi SAP_GUI toi da (s)
+                # 08/11 bo 1e kieu mat: dong ho bo khe (s), muc tien toi thieu (m), cho sau /chon_tuyen (s), nhip in CHO_VAT (s)
+                cho_khe=f('CHO_KHE', 30.0), tien_min=f('TIEN_MIN', 0.10), cho_chon=2.0, nhip_cho=5.0)
+
+
+# ---------- 08/11 bo 1e: kieu mat (phan thuan) ----------
+TEP_GOC = os.path.expanduser('~/goc_dang_chay')
+COT_KINH_NGHIEM = 'gio,x,y,huong,tuyen,ly_do'           # lop_huong_dan.doc_kinh_nghiem doc theo ten cot
+BO_QUA_KHI_GUI_LAI = ('PLAN_', 'ABORT_NHANH')           # ly do CHO cua sep bo qua khi gui lai sau khi bo khe (sep.py:370)
+
+
+def doc_goc(path=TEP_GOC):
+    """~/goc_dang_chay (bat_xe.sh ghi MOI lan bat: 'mat' | 'cu'): 'mat' neu dong dau la mat; khac / khong co tep => 'cu'."""
+    try:
+        with open(path) as f:
+            return 'mat' if f.readline().strip() == 'mat' else 'cu'
+    except OSError:
+        return 'cu'
+
+
+def ghi_kinh_nghiem(path, gio, x, y, huong, tuyen, ly_do):
+    """Them 1 dong ~/kinh_nghiem.csv (tao kem dong dau neu chua co tep)."""
+    moi = not os.path.exists(path)
+    with open(path, 'a') as f:
+        if moi:
+            f.write(COT_KINH_NGHIEM + '\n')
+        f.write('%s,%.3f,%.3f,%s,%s,%s\n' % (gio, x, y, huong, tuyen, ly_do))
+
+
+def noi_dung_chup(ly, gio, pose, fb, plan, cm):
+    """Tep chup ~/chup/<HHMMSS>_<huong>.txt (bai 514): pose, feedback cuoi, /plan cuoi, costmap toan cuc (o >= 50: x y gia_tri).
+    pose (x, y, yaw) | None; fb (distance_remaining, number_of_recoveries) | None; plan [(x, y)]; cm (w, h, res, ox, oy, data) | None."""
+    d = ['# chup gui_duong kieu mat %s: %s' % (gio, ly),
+         'pose %s' % ('khong co tf moi' if pose is None else '%.3f %.3f %.1f' % (pose[0], pose[1], math.degrees(pose[2])))]
+    d.append('feedback %s' % ('chua co' if fb is None else 'distance_remaining %.3f number_of_recoveries %d' % (fb[0], fb[1])))
+    d.append('plan %d diem' % len(plan or ()))
+    d += ['%.3f %.3f' % (x, y) for x, y in (plan or ())]
+    if cm is None:
+        d.append('costmap chua co')
+    else:
+        w, h, res, ox, oy, data = cm
+        o = [(i, j, v) for j in range(h) for i in range(w) for v in (data[j * w + i],) if v >= 50]
+        d.append('costmap %dx%d o %.3f m goc (%.3f; %.3f): %d o >= 50 (x y gia_tri)' % (w, h, res, ox, oy, len(o)))
+        d += ['%.3f %.3f %d' % (ox + (i + 0.5) * res, oy + (j + 0.5) * res, v) for i, j, v in o]
+    return '\n'.join(d) + '\n'
+
+
+class DongHo:
+    """Dong ho duy nhat cua kieu mat (thiet ke ban 3 muc 3b #2). cap_nhat(t, d_tf, d_fb) -> (trang_thai, ly_do, giay_dung):
+    'CHUA' (chua co feedback), 'TIEN' (vua tien >= tien_min: dat lai moc), 'DI' (chua tien du), 'BO_KHE' (ly do CHO_VAT_30s |
+    KHONG_FEEDBACK). Moc so sanh = gia tri nho nhat luc dat moc (tf va distance_remaining rieng); dich lui / tinh lai duong dai
+    hon khong lam lui moc; distance_remaining = 0 (chua co duong) bo qua."""
+
+    def __init__(self, t_gui, cho_khe, tien_min):
+        self.t_gui, self.cho_khe, self.tien_min = t_gui, cho_khe, tien_min
+        self.t_moc, self.moc_tf, self.moc_fb = None, None, None
+
+    def cap_nhat(self, t, d_tf, d_fb):
+        if self.t_moc is None:
+            if d_fb is None:
+                da = t - self.t_gui
+                return ('BO_KHE', 'KHONG_FEEDBACK', da) if da >= self.cho_khe else ('CHUA', None, da)
+            self.t_moc = t
+        tien = False
+        if d_tf is not None:
+            if self.moc_tf is None:
+                self.moc_tf = d_tf
+            elif d_tf <= self.moc_tf - self.tien_min:
+                tien = True
+        if d_fb is not None and d_fb > 0:
+            if self.moc_fb is None:
+                self.moc_fb = d_fb
+            elif d_fb <= self.moc_fb - self.tien_min:
+                tien = True
+        if tien:
+            self.t_moc = t
+            if d_tf is not None:
+                self.moc_tf = min(self.moc_tf, d_tf)
+            if d_fb is not None and d_fb > 0:
+                self.moc_fb = min(self.moc_fb, d_fb)
+            return 'TIEN', None, 0.0
+        dung = t - self.t_moc
+        if dung >= self.cho_khe:
+            return 'BO_KHE', 'CHO_VAT_30s', dung
+        return 'DI', None, dung
 
 
 def doc_sep_lenh(dong, t_now, tuoi_max=3.0):
@@ -158,6 +255,136 @@ def chay(io, huong, tuyen_dau, cfg):
     return 1
 
 
+def chay_mat(io, huong, tuyen_dau, cfg):
+    """08/11 bo 1e: mot chuyen kieu mat (thiet ke ban 3 muc 1 + 3b). Cung CSV, cung chu log ket thuc, cung ma thoat voi chay()."""
+    nhan = '%s_day' % huong
+    thu_tu = (1, 2) if tuyen_dau == 1 else (2, 1)
+    (dx, dy), yaw_cuoi = DICH[huong]
+    t_chuyen = io.now()
+    io.chon_tuyen('0')                                   # 3b #3: bo o cam cu (kill -9 / loi ra 130, 5 cua chuyen truoc)
+    io.ngu(cfg['cho_chon'])
+    pose, ban = io.cho_san_sang()
+    if pose is None or ban is None or ban.vat(ban.o(pose[0], pose[1])):
+        ly = ('khong co %s sau 15 s' % thieu_gi(pose, ban)) if pose is None or ban is None else 'xe nam trong o do cua costmap'
+        io.bao('DUNG: SAI_VI_TRI (%s). KHONG gui lenh nao.' % ly)
+        io.ghi(nhan, '-', 1, 0, 'SAI_VI_TRI', 0)
+        return 3
+    io.ghi(nhan, thu_tu[0], 1, 0, 'KIEM_DAT', 0)
+    gui_lai = False
+    for r in thu_tu:
+        if hoi_sep_mat(io, cfg, gui_lai) == 'DUNG':
+            return dung_sep(io, nhan, r, 1)
+        gui_lai = True
+        p = io.pose()
+        if p is None:
+            p, _ = io.cho_san_sang()
+        if p is None:
+            io.bao('   tuyen %d: khong co tf moi sau 15 s => doi tuyen' % r)
+            io.ghi(nhan, r, 1, 1, 'KHONG_DAT', 0)
+            io.bao('== Tuyen %d hong. ==' % r)
+            continue
+        io.chon_tuyen('%d %.3f %.3f' % (r, p[0], p[1]))
+        io.ngu(cfg['cho_chon'])
+        t0 = io.now()
+        io.bao('-- tuyen %d, lan 1/1: navigate_to_pose tu (%.2f; %.2f) toi (%.2f; %.2f)' % (r, p[0], p[1], dx, dy))
+        kq = theo_doi_mat(io, (dx, dy), yaw_cuoi, cfg)
+        giay = int(round(io.now() - t0))
+        if kq == 'DUNG':
+            return dung_sep(io, nhan, r, 1)
+        p = io.pose()
+        lech = None if p is None else math.hypot(p[0] - dx, p[1] - dy)
+        if kq == 'SUCCEEDED' and lech is not None and lech <= cfg['toi_sai_so']:
+            io.ghi(nhan, r, 1, 1, 'SUCCEEDED', giay, '%.2f' % lech)
+            io.ghi(nhan, r, 'tong', 0, 'DEN_NOI', int(round(io.now() - t_chuyen)))
+            io.bao('DEN_NOI: %s xong theo tuyen %d (cach dich %.2f m).' % (huong, r, lech))
+            return 0
+        if kq in ('CHO_VAT_30s', 'KHONG_FEEDBACK'):        # bo khe: nho cho ket + chup bang chung
+            if p is not None:
+                io.ghi_kinh_nghiem(p[0], p[1], huong, r, kq)
+            io.chup(huong, 'bo khe tuyen %d (%s)' % (r, kq))
+        io.bao('   khong den duoc (%s%s).' % (kq, '' if lech is None else ', cach dich %.2f m' % lech))
+        io.ghi(nhan, r, 1, 1, 'KHONG_DAT', giay, '-' if lech is None else '%.2f' % lech)
+        io.bao('== Tuyen %d hong. ==' % r)
+    io.bao('HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.')
+    io.ghi(nhan, '-', 'het', 0, 'HET_DUONG', 0)
+    return 1
+
+
+def hoi_sep_mat(io, cfg, gui_lai):
+    """Kieu mat, truoc moi lan gui: DUNG => 'DUNG'; CHO => cho cho_sep s (toi da 2 lan). gui_lai (sau khi bo khe): bo qua CHO
+    vi PLAN_* / ABORT_NHANH (khe vua bi chan la chuyen da biet); van nghe ly do khac (NHAY_VI_TRI, KHONG_TIN, TF_CU, MAT_SCAN, ...).
+    Khong cho phu lai / sep giao thoat (kieu mat: phu lai chi nhin, sep ra_thoat false)."""
+    lan_cho = 0
+    while True:
+        lenh = io.lenh_sep()
+        if lenh and lenh[0] == 'DUNG':
+            return 'DUNG'
+        if lenh and lenh[0] == 'CHO' and lan_cho < 2:
+            if gui_lai and lenh[1].startswith(BO_QUA_KHI_GUI_LAI):
+                io.bao('   sep bao CHO (%s): bo qua (khe vua bo).' % lenh[1])
+                return None
+            lan_cho += 1
+            io.bao('   sep bao CHO (%s): dung yen %d s (lan %d/2).' % (lenh[1], cfg['cho_sep'], lan_cho))
+            if cho(io, cfg['cho_sep']) == 'DUNG':
+                return 'DUNG'
+            continue
+        return None
+
+
+def theo_doi_mat(io, dich, yaw_cuoi, cfg):
+    """Gui navigate_to_pose, theo doi toi khi xong. Tra 'SUCCEEDED' | 'ABORTED' | 'CANCELED' | 'TU_CHOI' | 'DUNG' |
+    'CHO_VAT_30s' | 'KHONG_FEEDBACK' (hai ly do bo khe: da huy dich)."""
+    if not io.gui_nav(dich, yaw_cuoi):
+        return 'TU_CHOI'
+    dh = DongHo(io.now(), cfg['cho_khe'], cfg['tien_min'])
+    n_rec, lan_in, da_in = 0, 0, False
+    while True:
+        kq = io.ket_qua()
+        if kq is not None:
+            return kq
+        lenh = io.lenh_sep()
+        if lenh and lenh[0] == 'DUNG':
+            io.huy()
+            return 'DUNG'
+        fb = io.feedback()
+        p = io.pose()
+        d_tf = None if p is None else math.hypot(p[0] - dich[0], p[1] - dich[1])
+        tt, ly, dung = dh.cap_nhat(io.now(), d_tf, None if fb is None else fb[0])
+        if fb is not None and fb[1] > n_rec:
+            n_rec = fb[1]
+            io.bao('   Nav2 hoi phuc: number_of_recoveries = %d.' % n_rec)
+        if tt == 'BO_KHE':
+            io.huy()
+            return ly
+        if tt == 'TIEN':
+            if da_in:
+                io.bao('   DI_TIEP: xe tien lai.')
+            lan_in, da_in = 0, False
+        elif tt == 'DI' and dung >= cfg['nhip_cho'] * (lan_in + 1):
+            lan_in = int(dung // cfg['nhip_cho'])
+            da_in = True
+            io.bao('CHO_VAT: %d/%d s%s' % (int(dung), int(cfg['cho_khe']), '' if d_tf is None else ' (cach dich %.2f m)' % d_tf))
+        io.ngu(0.1)
+
+
+def don_sau_chuyen(io, ma, huong):
+    """Kieu mat, MOI loi ra (0, 1, 3, 4, 5, 130): (1) /chon_tuyen "0"; (2) ma != 0: chup; (3) noi log; (4) CSV + ma thoat da
+    ghi trong chay_mat / chay_co_ngat. Loi o mot viec khong chan viec sau. Tra danh sach (viec, ket qua)."""
+    out = []
+    for ten, lam in (('mask0', lambda: io.chon_tuyen('0')),
+                     ('chup', (lambda: io.chup(huong, 'ket thuc ma %d' % ma)) if ma != 0 else None),
+                     ('log', lambda: io.noi_log(huong, ma))):
+        if lam is None:
+            out.append((ten, 'khong can'))
+            continue
+        try:
+            lam()
+            out.append((ten, 'ok'))
+        except Exception as e:                       # noqa: BLE001 (don dep: khong de mot loi chan viec sau)
+            out.append((ten, 'LOI %s: %s' % (e.__class__.__name__, str(e)[:80])))
+    return out
+
+
 def dung_sep(io, nhan, r, lan):
     io.huy()
     io.bao('DUNG_SEP: sep bao dung. Xe dung yen, khong gui them lenh.')
@@ -176,14 +403,15 @@ def ngat(signum, frame):
     raise KeyboardInterrupt
 
 
-def chay_co_ngat(io, huong, tuyen_dau, cfg, bo_qua_ngat=lambda: None, da_ngat=lambda: DA_NGAT[0]):
+def chay_co_ngat(io, huong, tuyen_dau, cfg, bo_qua_ngat=lambda: None, da_ngat=lambda: DA_NGAT[0], chay_fn=None):
     """chay(); bi ngat (SIGINT/SIGTERM => KeyboardInterrupt) thi huy dich dang chay, ghi dong NGAT (dong ket thuc chuyen,
     sep.py dong chuyen), tra 130. bo_qua_ngat: tat bat tin hieu lan 2 trong luc huy (main dat SIG_IGN).
     06/11 viec 121 (gia lap 03:56: SIGINT thanh RuntimeError, khong huy dich, xe di tiep 26 s): bat MOI loi (BaseException).
     Bi ngat (KeyboardInterrupt hoac co da_ngat) => nhu cu (HUY, huy dich, NGAT, 130). Loi khac => van huy dich dang chay
-    (con dich thi ghi HUY truoc), in + ghi LOI_GUI_DUONG, tra MA_LOI."""
+    (con dich thi ghi HUY truoc), in + ghi LOI_GUI_DUONG, tra MA_LOI.
+    08/11 bo 1e: chay_fn = chay_mat cho kieu mat (None = chay, kieu cu y het)."""
     try:
-        return chay(io, huong, tuyen_dau, cfg)
+        return (chay_fn or chay)(io, huong, tuyen_dau, cfg)
     except BaseException as e:             # noqa: B036 (co y: ca KeyboardInterrupt lan RuntimeError cua rclpy)
         bi_ngat = isinstance(e, KeyboardInterrupt) or da_ngat()
         bo_qua_ngat()
@@ -323,8 +551,9 @@ try:
     from action_msgs.msg import GoalStatus
     from geometry_msgs.msg import PoseStamped
     from nav_msgs.msg import OccupancyGrid, Path
-    from nav2_msgs.action import FollowPath
+    from nav2_msgs.action import FollowPath, NavigateToPose
     from rcl_interfaces.msg import Log
+    from std_msgs.msg import String
     import tf2_ros
 except ImportError:
     rclpy = None
@@ -334,9 +563,11 @@ if rclpy is not None:
     import lai_xe_lidar as L  # chi dung doc_sep_thoat
 
     class GuiDuongNode(Node):
-        def __init__(self, cfg):
+        def __init__(self, cfg, kieu='cu'):
             super().__init__('gui_duong')
             self.cfg = cfg
+            self.kieu = kieu                           # 08/11 bo 1e: 'mat' | 'cu' (doc_goc)
+            self.dong = []                             # moi dong da in (kieu mat noi vao ~/log_gui_duong.txt)
             self.tf_buf = tf2_ros.Buffer()
             self.tf_listener = tf2_ros.TransformListener(self.tf_buf, self)
             # costmap cua Nav2: KeepLast(1), TRANSIENT_LOCAL, RELIABLE => nghe cung QoS de nhan ngay ban dang giu
@@ -353,6 +584,14 @@ if rclpy is not None:
             self.tep_lenh = os.path.expanduser('~/sep_lenh')
             self.tep_thoat = os.path.expanduser('~/sep_thoat')
             self.csv = os.path.expanduser('~/ket_qua_chuyen.csv')
+            if kieu == 'mat':                          # 08/11 bo 1e: chi kieu mat moi them pub / sub / client moi
+                self.pub_chon = self.create_publisher(String, '/chon_tuyen', QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE))
+                self.create_subscription(Path, '/plan', self._on_plan, QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE))
+                self.ac_nav = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+                self.fb, self.plan_cuoi = None, []
+                self.tep_kinh_nghiem = os.path.expanduser('~/kinh_nghiem.csv')
+                self.thu_muc_chup = os.path.expanduser('~/chup')
+                self.tep_log = os.path.expanduser('~/log_gui_duong.txt')
 
         # --- nghe ---
         def _on_costmap(self, msg):
@@ -381,6 +620,7 @@ if rclpy is not None:
                 rclpy.spin_once(self, timeout_sec=min(con, 0.05))
 
         def bao(self, cau):
+            self.dong.append(cau)
             print(cau, flush=True)
 
         def ghi(self, nhan, tuyen, diem, lan, ket_qua, giay, lech='-', lech_fp='-', tuoi='-'):
@@ -451,7 +691,9 @@ if rclpy is not None:
             return ma
 
         def huy_luot(self):
-            """05/11 lop 2: bi ngat => ghi HUY vao ~/gui_duong_luot (phu lai dang lui lop 2 thi dung)."""
+            """05/11 lop 2: bi ngat => ghi HUY vao ~/gui_duong_luot (phu lai dang lui lop 2 thi dung). Kieu mat: khong dung lop 2."""
+            if self.kieu == 'mat':
+                return
             try:
                 with open(self.tep_luot + '.tam', 'w') as f:
                     f.write(dong_huy(time.clock_gettime(time.CLOCK_BOOTTIME)) + '\n')
@@ -524,6 +766,77 @@ if rclpy is not None:
             """06/11 viec 121: con dich /follow_path dang chay (da gui, chua co ket qua)."""
             return self.goal is not None and self.kq is None
 
+        # --- 08/11 bo 1e: io kieu mat ---
+        def chon_tuyen(self, s):
+            # 08/11 buoc 2 (gia lap): publisher vua tao phat ngay thi DDS chua ghep voi lop_huong_dan => mat "0" dau chuyen.
+            # Cho toi da 3 s cho co nguoi nghe roi moi phat; van khong co thi in canh bao (lop_huong_dan chua chay?).
+            t_het = time.monotonic() + 3.0
+            while self.pub_chon.get_subscription_count() == 0 and time.monotonic() < t_het:
+                self.ngu(0.05)
+            if self.pub_chon.get_subscription_count() == 0:
+                self.bao('   CANH BAO: /chon_tuyen chua co ai nghe (lop_huong_dan?): "%s" co the mat' % s)
+            m = String()
+            m.data = s
+            self.pub_chon.publish(m)
+
+        def _on_plan(self, msg):
+            self.plan_cuoi = [(p.pose.position.x, p.pose.position.y) for p in msg.poses]
+
+        def _on_fb(self, msg):
+            f = msg.feedback
+            self.fb = (float(f.distance_remaining), int(f.number_of_recoveries))
+
+        def feedback(self):
+            return self.fb
+
+        def gui_nav(self, dich, yaw_cuoi):
+            if not self.ac_nav.wait_for_server(timeout_sec=5.0):
+                self.bao('   khong thay may chu /navigate_to_pose (bt_navigator)')
+                return False
+            if yaw_cuoi is None:                     # ve_A: goc cuoi theo huong xe -> dich luc gui
+                p = self.pose()
+                yaw_cuoi = 0.0 if p is None else math.atan2(dich[1] - p[1], dich[0] - p[0])
+            g = NavigateToPose.Goal()
+            g.pose.header.frame_id = 'map'
+            g.pose.header.stamp = self.get_clock().now().to_msg()
+            g.pose.pose.position.x, g.pose.pose.position.y = float(dich[0]), float(dich[1])
+            g.pose.pose.orientation.z, g.pose.pose.orientation.w = math.sin(yaw_cuoi / 2), math.cos(yaw_cuoi / 2)
+            self.goal, self.kq, self.fb = None, None, None
+            fut = self.ac_nav.send_goal_async(g, feedback_callback=self._on_fb)
+            t_het = time.monotonic() + 5.0
+            while not fut.done() and time.monotonic() < t_het:
+                self.ngu(0.05)
+            if not fut.done() or not fut.result().accepted:
+                self.bao('   /navigate_to_pose tu choi dich')
+                return False
+            self.goal = fut.result()
+            self.goal.get_result_async().add_done_callback(self._on_result)
+            return True
+
+        def ghi_kinh_nghiem(self, x, y, huong, tuyen, ly_do):
+            ghi_kinh_nghiem(self.tep_kinh_nghiem, time.strftime('%Y-%m-%d %H:%M:%S'), x, y, huong, tuyen, ly_do)
+
+        def chup(self, huong, ly):
+            os.makedirs(self.thu_muc_chup, exist_ok=True)
+            goc = os.path.join(self.thu_muc_chup, '%s_%s' % (time.strftime('%H%M%S'), huong))
+            p, k = goc + '.txt', 1
+            while os.path.exists(p):
+                k += 1
+                p = '%s_%d.txt' % (goc, k)
+            cm = None
+            if self.cm is not None:
+                i = self.cm.info
+                cm = (i.width, i.height, i.resolution, i.origin.position.x, i.origin.position.y, list(self.cm.data))
+            with open(p, 'w') as f:
+                f.write(noi_dung_chup(ly, time.strftime('%Y-%m-%d %H:%M:%S'), self.pose(), self.fb, self.plan_cuoi, cm))
+            return p
+
+        def noi_log(self, huong, ma):
+            with open(self.tep_log, 'a') as f:
+                f.write('== %s gui_duong kieu %s %s: ma %d ==\n' % (time.strftime('%Y-%m-%d %H:%M:%S'), self.kieu, huong, ma))
+                for c in self.dong:
+                    f.write(c + '\n')
+
         def huy_khi_ngat(self):
             """Bi ngat (SIGINT/SIGTERM): huy dich /follow_path dang chay (handle hien co) khi context con song, cho <= 2 s."""
             if self.goal is None or self.kq is not None:
@@ -544,7 +857,9 @@ if rclpy is not None:
         rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
         signal.signal(signal.SIGINT, ngat)            # 06/11 viec 121: ngat() o phan thuan (dat co DA_NGAT roi raise)
         signal.signal(signal.SIGTERM, ngat)
-        node = GuiDuongNode(cau_hinh())
+        kieu = doc_goc()                                     # 08/11 bo 1e: 'mat' | 'cu' (~/goc_dang_chay, bat_xe.sh ghi moi lan bat)
+        node = GuiDuongNode(cau_hinh(), kieu)
+        node.bao('KIEU gui_duong: %s (~/goc_dang_chay)' % kieu)
 
         def bo_qua_ngat():                                   # khong ngat lan 2 trong luc huy
             signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -552,7 +867,13 @@ if rclpy is not None:
 
         ma = 1
         try:
-            ma = chay_co_ngat(node, a[0], int(a[1]) if len(a) > 1 else 1, node.cfg, bo_qua_ngat)
+            ma = chay_co_ngat(node, a[0], int(a[1]) if len(a) > 1 else 1, node.cfg, bo_qua_ngat,
+                              chay_fn=chay_mat if kieu == 'mat' else None)
+            if kieu == 'mat':                                # moi loi ra (0, 1, 3, 4, 5, 130): don sau chuyen
+                bo_qua_ngat()
+                for ten, kq in don_sau_chuyen(node, ma, a[0]):
+                    if kq != 'ok' and kq != 'khong can':
+                        print('   DON %s: %s' % (ten, kq), flush=True)
         finally:
             node.destroy_node()
             if rclpy.ok():

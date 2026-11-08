@@ -1,0 +1,33 @@
+<!--
+  bt_mat.xml (bo 1e "mat lai", 08/11/2026, CHUA CHAY TREN XE): chep bt_cho.xml, chi doi MOT so:
+  NavigateRecovery number_of_retries 15 -> 1000. Cay KHONG tu bo cuoc som: dong ho DUY NHAT "30 s khong gan dich them
+  0,10 m => doi khe" la cua gui_duong.py (kieu mat), khong de hai dong ho canh tranh.
+  Dung khi MAT_LAI=true: nav2_params_mat.yaml co  default_nav_to_pose_bt_xml: /home/project1/bt_mat.xml
+  (kiem_xe.sh doi chieu qua MONG_BT do bat_xe.sh doc tu NAV_PARAMS). Bo cu (MAT_LAI=false) van dung bt_cho.xml.
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="1000" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <RateController hz="1.0">
+          <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+            <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </RecoveryNode>
+        </RateController>
+        <RecoveryNode number_of_retries="1" name="FollowPath">
+          <FollowPath path="{path}" controller_id="FollowPath"/>
+          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+        </RecoveryNode>
+      </PipelineSequence>
+      <ReactiveFallback name="RecoveryFallback">
+        <GoalUpdated/>
+        <Sequence name="DungYenCho">
+          <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
+          <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+          <Wait wait_duration="3"/>
+        </Sequence>
+      </ReactiveFallback>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>

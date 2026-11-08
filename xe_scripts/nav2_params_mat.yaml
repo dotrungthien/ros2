@@ -18,7 +18,8 @@ bt_navigator:
     default_server_timeout: 20
     wait_for_service_timeout: 1000
     # 30/10: 회전/후진 없이 제자리 대기만 하는 트리 (bt_cho.xml). 되돌리기: 이 파일 대신 nav2_params.yaml 로 Nav2 를 켠다.
-    default_nav_to_pose_bt_xml: /home/project1/bt_cho.xml
+    # 08/11 bo 1e: bt_mat.xml = bt_cho.xml voi NavigateRecovery 1000 lan (dong ho 30 s duy nhat la cua gui_duong.py kieu mat)
+    default_nav_to_pose_bt_xml: /home/project1/bt_mat.xml
     plugin_lib_names:
       - nav2_compute_path_to_pose_action_bt_node
       - nav2_compute_path_through_poses_action_bt_node
@@ -202,12 +203,25 @@ global_costmap:
       robot_base_frame: base_footprint
       resolution: 0.05
       track_unknown_space: true
+      # 08/11 bo 1e: tham so CAP COSTMAP (Humble 1.1.20 static_layer.cpp:158, :161 doc khong tien to ten lop) => ap cho CA HAI
+      # StaticLayer. trinary false: o lop huong dan 50 => chi phi 127 (di duoc nhung ton); ban do goc mode trinary (0/100/-1) khong doi.
+      # use_maximum true: lop sau chi nang chi phi (updateWithMax), khong ghi de ban do goc.
+      trinary_costmap: false
+      use_maximum: true
       # 로컬 코스트맵과 같은 풋프린트 (베이스를 달면 다시 측정할 것)
       # 2026-10-06 실측 (LiDAR 중심 기준 앞 12cm, 뒤 13cm, 좌우 8cm; LiDAR는 base_link 기준 앞쪽 +2.5cm), 미검증.
       footprint: "[[0.145, 0.08], [0.145, -0.08], [-0.105, -0.08], [-0.105, 0.08]]"
-      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      plugins: ["static_layer", "lop_huong_dan", "obstacle_layer", "inflation_layer"]
+      # 08/11 bo 1e: ban do GOC (map_server, /map_tinh tu map_xuong_v3.yaml), khong phai /map cua SLAM
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
+        map_topic: /map_tinh
+        map_subscribe_transient_local: true
+      # 08/11 bo 1e: luoi huong dan (lop_huong_dan.py): o cam cua khe kia (100) + vung ton diem (50). PHAI trung kich thuoc,
+      # do phan giai va goc voi /map_tinh (khac => ca costmap doi co moi lan nhan, static_layer.cpp:193-210)
+      lop_huong_dan:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_topic: /lop_huong_dan
         map_subscribe_transient_local: true
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -309,3 +323,11 @@ collision_monitor:
       type: "scan"
       topic: "/scan"
       enabled: true
+
+# 08/11 bo 1e: ban do goc cho global_costmap (/map_tinh). navigation_my_bot.launch.py mat_lai:=true bat map_server (remap
+# map -> map_tinh, nam trong lifecycle manager). Ten tham so theo Humble 1.1.20 map_server.cpp:71-73.
+map_server:
+  ros__parameters:
+    use_sim_time: false
+    yaml_filename: /home/project1/map_xuong_v3.yaml
+    frame_id: map

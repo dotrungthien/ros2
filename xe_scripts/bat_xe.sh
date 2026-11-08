@@ -34,7 +34,7 @@ T1="${T1:-60}"    # giay cho dong "bias" cua launch chinh
 T2="${T2:-120}"   # giay cho dong "Managed nodes are active" cua Nav2
 HAN="${HAN:-480}" # 8 phut ke tu luc con quay lay so 0
 # Danh sach ten tien trinh (khop lenh don trong chat 30/10; Quy trinh chuan 71 buoc 14, 15 can cap nhat theo).
-NODES='[g]yro_mpu6050|[o]dom_tu_lenh|[s]lam_toolbox|[d]ieu_khien|[y]dlidar|[t]eleop_web|[b]t_navigator|[p]lanner_server|[c]ontroller_server|[b]ehavior_server|[v]elocity_smoother|[c]ollision_monitor|[l]ifecycle_manager|[r]obot_state_publisher|[j]oint_state_publisher|[t]wist_mux|[s]tatic_transform_publisher|[c]amera_csi|[r]f2o_laser_odometry_node|[k]et_detector'
+NODES='[g]yro_mpu6050|[o]dom_tu_lenh|[s]lam_toolbox|[d]ieu_khien|[y]dlidar|[t]eleop_web|[b]t_navigator|[p]lanner_server|[c]ontroller_server|[b]ehavior_server|[v]elocity_smoother|[c]ollision_monitor|[m]ap_server|[l]op_huong_dan|[l]ifecycle_manager|[r]obot_state_publisher|[j]oint_state_publisher|[t]wist_mux|[s]tatic_transform_publisher|[c]amera_csi|[r]f2o_laser_odometry_node|[k]et_detector'
 # 31/10 chieu: them 7 ten cua launch ma truoc day thieu (rsp/jsp/twist_mux/static_tf sot lai sau "tat" -> bo mo coi, xem BAO_CAO muc 4). Duong lui: cp bat_xe.sh.v3 bat_xe.sh
 
 # 0 neu con node hoac launch cua he thong dang chay
@@ -78,6 +78,7 @@ moc() {
 if [ "$1" = "tat" ]; then
   T_TAT=$SECONDS
   echo "== Tat ghi vi tri, sep, lai_xe_lidar, Nav2, launch chinh =="
+  rm -f ~/goc_dang_chay                          # 08/11 bo 1e: het he thong thi khong con kieu nao dang chay
   moc 1
   pkill -INT -f "$TAY"
   # 02/11 (gia lap): ros2 launch bat nen tu script bo qua INT, nen gui INT thang cho cac node (node tu bat INT);
@@ -228,6 +229,9 @@ fi
 echo "== B2: bat Nav2 =="
 MAT_LAI="${MAT_LAI:-false}"   # 08/11 mat lai: true = collision_monitor loc lenh Nav2 (NAV_PARAMS phai co khoi collision_monitor, vd nav2_params_mat.yaml)
 echo "MAT_LAI=$MAT_LAI"
+# 08/11 bo 1e: ~/goc_dang_chay GHI DE moi lan bat (mat | cu): gui_duong.py chon kieu, kiem_xe.sh buoc 8d; tep cu cua lan bat hong khong con
+if [ "$MAT_LAI" = "true" ]; then echo mat > ~/goc_dang_chay; else echo cu > ~/goc_dang_chay; fi
+echo "~/goc_dang_chay = $(cat ~/goc_dang_chay)"
 [ -f "$LOG2" ] && mv -f "$LOG2" "$LOG2.cu"
 # NAV_PARAMS (tuy chon): duong dan tep tham so Nav2, vi du /home/project1/nav2_params_cho.yaml (cay hanh vi cho, khong quay/lui)
 # viec 110: chua dat thi doc dong NAV_PARAMS=... trong ~/cau_noi/cau_noi.env (cai_cau_noi.sh tao; chi doc, khong source)
@@ -280,9 +284,13 @@ cd ~ || exit 1                                    # sep.py import lai_xe_lidar.p
 echo "== B2b: bat sep (ra_lenh=$SEP_RA_LENH ra_thoat=$SEP_RA_THOAT) va phu lai (phat_lenh=$PHU_LAI_PHAT_LENH) =="
 [ -f ~/log_sep.txt ] && mv -f ~/log_sep.txt ~/log_sep.txt.cu
 [ -f ~/log_phu_lai.txt ] && mv -f ~/log_phu_lai.txt ~/log_phu_lai.txt.cu
-setsid nohup python3 ~/sep.py --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" > ~/log_sep.txt 2>&1 < /dev/null &
+# 08/11 bo 1e: MAT_LAI=true => cay bt_mat tinh lai duong 1 Hz, controller ABORTED dich /follow_path cu moi lan (Nav2 1.1.20
+#   simple_action_server.hpp:345-347) => sep + phu lai chi nghe /navigate_to_pose. Rong = dong lenh y nhu cu.
+NGHE_FP=""; [ "$MAT_LAI" = "true" ] && NGHE_FP="-p nghe_follow_path:=false"
+[ -n "$NGHE_FP" ] && echo "sep + phu lai: nghe_follow_path:=false (MAT_LAI=true)"
+setsid nohup python3 ~/sep.py --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" $NGHE_FP > ~/log_sep.txt 2>&1 < /dev/null &
 # 18:09: sep_ra_thoat = SEP_RA_THOAT (mot nguon): sep giao thoat thi phu lai khong tu THOAT_CUNG ma CHO_SEP
-setsid nohup python3 ~/lai_xe_lidar.py --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" -p sep_ra_thoat:="$SEP_RA_THOAT" > ~/log_phu_lai.txt 2>&1 < /dev/null &
+setsid nohup python3 ~/lai_xe_lidar.py --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" -p sep_ra_thoat:="$SEP_RA_THOAT" $NGHE_FP > ~/log_phu_lai.txt 2>&1 < /dev/null &
 sleep 5
 
 # in tung dong THIEU cho phu tro khong con song; tra 0 neu du ca hai

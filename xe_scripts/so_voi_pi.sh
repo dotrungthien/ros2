@@ -9,6 +9,9 @@
 # Dong tong: GIONG x/y, y = so tep co duong dan Pi (tru THIEU_TREN_PI); CHUA_RO khong tinh vao y.
 # cau_noi_xe.py, chon_b_v4.html, trang_v10.py, trang_v10.html (111-Q2) so voi ban da cai (~/cau_noi/), la ban dich vu dang chay.
 # Tep trong kho (du_lieu_0111/) co ten trong bang la duong dan tuong doi so voi xe_scripts/.
+# 08/11 bo 1e: them bt_mat.xml, nav2_params_mat.yaml, lop_huong_dan.py, map_xuong_v3.yaml/.png (map_server /map_tinh);
+#   slam_dinh_vi_xuong.yaml nay lay tu xe_scripts/ (vao kho, ban dang chay travel 0.25), khong con tu du_lieu_0111/;
+#   slam_dinh_vi_xuong_mat.yaml (travel 0.10 / heading 0.15) cho kieu mat, chon bang bien SLAM cua bat_xe.sh.
 #
 # TU NHAC: moi .py/.sh/.yaml/.xml trong xe_scripts/ chua co trong bang ma khong thuoc LUAT LOAI TRU
 #   in "CHUA_CO_TRONG_DANH_SACH <ten>" (them tep moi vao bang, hoac vao luat loai tru neu co ly do).
@@ -24,7 +27,9 @@ chuyen.sh|~/chuyen.sh
 ghi_bag.sh|~/ghi_bag.sh
 chup_loi.sh|~/chup_loi.sh
 bt_cho.xml|~/bt_cho.xml
+bt_mat.xml|~/bt_mat.xml
 nav2_params_cho.yaml|~/nav2_params_cho.yaml
+nav2_params_mat.yaml|~/nav2_params_mat.yaml
 cai_cau_noi.sh|~/cai_cau_noi.sh
 cau_noi_xe.py|~/cau_noi/cau_noi_xe.py
 chon_b_v4.html|~/cau_noi/chon_b.html
@@ -35,9 +40,13 @@ sep.py|~/sep.py
 gui_duong.py|~/gui_duong.py
 dung_xe.py|~/dung_xe.py|tuychon
 tinh_tuyen.py|~/tinh_tuyen.py
-du_lieu_0111/slam_dinh_vi_xuong.yaml|~/slam_dinh_vi_xuong.yaml
+lop_huong_dan.py|~/lop_huong_dan.py
+slam_dinh_vi_xuong.yaml|~/slam_dinh_vi_xuong.yaml
+slam_dinh_vi_xuong_mat.yaml|~/slam_dinh_vi_xuong_mat.yaml
 du_lieu_0111/map_xuong_v3_pg.posegraph|~/map_xuong_v3_pg.posegraph
 du_lieu_0111/map_xuong_v3_pg.data|~/map_xuong_v3_pg.data
+du_lieu_0111/map_xuong_v3.yaml|~/map_xuong_v3.yaml
+du_lieu_0111/map_xuong_v3.png|~/map_xuong_v3.png
 HUONG_DAN_CAU_NOI.md|?
 HUONG_DAN_THU_31_10.md|?
 THIET_KE_LAI_XE_LIDAR.md|?

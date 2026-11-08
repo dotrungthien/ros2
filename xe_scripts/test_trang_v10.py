@@ -1046,5 +1046,109 @@ class Q3HanHet(Nen):
         self.assertIn("(S.han_het?' (시간 초과)':S.han_s!==null&&S.han_s!==undefined?' (남은 시간 '+S.han_s+'초)':'')", t)
 
 
+
+# ---------------- 08/11 bo 1e: CHO_VAT / DI_TIEP (gui_duong kieu mat), phu lai chi nhin ----------------
+class MatLai(Nen):
+    def test_d1_tep_xe_kieu_mat(self):
+        import re
+        sv = doc('so_voi_pi.sh')                                                         # tep co dong khong duoc in: chi assertTrue
+        for d in ('bt_mat.xml|~/bt_mat.xml', 'nav2_params_mat.yaml|~/nav2_params_mat.yaml', 'lop_huong_dan.py|~/lop_huong_dan.py',
+                  'slam_dinh_vi_xuong.yaml|~/slam_dinh_vi_xuong.yaml', 'slam_dinh_vi_xuong_mat.yaml|~/slam_dinh_vi_xuong_mat.yaml',
+                  'du_lieu_0111/map_xuong_v3.yaml|~/map_xuong_v3.yaml',
+                  'du_lieu_0111/map_xuong_v3.png|~/map_xuong_v3.png'):
+            self.assertTrue(('\n' + d + '\n') in sv, 'so_voi_pi.sh thieu dong %s' % d.split('|')[0])
+        self.assertTrue('\ndu_lieu_0111/slam_dinh_vi_xuong.yaml|' not in sv, 'so_voi_pi.sh con so slam yaml cu')
+        self.assertIn('minimum_travel_distance: 0.25', doc('slam_dinh_vi_xuong.yaml'))            # ban cu giu nguyen
+        self.assertIn('minimum_travel_distance: 0.10', doc('slam_dinh_vi_xuong_mat.yaml'))
+        self.assertIn('minimum_travel_heading: 0.15', doc('slam_dinh_vi_xuong_mat.yaml'))
+        self.assertTrue('SLAM="${SLAM:-/home/project1/slam_dinh_vi_xuong.yaml}"' in doc('bat_xe.sh'), 'bat_xe.sh doi SLAM mac dinh')
+        # bt_mat.xml = bt_cho.xml, chi doi retries 15 -> 1000; nav2_params_mat tro toi bt_mat (kiem_xe so qua MONG_BT)
+        bo_dau = lambda t: t[t.index('-->') + 3:]
+        self.assertEqual(bo_dau(doc('bt_mat.xml')), bo_dau(doc('bt_cho.xml')).replace(
+            'number_of_retries="15" name="NavigateRecovery"', 'number_of_retries="1000" name="NavigateRecovery"'))
+        pm = doc('nav2_params_mat.yaml')
+        self.assertIn('default_nav_to_pose_bt_xml: /home/project1/bt_mat.xml', pm)
+        self.assertIn('yaml_filename: /home/project1/map_xuong_v3.yaml', pm)
+        bx = doc('bat_xe.sh')
+        self.assertTrue("MONG_BT=$(sed -n 's/^ *default_nav_to_pose_bt_xml: *//p' \"$NAV_PARAMS\"" in bx, 'bat_xe.sh MONG_BT doi')
+        self.assertTrue('if [ "$MAT_LAI" = "true" ]; then echo mat > ~/goc_dang_chay; else echo cu > ~/goc_dang_chay; fi' in bx,
+                        'bat_xe.sh khong ghi de ~/goc_dang_chay moi lan bat')
+        self.assertTrue('rm -f ~/goc_dang_chay' in bx, 'bat_xe.sh tat khong xoa ~/goc_dang_chay')
+        self.assertTrue('|[m]ap_server|[l]op_huong_dan|' in bx, 'NODES thieu map_server / lop_huong_dan')
+        self.assertTrue(bx.count('$NGHE_FP >') == 2 and 'NGHE_FP="-p nghe_follow_path:=false"' in bx, 'nghe_follow_path')
+        for ten in ('sep.py', 'lai_xe_lidar.py'):                                          # ben doc: ten tham so co that
+            self.assertIn("declare_parameter('nghe_follow_path', True)", doc(ten))
+        kx = doc('kiem_xe.sh')
+        self.assertIn('if [ "$(head -1 ~/goc_dang_chay 2>/dev/null)" = "mat" ]; then', kx)
+        self.assertIn('python3 ~/lop_huong_dan.py --kiem-costmap 10 || KQ=1', kx)
+        G = V.nap(C, 'gui_duong')
+        self.assertEqual(os.path.basename(G.TEP_GOC), 'goc_dang_chay')
+        launch = doc('..', 'dev_ws', 'src', 'my_bot', 'launch', 'navigation_my_bot.launch.py')
+        self.assertIn("cmd=['python3', EnvironmentVariable('LOP_HUONG_DAN_PY', default_value='/home/project1/lop_huong_dan.py')]", launch)
+        self.assertIn("remappings=remappings + [('map', 'map_tinh')]", launch)
+        self.assertIn("'node_names': ['map_server'] + lifecycle_nodes + ['collision_monitor']", launch)
+        self.assertIn('map_topic: /map_tinh', pm)
+        self.assertIn('map_topic: /lop_huong_dan', pm)
+
+    def test_cau_noi_env_muc_b(self):
+        self.assertIs(C.env_muc_b({}), C.ENV_MUC_B)                                      # khong MAT_LAI: nhu cu
+        self.assertIs(C.env_muc_b({'MAT_LAI': 'false'}), C.ENV_MUC_B)
+        self.assertEqual(C.ENV_MUC_B, {'SEP_RA_LENH': 'true', 'SEP_RA_THOAT': 'true', 'PHU_LAI_PHAT_LENH': 'true'})
+        self.assertEqual(C.env_muc_b({'MAT_LAI': 'true'}),
+                         {'SEP_RA_LENH': 'true', 'SEP_RA_THOAT': 'false', 'PHU_LAI_PHAT_LENH': 'false', 'MAT_LAI': 'true'})
+        self.assertIn('dict(os.environ, **env_muc_b())', doc('cau_noi_xe.py'))
+        bx = doc('bat_xe.sh')                                                            # ben doc: bat_xe.sh doc dung 4 ten bien
+        for k in C.ENV_MUC_B_MAT:
+            self.assertTrue(('%s="${%s:-' % (k, k)) in bx, 'bat_xe.sh khong doc bien %s' % k)
+
+    def test_cho_vat_va_di_tiep(self):
+        f = V.suy_trang_thai
+        n = nut(chuyen_chay=True)
+        log = ['== cau_noi_xe 20:00:00: di_B (BANG=day) ==', 'KIEU gui_duong: mat (~/goc_dang_chay)',
+               '-- tuyen 1, lan 1/1: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)']
+        self.assertEqual(f(link('on'), n, SEP0, None, V.dong_chuyen_cuoi(log[:2]), None, 1.0), ('TT_DANG_DI', 'CHUAN_BI'))
+        self.assertEqual(f(link('on'), n, SEP0, None, V.dong_chuyen_cuoi(log), None, 1.0), ('TT_DANG_DI', ''))
+        log.append('CHO_VAT: 5/30 s (cach dich 1.20 m)')
+        self.assertEqual(f(link('on'), n, SEP0, None, V.dong_chuyen_cuoi(log), None, 1.0), ('TT_DANG_CHO', 'gui_duong cho'))
+        log.append('   DI_TIEP: xe tien lai.')
+        self.assertEqual(f(link('on'), n, SEP0, None, V.dong_chuyen_cuoi(log), None, 1.0), ('TT_DANG_DI', ''))
+        log.append('   khong den duoc (CHO_VAT_30s, cach dich 0.95 m).')
+        self.assertEqual(f(link('on'), n, SEP0, None, V.dong_chuyen_cuoi(log), None, 1.0)[0], 'TT_DANG_CHO')
+
+    def test_phu_lai_chi_nhin_khong_hien_thoat_xoay(self):
+        f = V.suy_trang_thai
+        n = nut(chuyen_chay=True)
+        for pl, ma_cu in ((('RA_LUI', '', 1.0), 'TT_DANG_THOAT'), (('XOAY_P', '', 1.0), 'TT_DANG_XOAY'), (('CHO_SEP', '', 1.0), 'TT_DANG_CHO')):
+            self.assertEqual(f(link('on'), n, SEP0, pl, 'DI', None, 1.0)[0], ma_cu)                       # mac dinh nhu cu
+            self.assertEqual(f(link('on'), n, SEP0, pl, 'DI', None, 1.0, False), ('TT_DANG_DI', ''))     # chi nhin
+        self.assertEqual(f(link('on'), n, SEP0, ('RA_LUI', '', 1.0), 'DI', 'RA_LUI', 1.0, False)[0], 'TT_DANG_THOAT')   # sep thoat van tinh
+
+    def test_trang_thai_doc_phat_lenh_tu_proc(self):
+        import subprocess
+        f = os.path.join(TAM, 'lai_xe_lidar.py')
+        with open(f, 'w') as fh:
+            fh.write('import time\ntime.sleep(30)\n')
+        LINK['on'] = True
+        p = subprocess.Popen([sys.executable if os.path.basename(sys.executable).startswith('python3') else 'python3', f, '--ros-args',
+                              '-p', 'phat_lenh:=false', '-p', 'sep_ra_thoat:=false', '-p', 'nghe_follow_path:=false'])
+        try:
+            time.sleep(0.3)
+            self.assertTrue(C.bat_dau_chuyen('di_B'))
+
+            def co_dong_tuyen():
+                with open(C.CFG['log_chuyen']) as fl:
+                    return '-- tuyen 1' in fl.read()
+            self.assertTrue(cho(co_dong_tuyen))
+            with open(os.path.join(TAM, 'log_phu_lai.txt'), 'w') as fh:
+                fh.write(ros(time.time(), 'XANH_VANG -> RA_LUI (vung_sau) | SAU=0.05 TRUOC=0.30') + '\n')
+            st, j = js(self.port, 'GET', '/v10/trang_thai')
+            self.assertEqual(j['ma'], 'TT_DANG_DI')                                    # phu lai chi nhin: khong 탈출
+            self.assertEqual(j['bang']['code']['lai_xe_lidar.py'].get('phat_lenh'), 'false')
+        finally:
+            p.kill()
+            p.wait()
+            C.dung_chuyen()
+            cho(lambda: not C.trang_thai_nut()['chuyen']['chay'])
+
 if __name__ == '__main__':
     unittest.main()

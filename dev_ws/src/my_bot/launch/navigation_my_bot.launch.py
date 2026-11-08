@@ -17,9 +17,9 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, GroupAction, SetEnvironmentVariable
 from launch.conditions import IfCondition, UnlessCondition
-from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.descriptions import ParameterFile
 from nav2_common.launch import RewrittenYaml
@@ -186,6 +186,25 @@ def generate_launch_description():
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings,
                 condition=IfCondition(mat_lai)),
+            # 08/11 bo 1e (mat_lai:=true): ban do GOC cho global_costmap static_layer (/map_tinh, khoi map_server trong params_file)
+            Node(
+                package='nav2_map_server',
+                executable='map_server',
+                name='map_server',
+                output='screen',
+                respawn=use_respawn,
+                respawn_delay=2.0,
+                parameters=[configured_params],
+                arguments=['--ros-args', '--log-level', log_level],
+                remappings=remappings + [('map', 'map_tinh')],
+                condition=IfCondition(mat_lai)),
+            # 08/11 bo 1e: luoi huong dan /lop_huong_dan (phat "0" ngay khi bat; /chon_tuyen do gui_duong.py kieu mat gui).
+            # Bien LOP_HUONG_DAN_PY (khong dat = duong Pi) chi de gia lap PC tro toi tep trong kho; khong them tham so launch.
+            ExecuteProcess(
+                cmd=['python3', EnvironmentVariable('LOP_HUONG_DAN_PY', default_value='/home/project1/lop_huong_dan.py')],
+                name='lop_huong_dan',
+                output='screen',
+                condition=IfCondition(mat_lai)),
             Node(
                 package='nav2_lifecycle_manager',
                 executable='lifecycle_manager',
@@ -194,7 +213,7 @@ def generate_launch_description():
                 arguments=['--ros-args', '--log-level', log_level],
                 parameters=[{'use_sim_time': use_sim_time},
                             {'autostart': autostart},
-                            {'node_names': lifecycle_nodes + ['collision_monitor']}],
+                            {'node_names': ['map_server'] + lifecycle_nodes + ['collision_monitor']}],
                 condition=IfCondition(mat_lai)),
         ]
     )

@@ -187,6 +187,14 @@ DONG_CHUYEN = re.compile(r"^(DEN_NOI|HET_DUONG|DUNG_SEP|DUNG: SAI_VI_TRI|HUY_DIC
 DONG_BAT = re.compile(r"^(SAN SANG|CHUA SAN SANG|QUA 8 PHUT|DA BAT|LOI)")
 DONG_TAT = re.compile(r"^(DA_DON|CON_ROS_SONG|CON_CHAY)")   # bat_xe.sh tat: 0 = DA_DON n tep; 1 = CON_CHAY / CON_ROS_SONG
 ENV_MUC_B = {"SEP_RA_LENH": "true", "SEP_RA_THOAT": "true", "PHU_LAI_PHAT_LENH": "true"}
+# 08/11 bo 1e "mat lai": MAT_LAI=true trong moi truong cau noi (~/cau_noi/cau_noi.env) => sep ra lenh nhung KHONG giao thoat,
+# phu lai chi nhin (collision_monitor + DWB lai), bat_xe.sh MAT_LAI=true. Khong co => nhu cu (ENV_MUC_B).
+ENV_MUC_B_MAT = {"SEP_RA_LENH": "true", "SEP_RA_THOAT": "false", "PHU_LAI_PHAT_LENH": "false", "MAT_LAI": "true"}
+
+
+def env_muc_b(env=None):
+    env = os.environ if env is None else env
+    return ENV_MUC_B_MAT if env.get("MAT_LAI") == "true" else ENV_MUC_B
 CFG.update(chuyen=HOME + "/chuyen.sh", log_chuyen=HOME + "/log_nut_chuyen.txt", log_tat=HOME + "/log_nut_tat.txt",
            sep_nhat_ky=HOME + "/sep_nhat_ky.csv", bat_max_s=600, dung_cho_s=3.0)
 CFG.update(trang_v10=os.environ.get("CAU_NOI_TRANG_V10", HERE + "/trang_v10.html"))   # viec 111
@@ -551,7 +559,7 @@ class H(BaseHTTPRequestHandler):
         if cmd == "dung":
             return self._gui(200, dung_chuyen())
         if cmd == "bat":
-            ok = bat_dau_job(None, CFG["bat_max_s"], dict(os.environ, **ENV_MUC_B))
+            ok = bat_dau_job(None, CFG["bat_max_s"], dict(os.environ, **env_muc_b()))
         elif cmd in ("di_B", "ve_A"):
             ok = bat_dau_chuyen(cmd)
         elif cmd == "tat":

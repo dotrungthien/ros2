@@ -161,6 +161,20 @@ if len(xs) >= 3 and len(xs) == len(ys) and sec:
     print("x=%.3f m, y=%.3f m, tuoi tin %.1f s" % (sum(xs) / len(xs), sum(ys) / len(ys), time.time() - int(sec.group(1))))
 ')
 echo "GHI LAI    costmap toan cuc: ${FP:-khong doc duoc} (so voi tf o Buoc 7; tuoi tin > 5 s la dau hieu tf cu trong Nav2)"
+# 8d. 08/11 bo 1e "mat lai" (~/goc_dang_chay = mat, bat_xe.sh MAT_LAI=true ghi): planner Nav2 cho costmap "current" KHONG han gio
+# (Humble 1.1.20 planner_server.cpp:274-281) => thieu luoi /lop_huong_dan la treo. Kieu cu: bo qua buoc nay.
+if [ "$(head -1 ~/goc_dang_chay 2>/dev/null)" = "mat" ]; then
+  NPUB=$(timeout 10 ros2 topic info /lop_huong_dan 2>/dev/null | sed -n 's/^Publisher count: *//p')
+  if [ "$NPUB" = "1" ]; then
+    echo "DAT        /lop_huong_dan: 1 publisher"
+  else
+    echo "KHONG DAT  /lop_huong_dan: ${NPUB:-0 hoac khong doc duoc} publisher (mong 1: lop_huong_dan.py chua chay => planner treo)"
+    KQ=1
+  fi
+  python3 ~/lop_huong_dan.py --kiem-costmap 10 || KQ=1      # in DAT / KHONG DAT: co tin trong 10 s, cung kich thuoc ban do goc
+else
+  echo "BO_QUA     buoc 8d (lop_huong_dan): ~/goc_dang_chay khong phai mat"
+fi
 
 echo "=========="
 if [ "$KQ" -eq 0 ]; then

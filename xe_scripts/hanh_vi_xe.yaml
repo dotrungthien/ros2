@@ -93,3 +93,4 @@ thoi_quen:
   dich_dung_m: {gia_tri: 0.03, dung_o: "sep.py", cho: "P_MAC_DINH['dich_dung'] (tham so ROS)"}
   sat_vat_m: {gia_tri: 0.1, dung_o: "sep.py", cho: "P_MAC_DINH['sat_vat'] (tham so ROS)"}
   sat_vat_tat_m: {gia_tri: 0.12, dung_o: "sep.py", cho: "P_MAC_DINH['sat_vat_tat'] (tham so ROS)"}
+  kinh_nghiem_quan_sat_s: {gia_tri: 15.0, dung_o: "gui_duong.py", cho: "MOI 09/11 nao xe viec 4 (khong co o 2607fee): BT_LUI / GUI_LUI / CHO_DICH DUOC neu tien trong bay nhieu giay sau do"}

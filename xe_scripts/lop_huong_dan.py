@@ -15,7 +15,6 @@ Kiem (kiem_xe.sh buoc 8d): python3 ~/lop_huong_dan.py --kiem-costmap  => /global
   kich thuoc / do phan giai / goc voi ban do goc. Ma thoat 0 = DAT, 1 = KHONG DAT.
 Phan thuan (khong ROS) o nua tren, thu bang test_lop_huong_dan.py.
 """
-import csv
 import math
 import os
 import re
@@ -84,19 +83,15 @@ def doc_kinh_nghiem(path=TEP_KINH_NGHIEM, ly_do=('KET_CO_DUONG',)):
     """Diem (x, y) cua ~/kinh_nghiem.csv (cot gio,x,y,huong,tuyen,ly_do; gui_duong.py ghi). Khong co tep => []; dong hong bo qua.
     09/11 buoc 3 #5: chi dem dong co ly_do trong `ly_do` (KET_CO_DUONG = co duong ma ket; VAT_CHAN = vat chan, khong dem)."""
     out = []
-    try:
-        with open(path, newline='') as f:
-            for r in csv.DictReader(f):
-                if (r.get('ly_do') or '').strip() not in ly_do:
-                    continue
-                try:
-                    x, y = float(r['x']), float(r['y'])
-                except (KeyError, TypeError, ValueError):
-                    continue
-                if math.isfinite(x) and math.isfinite(y):
-                    out.append((x, y))
-    except OSError:
-        return []
+    for r in HV.doc_kinh_nghiem(path):                 # 09/11 nao xe viec 4: doc ca dong cu lan dong moi (nhieu cot hon)
+        if (r.get('ly_do') or '').strip() not in ly_do:
+            continue
+        try:
+            x, y = float(r['x']), float(r['y'])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if math.isfinite(x) and math.isfinite(y):
+            out.append((x, y))
     return out
 
 

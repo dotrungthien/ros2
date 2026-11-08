@@ -863,9 +863,14 @@ class IOMat:
         self.huy()
         return 'ok'
 
-    def ghi_kinh_nghiem(self, x, y, huong, tuyen, ly):
-        self.kn.append((round(x, 2), round(y, 2), huong, tuyen, ly))
-        self.thu_tu = getattr(self, 'thu_tu', []) + [('kn', self.t)]
+    def ghi_kinh_nghiem(self, dong):                     # 09/11 nao xe viec 4: dict theo COT_KINH_NGHIEM (khong gio)
+        self.kn_moi = getattr(self, 'kn_moi', []) + [dict(dong, t=round(self.t, 1))]
+        if dong['su_co'] == 'DOI_KHE':                   # kn: chi dong bo khe (nhu truoc), (x, y, huong, ly_do)
+            self.kn.append((round(dong['x'], 2), round(dong['y'], 2), dong['huong'], dong['ly_do']))
+            self.thu_tu = getattr(self, 'thu_tu', []) + [('kn', self.t)]
+
+    def ma_chuyen(self):
+        return 'thu'
 
     def lui(self, m, v):                                  # 08/11 buoc 2c: Nav2 BackUp gia (mat m / v giay)
         self.lui_ds = getattr(self, 'lui_ds', []) + [(round(self.t, 1), m, v)]
@@ -879,7 +884,7 @@ class IOMat:
             self.t += 1.0
             raise KeyboardInterrupt
         self.t += m / v
-        return kq, (m if kq == 'SUCCEEDED' else 0.05)
+        return kq, getattr(self, 'quang_lui', m if kq == 'SUCCEEDED' else 0.05)
 
     def chup(self, huong, ly):
         self.chup_ds.append((huong, ly))
@@ -927,7 +932,7 @@ def test_36_mat_dong_ho_30s_bo_khe_roi_tuyen_kia():
     cho = [c for c in io.cau if c.startswith('CHO_VAT:')]
     assert [c.split()[1] for c in cho] == ['5/30', '10/30', '15/30', '20/30', '25/30'], cho
     assert any(c.startswith('   khong den duoc (CHO_VAT_30s, cach dich ') for c in io.cau), io.cau
-    assert io.kn == [(0.7, 0.8, 'di_B', 1, 'KET_CO_DUONG')] and io.chup_ds == [('di_B', 'bo khe tuyen 1 (CHO_VAT_30s, KET_CO_DUONG)')]
+    assert io.kn == [(0.7, 0.8, 'di_B', 'KET_CO_DUONG')] and io.chup_ds == [('di_B', 'bo khe tuyen 1 (CHO_VAT_30s, KET_CO_DUONG)')]
     assert '   sep bao CHO (ABORT_NHANH 1s truoc): bo qua (khe vua bo).' in io.cau                 # gui lai: bo qua ABORT_NHANH
     assert [s.split()[0] for _, s in io.chon] == ['0', '1', '2'] and io.da_huy == 1
     assert CUA(io.rows) == ['KIEM_DAT', 'KHONG_DAT', 'SUCCEEDED', 'DEN_NOI']
@@ -972,7 +977,7 @@ def test_39_mat_khong_feedback_va_recoveries():
                 dict(ket=('ABORTED', 40.0), fb=lambda dt: (1.4 - 0.2 * min(dt, 5), 1 if dt > 10 else 0) if dt < 12 else (0.4, 3))])
     assert G.chay_mat(io, 'di_B', 1, CFG) == 1, io.cau
     assert any(c.startswith('   khong den duoc (KHONG_FEEDBACK') for c in io.cau)
-    assert io.kn[0][4] == 'VAT_CHAN'                                 # 09/11 #5: khong co /plan => planner khong ra duong
+    assert io.kn[0][3] == 'VAT_CHAN'                                 # 09/11 #5: khong co /plan => planner khong ra duong
     rec = [c for c in io.cau if 'number_of_recoveries' in c]
     assert rec == ['   Nav2 hoi phuc: number_of_recoveries = 1.', '   Nav2 hoi phuc: number_of_recoveries = 3.'], rec
     assert io.cau[-1].startswith('HET_DUONG') and CUA(io.rows)[-1] == 'HET_DUONG'
@@ -1035,15 +1040,22 @@ def test_42_mat_kinh_nghiem_ghi_doc_khop_lop_huong_dan():
     import tempfile
     import lop_huong_dan as LH
     p = os.path.join(tempfile.mkdtemp(), 'kinh_nghiem.csv')
+    with open(p, 'w') as f:                              # 09/11 nao xe viec 4: tep cu (truoc 09/11) giu nguyen, doc duoc
+        f.write('gio,x,y,huong,tuyen,ly_do\n2026-11-08 19:00:00,0.69,0.80,di_B,1,KET_CO_DUONG\n')
     for k in range(3):
-        G.ghi_kinh_nghiem(p, '2026-11-08 20:0%d:00' % k, 0.70 + 0.01 * k, 0.80, 'di_B', 1, G.KET_CO_DUONG)
-    G.ghi_kinh_nghiem(p, '2026-11-08 20:09:00', 0.30, 0.10, 'di_B', 1, G.VAT_CHAN)        # 09/11 #5: lop_huong_dan khong dem
+        G.ghi_kinh_nghiem(p, dict(gio='2026-11-08 20:0%d:00' % k, chuyen='c1', x=0.70 + 0.01 * k, y=0.80, huong='di_B', su_co='DOI_KHE',
+                                  cach='cho=30', ket_qua='HONG', ly_do=G.KET_CO_DUONG))
+    G.ghi_kinh_nghiem(p, dict(gio='2026-11-08 20:09:00', chuyen='c1', x=0.30, y=0.10, huong='di_B', su_co='DOI_KHE', cach='cho=30',
+                              ket_qua='HONG', ly_do=G.VAT_CHAN))                   # 09/11 #5: lop_huong_dan khong dem
+    G.ghi_kinh_nghiem(p, dict(gio='g', chuyen='c1', x=None, y=None, huong='di_B', su_co='BT_LUI', cach='lui=0.25', ket_qua='DUOC', ly_do='-'))
     with open(p) as f:
         dong = f.read().splitlines()
-    assert dong[0] == G.COT_KINH_NGHIEM == 'gio,x,y,huong,tuyen,ly_do' and len(dong) == 5
+    assert G.COT_KINH_NGHIEM == 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do' and dong[0] == 'gio,x,y,huong,tuyen,ly_do'
+    assert dong[2] == G.COT_KINH_NGHIEM and len(dong) == 8 and dong.count(G.COT_KINH_NGHIEM) == 1          # dong dau moi chi 1 lan
+    assert dong[3] == '2026-11-08 20:00:00,c1,0.700,0.800,di_B,DOI_KHE,cho=30,HONG,KET_CO_DUONG' and dong[7] == 'g,c1,,,di_B,BT_LUI,lui=0.25,DUOC,-'
     with open(p, 'a') as f:
         f.write('hong,khong,phai,so\n,,,\n')
-    assert LH.doc_kinh_nghiem(p) == [(0.70, 0.80), (0.71, 0.80), (0.72, 0.80)]
+    assert LH.doc_kinh_nghiem(p) == [(0.69, 0.80), (0.70, 0.80), (0.71, 0.80), (0.72, 0.80)]           # dong cu + dong moi
 
 
 def test_43_mat_noi_dung_chup():
@@ -1209,7 +1221,7 @@ def test_50_mat_ly_do_kinh_nghiem():
     assert G.ly_do_kinh_nghiem(0.0, 30.0) == G.ly_do_kinh_nghiem(30.0, 30.0) == 'KET_CO_DUONG'
     assert G.ly_do_kinh_nghiem(30.01, 30.0) == 'VAT_CHAN'
     io = IOMat([dict(ket=None, fb=lambda dt: (1.2, 0), pose=lambda dt: (0.6, 0.0, 0.0), plan=lambda dt: dt - 5 if dt < 5 else 31.0), None])
-    assert G.chay_mat(io, 'di_B', 1, CFG) == 1 and io.kn[0][4] == 'VAT_CHAN', io.kn          # /plan cuoi cu hon 30 s
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 1 and io.kn[0][3] == 'VAT_CHAN', io.kn          # /plan cuoi cu hon 30 s
 
 
 def test_51_mat_vi_tri_xe_noi_dung():
@@ -1218,6 +1230,50 @@ def test_51_mat_vi_tri_xe_noi_dung():
     assert G.noi_dung_vi_tri(1.0, None, []) == '1.00 - - -\nplan 0\n'
     d = G.noi_dung_vi_tri(1.0, (0, 0, 0), [(k * 0.01, 0.0) for k in range(351)]).splitlines()[1].split()
     assert d[1] == '100' and len(d) == 202 and d[-2:] == ['3.500', '0.000'] and d[2:4] == ['0.000', '0.000']
+
+
+def _kn(io):
+    return [(d['su_co'], d['cach'], d['ket_qua'], d['ly_do']) for d in getattr(io, 'kn_moi', [])]
+
+
+def test_53_nao_xe_kinh_nghiem_moi_loai_su_co():
+    """09/11 nao xe viec 4: DOI_KHE (ngay, HONG), BT_LUI / GUI_LUI / CHO_DICH (DUOC neu tien trong 15 s), DONG_BANG (lui < 5 cm)."""
+    assert G.HV.so('kinh_nghiem_quan_sat_s') == 15.0 and G.HV.than_the('o_luoi_m') == 0.05
+    # BT lui roi xe tien lai => BT_LUI DUOC
+    io = IOMat([dict(ket=('SUCCEEDED', 20.0), fb=lambda dt: (max(0.05, 1.8 - 0.09 * dt), 1 if dt > 3 else 0),
+                     pose=lambda dt: TOI_B(dt) if dt >= 20 else (0.05 * dt, 0.0, 0.0), lui_bt=[(3.0, 'RA', None), (5.6, 'XONG', 'SUCCEEDED')])])
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 0 and _kn(io) == [('BT_LUI', 'lui=0.25', 'DUOC', '-')], _kn(io)
+    assert io.kn_moi[0]['chuyen'] == 'thu' and io.kn_moi[0]['huong'] == 'di_B'
+    # BT lui ma xe khong dich (vi tri nhu nhau) => DONG_BANG HONG (ly_do = su co goc)
+    io = IOMat([dict(ket=('SUCCEEDED', 20.0), fb=lambda dt: (max(0.05, 1.8 - 0.09 * dt), 1 if dt > 3 else 0),
+                     pose=lambda dt: TOI_B(dt) if dt >= 20 else (0.3, 0.0, 0.0), lui_bt=[(3.0, 'RA', None), (5.6, 'XONG', 'ABORTED')])])
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 0 and _kn(io) == [('DONG_BANG', 'lui=0.25', 'HONG', 'BT_LUI')], _kn(io)
+    # BT lui roi xe van dung 15 s => BT_LUI HONG (chot boi nhip, truoc khi bo khe 30 s)
+    io = IOMat([dict(ket=None, fb=lambda dt: (1.2, 0), pose=lambda dt: (0.6, 0.0, 0.0) if dt < 3 else (0.4, 0.0, 0.0),
+                     lui_bt=[(2.0, 'RA', None), (4.5, 'XONG', 'SUCCEEDED')]), None])
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 1
+    k = _kn(io)
+    assert k[0] == ('BT_LUI', 'lui=0.25', 'HONG', '-') and k[1] == ('DOI_KHE', 'cho=30', 'HONG', 'VAT_CHAN'), k
+    assert io.kn_moi[0]['t'] < io.kn_moi[1]['t']
+    # Gui lui truoc tuyen 2 roi tuyen 2 tien => GUI_LUI DUOC; DOI_KHE ghi truoc
+    ket_khe = (0.62, 0.03, 0.0)
+    io = IOMat([dict(ket=None, fb=lambda dt: (1.75, 0), pose=lambda dt: ket_khe, plan=lambda dt: 1.0),
+                dict(ket=('SUCCEEDED', 30.0), fb=lambda dt: (max(0.05, 2.9 - 0.1 * dt), 0), pose=lambda dt: TOI_B(dt) if dt >= 30 else ket_khe)])
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 0
+    assert _kn(io) == [('DOI_KHE', 'cho=30', 'HONG', 'KET_CO_DUONG'), ('GUI_LUI', 'lui=0.35', 'DUOC', '-')], _kn(io)
+    # Gui lui ma xe dich 0,02 m => DONG_BANG HONG (khong cho GUI_LUI)
+    io = IOMat([dict(ket=None, fb=lambda dt: (1.75, 0), pose=lambda dt: ket_khe), None])
+    io.kq_lui, io.quang_lui = 'ABORTED', 0.02
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 1
+    assert _kn(io) == [('DOI_KHE', 'cho=30', 'HONG', 'VAT_CHAN'), ('DONG_BANG', 'lui=0.35', 'HONG', 'GUI_LUI')], _kn(io)
+    # Gui lui xong nhung khong co tuyen nao chay tiep (tuyen 2 bi tu choi) => GUI_LUI HONG luc het chuyen
+    io = IOMat([dict(ket=None, fb=lambda dt: (1.75, 0), pose=lambda dt: ket_khe), None])
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 1 and _kn(io)[-1] == ('GUI_LUI', 'lui=0.35', 'HONG', '-'), _kn(io)
+    # GAN_DICH: cho 60 s roi gui lai toi B => CHO_DICH DUOC; gui lai van ket => CHO_DICH HONG
+    io, ma = _gan_dich(dict(ket=('SUCCEEDED', 8.0), fb=lambda dt: (max(0.05, 0.3 - 0.04 * dt), 0), pose=lambda dt: TOI_B(dt) if dt >= 8 else GAN_B(dt)))
+    assert ma == 0 and _kn(io) == [('CHO_DICH', 'cho=60', 'DUOC', '-')], _kn(io)
+    io, ma = _gan_dich(dict(ket=None, fb=lambda dt: (0.35, 0), pose=GAN_B))
+    assert ma == 1 and _kn(io) == [('CHO_DICH', 'cho=60', 'HONG', '-')], _kn(io)
 
 if __name__ == '__main__':
     import sys

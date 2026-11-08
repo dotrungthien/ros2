@@ -93,6 +93,7 @@ CU_2607FEE = {
     'sat_vat_tat_m': 0.12,
 }
 CU_THAN_THE = {'v_min_mps': 0.092, 'lidar_range_min_m': 0.10, 'ban_kinh_xoay_m': 0.186, 'o_luoi_m': 0.05, 'rong_xe_m': 0.16, 'dai_xe_m': 0.25}
+MOI_NAO_XE = {'kinh_nghiem_quan_sat_s': 15.0}           # so MOI cua nao xe (khong co o 2607fee)
 CU_AN_TOAN = {'cach_vat_toi_thieu_m': 0.06, 'sep_phat_toc_do': False}
 
 
@@ -105,7 +106,7 @@ def _tam(noi_dung):
 
 def test_01_mac_dinh_tung_so_bang_2607fee():
     sai = [(k, HV.MAC_DINH.get(k), v) for k, v in CU_2607FEE.items() if HV.MAC_DINH.get(k) != v or type(HV.MAC_DINH.get(k)) is not type(v)]
-    assert not sai and set(HV.MAC_DINH) - set(CU_2607FEE) == set(), sai
+    assert not sai and set(HV.MAC_DINH) - set(CU_2607FEE) == set(MOI_NAO_XE) and all(HV.MAC_DINH[k] == v for k, v in MOI_NAO_XE.items()), sai
     assert HV.MAC_DINH_THAN_THE == CU_THAN_THE and HV.MAC_DINH_AN_TOAN == CU_AN_TOAN
 
 

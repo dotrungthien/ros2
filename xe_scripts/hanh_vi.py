@@ -103,7 +103,11 @@ MAC_DINH = {
     'dich_dung_m': 0.03,    # P_MAC_DINH['dich_dung'] (tham so ROS)
     'sat_vat_m': 0.1,     # P_MAC_DINH['sat_vat'] (tham so ROS)
     'sat_vat_tat_m': 0.12,    # P_MAC_DINH['sat_vat_tat'] (tham so ROS)
+    'kinh_nghiem_quan_sat_s': 15.0,  # MOI (nao xe viec 4, khong co o 2607fee): ket qua su co = co tien trong bay nhieu giay sau do
 }
+
+COT_KINH_NGHIEM = 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do'     # ~/kinh_nghiem.csv tu 09/11 (nao xe viec 4)
+COT_KINH_NGHIEM_CU = 'gio,x,y,huong,tuyen,ly_do'                      # truoc 09/11 (moi dong cu la mot lan bo khe)
 
 _DA = {}
 
@@ -191,3 +195,28 @@ def nap_lai():
     """Doc lai tep (test). Tien trinh dang chay KHONG doc lai: so co dinh tu luc khoi dong."""
     _DA.clear()
     return _nap()
+
+
+def doc_kinh_nghiem(path):
+    """~/kinh_nghiem.csv -> [dict theo COT_KINH_NGHIEM + 'so_dong'] (so dong trong tep, dem tu 1, de lam bang chung).
+    Dong 'gio,...' la dong dau: doi bang cot (tep co the co dong dau cu roi dong dau moi). Dong cu (COT_KINH_NGHIEM_CU):
+    su_co = DOI_KHE, chuyen / cach / ket_qua rong, giu tuyen. Dong sai so cot bo qua. Khong co tep => []."""
+    out, cot = [], COT_KINH_NGHIEM.split(',')
+    try:
+        with open(path) as f:
+            for n, l in enumerate(f, 1):
+                l = l.rstrip('\r\n')
+                if l.startswith('gio,'):
+                    cot = l.split(',')
+                    continue
+                o = l.split(',')
+                if len(o) != len(cot):
+                    continue
+                d = dict(zip(cot, o))
+                if 'su_co' not in d:
+                    d.update(chuyen='', su_co='DOI_KHE', cach='', ket_qua='')
+                d['so_dong'] = n
+                out.append(d)
+    except OSError:
+        return []
+    return out

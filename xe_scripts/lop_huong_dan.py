@@ -7,7 +7,7 @@ Chi chay khi MAT_LAI=true (navigation_my_bot.launch.py mat_lai:=true: python3 /h
 - Bat len: phat ngay luoi toan 0 (planner Nav2 cho moi lop "current" KHONG han gio, planner_server.cpp:274-281).
 - /chon_tuyen (std_msgs/String) "r x y" (r = 1 | 2, x y = vi tri xe, m): o co tam trong tinh_tuyen.CAM[r] = 100 (cam: khe kia),
   tru dia R_THA quanh (x, y) (xe co the dang dung trong vung cam). "0": bo het o cam.
-- LUON cong vung ton diem: cum >= N_CUM dong ~/kinh_nghiem.csv trong R_CUM => dia R_VUNG gia tri GIA_TON (50 < 72: di duoc
+- LUON cong vung ton diem: cum >= N_CUM dong ~/kinh_nghiem.csv (09/11: chi ly_do KET_CO_DUONG) trong R_CUM => dia R_VUNG gia tri GIA_TON (50 < 72: di duoc
   nhung ton, KHONG BAO GIO thanh cam). Doc lai csv MOI lan nhan /chon_tuyen; dong hong bo qua.
 - Moi lan phat in 1 dong (PHAT ...).
 - QoS phat: RELIABLE + TRANSIENT_LOCAL depth 1 (global_costmap lop_huong_dan.map_subscribe_transient_local: true).
@@ -79,12 +79,15 @@ def doc_chon_tuyen(s):
     return int(o[0]), float(o[1]), float(o[2])
 
 
-def doc_kinh_nghiem(path=TEP_KINH_NGHIEM):
-    """Diem (x, y) cua ~/kinh_nghiem.csv (cot gio,x,y,huong,tuyen,ly_do; gui_duong.py ghi). Khong co tep => []; dong hong bo qua."""
+def doc_kinh_nghiem(path=TEP_KINH_NGHIEM, ly_do=('KET_CO_DUONG',)):
+    """Diem (x, y) cua ~/kinh_nghiem.csv (cot gio,x,y,huong,tuyen,ly_do; gui_duong.py ghi). Khong co tep => []; dong hong bo qua.
+    09/11 buoc 3 #5: chi dem dong co ly_do trong `ly_do` (KET_CO_DUONG = co duong ma ket; VAT_CHAN = vat chan, khong dem)."""
     out = []
     try:
         with open(path, newline='') as f:
             for r in csv.DictReader(f):
+                if (r.get('ly_do') or '').strip() not in ly_do:
+                    continue
                 try:
                     x, y = float(r['x']), float(r['y'])
                 except (KeyError, TypeError, ValueError):

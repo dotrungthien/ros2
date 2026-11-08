@@ -4,6 +4,7 @@ Cau noi that (cong ngau nhien), HOME gia, bat_xe.sh / chuyen.sh gia; tep that cu
 Chay: python3 -m unittest test_trang_v10   (trong xe_scripts; chay RIENG voi test_cau_noi: moi tep mot HOME gia)
 """
 import json
+import math
 import os
 import shutil
 import sys
@@ -105,7 +106,7 @@ class Nen(unittest.TestCase):
     def setUp(self):
         cho(lambda: C.trang_thai_nut()['viec'] == 'rong', 15)
         LINK['on'] = False
-        for t in ('log_phu_lai.txt', 'sep_thoat', 'sep_nhat_ky.csv', '.cau_noi_pin'):
+        for t in ('log_phu_lai.txt', 'sep_thoat', 'sep_nhat_ky.csv', '.cau_noi_pin', 'vi_tri_xe'):
             try:
                 os.remove(os.path.join(TAM, t))
             except OSError:
@@ -442,7 +443,18 @@ class M2BanDo(Nen):
             f.write('gio_mono,gio,loai,dau_hieu,nguon_nghi,phep_kiem,ket_qua,se_lam,x,y,goc_do\n'
                     '5.00,2026-11-06 03:00:00,TU_THE,DI_THUONG,,,,,0.41,0.20,15\n5.10,2026-11-06 03:00:01,VONG,x,,,,,,,\n')
         st, j = js(self.port, 'GET', '/v10/trang_thai')
-        self.assertEqual(j['pose'], {'x': 0.41, 'y': 0.2, 'goc_do': 15.0, 'gio': '2026-11-06 03:00:00'})
+        self.assertEqual(j['pose'], {'x': 0.41, 'y': 0.2, 'goc_do': 15.0, 'gio': '2026-11-06 03:00:00', 'nguon': 'sep'})
+        # 09/11 buoc 3 #3: ~/vi_tri_xe moi (gui_duong kieu mat) thang vi tri cua sep; cu > 3 s => lai lay cua sep
+        G = V.nap(C, 'gui_duong')
+        with open(os.path.join(TAM, 'vi_tri_xe'), 'w') as f:
+            f.write(G.noi_dung_vi_tri(time.time(), (1.25, 0.5, 0.0), [(1.25, 0.5), (1.6, 0.82)]))
+        j = js(self.port, 'GET', '/v10/trang_thai')[1]
+        self.assertEqual((j['pose']['x'], j['pose']['y'], j['pose']['nguon']), (1.25, 0.5, 'gui_duong'))
+        self.assertEqual(j['duong'], [])                                                 # khong co chuyen dang chay: khong ve duong
+        with open(os.path.join(TAM, 'vi_tri_xe'), 'w') as f:
+            f.write(G.noi_dung_vi_tri(time.time() - 10, (1.25, 0.5, 0.0), []))
+        self.assertEqual(js(self.port, 'GET', '/v10/trang_thai')[1]['pose']['nguon'], 'sep')
+        os.remove(os.path.join(TAM, 'vi_tri_xe'))
         os.remove(os.path.join(TAM, 'sep_nhat_ky.csv'))
         self.assertIsNone(js(self.port, 'GET', '/v10/trang_thai')[1]['pose'])
 
@@ -1049,6 +1061,32 @@ class Q3HanHet(Nen):
 
 # ---------------- 08/11 bo 1e: CHO_VAT / DI_TIEP (gui_duong kieu mat), phu lai chi nhin ----------------
 class MatLai(Nen):
+    def test_buoc3_d1_gui_duong_trang(self):
+        """09/11 buoc 3 D(1): cau gui_duong in / tep gui_duong ghi -> cho trang doc (#3 #4 #6)."""
+        G = V.nap(C, 'gui_duong')
+        now = time.time()
+        vt = V.doc_vi_tri_xe(G.noi_dung_vi_tri(now, (0.5, -0.25, math.pi / 2), [(0.0, 0.0), (0.5, 0.5)]), now + 0.5)
+        self.assertEqual((vt['x'], vt['y'], vt['goc_do'], vt['tuoi_s'], vt['duong']), (0.5, -0.25, 90.0, 0.5, [[0.0, 0.0], [0.5, 0.5]]))
+        self.assertIsNone(V.doc_vi_tri_xe(G.noi_dung_vi_tri(now, None, []), now))          # khong co tf moi
+        self.assertIsNone(V.doc_vi_tri_xe(G.noi_dung_vi_tri(now - 3.5, (0, 0, 0), []), now))
+        self.assertIsNone(V.doc_vi_tri_xe('hong', now))
+        # #4: so CHO_VAT cua gui_duong (n/30 bo khe, n/60 GAN_DICH, n/10 gui lai) la so chinh luc 대기
+        for c, so in (('CHO_VAT: 15/30 s (cach dich 1.20 m)', [15, 30]), ('CHO_VAT: 55/60 s', [55, 60]), ('CHO_VAT: 5/10 s', [5, 10])):
+            self.assertEqual(V.chuyen_cuoi_ct(['-- tuyen 1, lan 1/1: x', c]), ('CHO', c))
+            self.assertEqual(V.cho_vat_so(c), so)
+        self.assertIsNone(V.cho_vat_so('   GAN_DICH: cach dich 0.30 m'))
+        # #6: LUI_RA => 탈출 중, ly do = dong LUI_RA; LUI_XONG => di tiep
+        for c in ('LUI_RA: bt %.2f' % G.LUI_BT_M, 'LUI_RA: gui 0.35 (truoc tuyen 2, /backup 0.10 m/s)'):
+            cl, cd = V.chuyen_cuoi_ct(['-- tuyen 1, lan 1/1: x', c])
+            ma, ly = V.suy_trang_thai(link('on'), nut(chuyen_chay=True), SEP0, None, cl, None, 1.0, False, cd)
+            self.assertEqual((ma, ly), ('TT_DANG_THOAT', c))
+        self.assertEqual(V.dong_chuyen_cuoi(['LUI_RA: bt 0.25', '   LUI_XONG: bt => SUCCEEDED.']), 'DI')
+        h = doc('trang_v10.html')
+        self.assertIn("S.cho_vat?'앞이 막혔어요. 기다리는 중 '+S.cho_vat[0]+'/'+S.cho_vat[1]+'초'", h)
+        self.assertIn("(S.ly_do||'').indexOf('LUI_RA:')===0?'Nav2가 뒤로 빼내고 있어요 ", h)
+        self.assertIn("$('brain').style.opacity=cu&&n.tuoi_s>5?'0.45':'1';", h)
+        self.assertIn('S.duong.forEach(function(p,k)', h)
+
     def test_d1_tep_xe_kieu_mat(self):
         import re
         sv = doc('so_voi_pi.sh')                                                         # tep co dong khong duoc in: chi assertTrue

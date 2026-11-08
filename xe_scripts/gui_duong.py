@@ -41,6 +41,12 @@ Phan thuan (khong ROS) o nua tren, thu bang test_gui_duong.py.
   Bien moi: CHO_KHE (30 s), TIEN_MIN (0,10 m).
   08/11 buoc 2c: truoc khi gui tuyen kia: Nav2 BackUp (/backup) 0,35 m o 0,10 m/s, in "LUI_RA ..."; sep DUNG luc lui => DUNG_SEP.
   behavior_server ra cmd_vel_nav_raw -> velocity_smoother -> collision_monitor (nhu lenh controller).
+  09/11 buoc 3 (CHUA CHAY TREN XE): #2 GAN_DICH: xe cach dich < GAN_DICH_M (0,40 m) ma khong tien GAN_DICH_S (10 s) => huy dich,
+  dung yen CHO_DICH (60 s, in "CHO_VAT: n/60 s"), gui lai 1 lan ("-- tuyen r, lan 2/2"); 10 s van khong tien => HET_DUONG,
+  KHONG doi khe. #3 ~/vi_tri_xe moi 1 s (noi_dung_vi_tri). #5 ~/kinh_nghiem.csv ly_do KET_CO_DUONG (co /plan trong CHO_KHE s
+  ma khong tien) | VAT_CHAN (planner khong ra duong). #6 "LUI_RA: bt|gui <m>" khi bat dau lui (bt: cay bt_mat goi /backup,
+  thay qua /backup/_action/status; gui: truoc /backup cua minh), "   LUI_XONG: bt|gui => KQ" khi xong. #7 bi ngat: huy ca
+  /backup dang chay. (09/11: behavior_server ra thang /cmd_vel_avoid khi mat_lai:=true, buoc 2g.)
 """
 import math
 import os
@@ -63,13 +69,17 @@ def cau_hinh(env=os.environ):
                 # 08/11 bo 1e kieu mat: dong ho bo khe (s), muc tien toi thieu (m), cho sau /chon_tuyen (s), nhip in CHO_VAT (s)
                 cho_khe=f('CHO_KHE', 30.0), tien_min=f('TIEN_MIN', 0.10), cho_chon=2.0, nhip_cho=5.0,
                 # 08/11 buoc 2c: truoc khi gui tuyen kia lui thang bang Nav2 BackUp (m, m/s): gia lap xe khong tu quay dau trong khe
-                lui_m=0.35, lui_v=0.10)
+                lui_m=0.35, lui_v=0.10,
+                # 09/11 buoc 3 #2: gan dich (m), khong tien bao lau thi huy (s), dung yen bao lau roi gui lai 1 lan (s)
+                gan_dich_m=f('GAN_DICH_M', 0.40), gan_dich_s=f('GAN_DICH_S', 10.0), cho_dich=f('CHO_DICH', 60.0))
 
 
 # ---------- 08/11 bo 1e: kieu mat (phan thuan) ----------
 TEP_GOC = os.path.expanduser('~/goc_dang_chay')
 COT_KINH_NGHIEM = 'gio,x,y,huong,tuyen,ly_do'           # lop_huong_dan.doc_kinh_nghiem doc theo ten cot
 BO_QUA_KHI_GUI_LAI = ('PLAN_', 'ABORT_NHANH')           # ly do CHO cua sep bo qua khi gui lai sau khi bo khe (sep.py:370)
+LUI_BT_M = 0.25            # 09/11 buoc 3 #6: backup_dist cua nhanh FollowPath trong bt_mat.xml (test kiem khop)
+KET_CO_DUONG, VAT_CHAN = 'KET_CO_DUONG', 'VAT_CHAN'      # 09/11 buoc 3 #5: ly_do ~/kinh_nghiem.csv (lop_huong_dan chi dem KET_CO_DUONG)
 
 
 def doc_goc(path=TEP_GOC):
@@ -106,6 +116,24 @@ def noi_dung_chup(ly, gio, pose, fb, plan, cm):
         d.append('costmap %dx%d o %.3f m goc (%.3f; %.3f): %d o >= 50 (x y gia_tri)' % (w, h, res, ox, oy, len(o)))
         d += ['%.3f %.3f %d' % (ox + (i + 0.5) * res, oy + (j + 0.5) * res, v) for i, j, v in o]
     return '\n'.join(d) + '\n'
+
+
+def ly_do_kinh_nghiem(tuoi_plan, cua_so):
+    """09/11 buoc 3 #5: co /plan (cua dich nay) trong `cua_so` s cuoi => KET_CO_DUONG (co duong ma khong tien);
+    khong => VAT_CHAN (planner khong ra duong: Nav2 1.1.20 chi phat /plan khi tinh duoc)."""
+    return KET_CO_DUONG if tuoi_plan is not None and tuoi_plan <= cua_so else VAT_CHAN
+
+
+def noi_dung_vi_tri(t_epoch, pose, plan, n_max=100):
+    """09/11 buoc 3 #3: ~/vi_tri_xe (gui_duong kieu mat ghi moi 1 s; trang_v10.doc_vi_tri_xe doc).
+    Dong 1: '<epoch> <x> <y> <goc_do>' ('-' khi khong co tf moi). Dong 2: 'plan <n> x1 y1 x2 y2 ...' (/plan cua dich dang
+    chay, toi da n_max diem cach deu, giu diem cuoi; khong co dich => 'plan 0')."""
+    d1 = '%.2f %s' % (t_epoch, '- - -' if pose is None else '%.3f %.3f %.1f' % (pose[0], pose[1], math.degrees(pose[2])))
+    plan = list(plan or ())
+    if len(plan) > n_max:
+        b = (len(plan) - 1) / (n_max - 1)
+        plan = [plan[int(round(k * b))] for k in range(n_max)]
+    return d1 + '\n' + ' '.join(['plan', str(len(plan))] + ['%.3f %.3f' % (x, y) for x, y in plan]) + '\n'
 
 
 class DongHo:
@@ -279,9 +307,9 @@ def chay_mat(io, huong, tuyen_dau, cfg):
         if hoi_sep_mat(io, cfg, gui_lai) == 'DUNG':
             return dung_sep(io, nhan, r, 1)
         if gui_lai:                                      # 08/11 buoc 2c: lui ra khoi khe vua bo truoc khi /chon_tuyen tuyen kia
+            io.bao('LUI_RA: gui %.2f (truoc tuyen %d, /backup %.2f m/s)' % (cfg['lui_m'], r, cfg['lui_v']))     # 09/11 #6
             kq_lui, quang = io.lui(cfg['lui_m'], cfg['lui_v'])
-            io.bao('   LUI_RA truoc tuyen %d: /backup %.2f m, %.2f m/s => %s%s.' % (
-                r, cfg['lui_m'], cfg['lui_v'], kq_lui, '' if quang is None else ' (xe lui %.2f m)' % quang))
+            io.bao('   LUI_XONG: gui => %s%s.' % (kq_lui, '' if quang is None else ' (xe lui %.2f m)' % quang))
             if kq_lui == 'DUNG':
                 return dung_sep(io, nhan, r, 1)
         gui_lai = True
@@ -308,14 +336,58 @@ def chay_mat(io, huong, tuyen_dau, cfg):
             io.ghi(nhan, r, 'tong', 0, 'DEN_NOI', int(round(io.now() - t_chuyen)))
             io.bao('DEN_NOI: %s xong theo tuyen %d (cach dich %.2f m).' % (huong, r, lech))
             return 0
+        if kq == 'GAN_DICH':                               # 09/11 buoc 3 #2: gan dich ma ket => cho, gui lai 1 lan, KHONG doi khe
+            io.ghi(nhan, r, 1, 1, 'KHONG_DAT', giay, '-' if lech is None else '%.2f' % lech)
+            return gan_dich(io, cfg, nhan, huong, r, (dx, dy), yaw_cuoi, lech, t_chuyen)
         if kq in ('CHO_VAT_30s', 'KHONG_FEEDBACK'):        # bo khe: nho cho ket + chup bang chung
+            ly = ly_do_kinh_nghiem(io.tuoi_plan(), cfg['cho_khe'])        # 09/11 buoc 3 #5
             if p is not None:
-                io.ghi_kinh_nghiem(p[0], p[1], huong, r, kq)
-            io.chup(huong, 'bo khe tuyen %d (%s)' % (r, kq))
+                io.ghi_kinh_nghiem(p[0], p[1], huong, r, ly)
+            io.chup(huong, 'bo khe tuyen %d (%s, %s)' % (r, kq, ly))
         io.bao('   khong den duoc (%s%s).' % (kq, '' if lech is None else ', cach dich %.2f m' % lech))
         io.ghi(nhan, r, 1, 1, 'KHONG_DAT', giay, '-' if lech is None else '%.2f' % lech)
         io.bao('== Tuyen %d hong. ==' % r)
     io.bao('HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.')
+    io.ghi(nhan, '-', 'het', 0, 'HET_DUONG', 0)
+    return 1
+
+
+def gan_dich(io, cfg, nhan, huong, r, dich, yaw_cuoi, lech, t_chuyen):
+    """09/11 buoc 3 #2. Dich DA huy (theo_doi_mat). Dung yen cho_dich s (in 'CHO_VAT: n/60 s' moi nhip_cho s; Nav2 khong co
+    dich => cay BT khong chay, khong lui), sep DUNG => DUNG_SEP; roi gui lai 1 lan cung tuyen (khong /chon_tuyen moi, khong
+    lui). Lan 2: gan_dich_s s khong tien (o dau cung vay) hoac hong => HET_DUONG (ma 1), KHONG doi khe."""
+    io.bao('   GAN_DICH: cach dich %s, khong tien %d s => huy dich, dung yen %d s roi gui lai 1 lan (khong doi khe).' % (
+        '?' if lech is None else '%.2f m' % lech, int(cfg['gan_dich_s']), int(cfg['cho_dich'])))
+    t0, lan_in = io.now(), 0
+    while io.now() - t0 < cfg['cho_dich']:
+        lenh = io.lenh_sep()
+        if lenh and lenh[0] == 'DUNG':
+            return dung_sep(io, nhan, r, 2)
+        da = io.now() - t0
+        if da >= cfg['nhip_cho'] * (lan_in + 1):
+            lan_in = int(da // cfg['nhip_cho'])
+            p = io.pose()
+            io.bao('CHO_VAT: %d/%d s%s' % (int(da), int(cfg['cho_dich']),
+                                           '' if p is None else ' (cach dich %.2f m)' % math.hypot(p[0] - dich[0], p[1] - dich[1])))
+        io.ngu(0.1)
+    p = io.pose()
+    t1 = io.now()
+    io.bao('-- tuyen %d, lan 2/2: navigate_to_pose tu %s toi (%.2f; %.2f) (GAN_DICH gui lai)' % (
+        r, '(?)' if p is None else '(%.2f; %.2f)' % (p[0], p[1]), dich[0], dich[1]))
+    kq = theo_doi_mat(io, dich, yaw_cuoi, cfg, gui_lai_gan=True)
+    giay = int(round(io.now() - t1))
+    if kq == 'DUNG':
+        return dung_sep(io, nhan, r, 2)
+    p = io.pose()
+    lech = None if p is None else math.hypot(p[0] - dich[0], p[1] - dich[1])
+    if kq == 'SUCCEEDED' and lech is not None and lech <= cfg['toi_sai_so']:
+        io.ghi(nhan, r, 1, 2, 'SUCCEEDED', giay, '%.2f' % lech)
+        io.ghi(nhan, r, 'tong', 0, 'DEN_NOI', int(round(io.now() - t_chuyen)))
+        io.bao('DEN_NOI: %s xong theo tuyen %d (cach dich %.2f m).' % (huong, r, lech))
+        return 0
+    io.bao('   khong den duoc (%s%s).' % (kq, '' if lech is None else ', cach dich %.2f m' % lech))
+    io.ghi(nhan, r, 1, 2, 'KHONG_DAT', giay, '-' if lech is None else '%.2f' % lech)
+    io.bao('HET_DUONG: gan dich ma khong toi (GAN_DICH, tuyen %d), khong doi khe. Xe dung yen.' % r)
     io.ghi(nhan, '-', 'het', 0, 'HET_DUONG', 0)
     return 1
 
@@ -341,14 +413,19 @@ def hoi_sep_mat(io, cfg, gui_lai):
         return None
 
 
-def theo_doi_mat(io, dich, yaw_cuoi, cfg):
+def theo_doi_mat(io, dich, yaw_cuoi, cfg, gui_lai_gan=False):
     """Gui navigate_to_pose, theo doi toi khi xong. Tra 'SUCCEEDED' | 'ABORTED' | 'CANCELED' | 'TU_CHOI' | 'DUNG' |
-    'CHO_VAT_30s' | 'KHONG_FEEDBACK' (hai ly do bo khe: da huy dich)."""
+    'CHO_VAT_30s' | 'KHONG_FEEDBACK' (hai ly do bo khe: da huy dich) | 'GAN_DICH' (09/11 #2: cach dich < gan_dich_m, khong tien
+    gan_dich_s s; da huy dich) | 'GAN_DICH_HET' (gui_lai_gan: khong tien gan_dich_s s o bat ky dau; da huy dich).
+    09/11 #6: cay BT goi /backup => in 'LUI_RA: bt <m>' / '   LUI_XONG: bt => KQ' (io.su_kien_lui)."""
     if not io.gui_nav(dich, yaw_cuoi):
         return 'TU_CHOI'
-    dh = DongHo(io.now(), cfg['cho_khe'], cfg['tien_min'])
+    han = cfg['gan_dich_s'] if gui_lai_gan else cfg['cho_khe']
+    dh = DongHo(io.now(), han, cfg['tien_min'])
     n_rec, lan_in, da_in = 0, 0, False
     while True:
+        for loai, chi_tiet in io.su_kien_lui():
+            io.bao('LUI_RA: bt %.2f' % LUI_BT_M if loai == 'RA' else '   LUI_XONG: bt => %s.' % chi_tiet)
         kq = io.ket_qua()
         if kq is not None:
             return kq
@@ -365,7 +442,11 @@ def theo_doi_mat(io, dich, yaw_cuoi, cfg):
             io.bao('   Nav2 hoi phuc: number_of_recoveries = %d.' % n_rec)
         if tt == 'BO_KHE':
             io.huy()
-            return ly
+            return 'GAN_DICH_HET' if gui_lai_gan else ly
+        if (tt == 'DI' and not gui_lai_gan and d_tf is not None and d_tf < cfg['gan_dich_m']
+                and dung >= cfg['gan_dich_s']):
+            io.huy()
+            return 'GAN_DICH'
         if tt == 'TIEN':
             if da_in:
                 io.bao('   DI_TIEP: xe tien lai.')
@@ -373,7 +454,7 @@ def theo_doi_mat(io, dich, yaw_cuoi, cfg):
         elif tt == 'DI' and dung >= cfg['nhip_cho'] * (lan_in + 1):
             lan_in = int(dung // cfg['nhip_cho'])
             da_in = True
-            io.bao('CHO_VAT: %d/%d s%s' % (int(dung), int(cfg['cho_khe']), '' if d_tf is None else ' (cach dich %.2f m)' % d_tf))
+            io.bao('CHO_VAT: %d/%d s%s' % (int(dung), int(han), '' if d_tf is None else ' (cach dich %.2f m)' % d_tf))
         io.ngu(0.1)
 
 
@@ -558,7 +639,7 @@ try:
     from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
     from rclpy.signals import SignalHandlerOptions
     from rclpy.time import Time
-    from action_msgs.msg import GoalStatus
+    from action_msgs.msg import GoalStatus, GoalStatusArray
     from geometry_msgs.msg import PoseStamped
     from nav_msgs.msg import OccupancyGrid, Path
     from nav2_msgs.action import BackUp, FollowPath, NavigateToPose
@@ -600,6 +681,14 @@ if rclpy is not None:
                 self.ac_nav = ActionClient(self, NavigateToPose, 'navigate_to_pose')
                 self.ac_lui = ActionClient(self, BackUp, 'backup')      # 08/11 buoc 2c: behavior_server
                 self.fb, self.plan_cuoi = None, []
+                # 09/11 buoc 3: /backup cua gui (#7 bi ngat thi huy), su kien /backup cua cay BT (#6), ~/vi_tri_xe (#3), tuoi /plan (#5)
+                self.goal_lui, self.fut_lui, self.kq_lui = None, None, None
+                self.id_lui_gui, self.lui_bt, self.su_kien = set(), {}, []
+                self.create_subscription(GoalStatusArray, '/backup/_action/status', self._on_lui_status,
+                                         QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE,
+                                                    durability=DurabilityPolicy.TRANSIENT_LOCAL))
+                self.t_plan, self.t_vi_tri = None, 0.0
+                self.tep_vi_tri = os.path.expanduser('~/vi_tri_xe')
                 self.tep_kinh_nghiem = os.path.expanduser('~/kinh_nghiem.csv')
                 self.thu_muc_chup = os.path.expanduser('~/chup')
                 self.tep_log = os.path.expanduser('~/log_gui_duong.txt')
@@ -625,10 +714,23 @@ if rclpy is not None:
         def ngu(self, giay):
             t_het = time.monotonic() + giay
             while True:
+                if self.kieu == 'mat' and time.monotonic() - self.t_vi_tri >= 1.0:     # 09/11 buoc 3 #3
+                    self._ghi_vi_tri()
                 con = t_het - time.monotonic()
                 if con <= 0:
                     return
                 rclpy.spin_once(self, timeout_sec=min(con, 0.05))
+
+        def _ghi_vi_tri(self):
+            """09/11 buoc 3 #3: ~/vi_tri_xe (tep tam roi doi ten): vi tri tf + /plan cua dich navigate_to_pose dang chay."""
+            self.t_vi_tri = time.monotonic()
+            dang = self.goal is not None and self.kq is None
+            try:
+                with open(self.tep_vi_tri + '.tam', 'w') as f:
+                    f.write(noi_dung_vi_tri(time.time(), self.pose(), self.plan_cuoi if dang else []))
+                os.replace(self.tep_vi_tri + '.tam', self.tep_vi_tri)
+            except OSError:
+                pass
 
         def bao(self, cau):
             self.dong.append(cau)
@@ -774,8 +876,8 @@ if rclpy is not None:
                     self.ngu(0.05)
 
         def co_dich(self):
-            """06/11 viec 121: con dich /follow_path dang chay (da gui, chua co ket qua)."""
-            return self.goal is not None and self.kq is None
+            """06/11 viec 121: con dich /follow_path dang chay (da gui, chua co ket qua). 09/11 #7: kieu mat tinh ca /backup cua gui."""
+            return (self.goal is not None and self.kq is None) or (self.kieu == 'mat' and self.lui_dang_chay())
 
         # --- 08/11 bo 1e: io kieu mat ---
         def chon_tuyen(self, s):
@@ -792,6 +894,30 @@ if rclpy is not None:
 
         def _on_plan(self, msg):
             self.plan_cuoi = [(p.pose.position.x, p.pose.position.y) for p in msg.poses]
+            self.t_plan = time.monotonic()
+
+        def tuoi_plan(self):
+            """09/11 #5: giay tu /plan cuoi CUA DICH DANG CHAY (gui_nav xoa moc); None neu chua co."""
+            return None if self.t_plan is None else time.monotonic() - self.t_plan
+
+        def _on_lui_status(self, msg):
+            """09/11 #6: goal /backup KHONG do gui gui (cay BT): vao EXECUTING => su kien RA; ket thuc => XONG <ket qua>."""
+            ten = {GoalStatus.STATUS_SUCCEEDED: 'SUCCEEDED', GoalStatus.STATUS_ABORTED: 'ABORTED', GoalStatus.STATUS_CANCELED: 'CANCELED'}
+            for st in msg.status_list:
+                k = bytes(st.goal_info.goal_id.uuid)
+                if k in self.id_lui_gui:
+                    continue
+                cu = self.lui_bt.get(k)
+                if st.status == GoalStatus.STATUS_EXECUTING and cu is None:
+                    self.lui_bt[k] = 'RA'
+                    self.su_kien.append(('RA', None))
+                elif st.status in ten and cu == 'RA':
+                    self.lui_bt[k] = 'XONG'
+                    self.su_kien.append(('XONG', ten[st.status]))
+
+        def su_kien_lui(self):
+            out, self.su_kien = self.su_kien, []
+            return out
 
         def _on_fb(self, msg):
             f = msg.feedback
@@ -813,6 +939,7 @@ if rclpy is not None:
             g.pose.pose.position.x, g.pose.pose.position.y = float(dich[0]), float(dich[1])
             g.pose.pose.orientation.z, g.pose.pose.orientation.w = math.sin(yaw_cuoi / 2), math.cos(yaw_cuoi / 2)
             self.goal, self.kq, self.fb = None, None, None
+            self.plan_cuoi, self.t_plan = [], None          # 09/11 #3 #5: /plan cua dich truoc khong tinh
             fut = self.ac_nav.send_goal_async(g, feedback_callback=self._on_fb)
             t_het = time.monotonic() + 5.0
             while not fut.done() and time.monotonic() < t_het:
@@ -834,30 +961,61 @@ if rclpy is not None:
             g.target.x, g.speed = float(m), float(v)
             han = m / v * 2.0 + 5.0
             g.time_allowance.sec = int(math.ceil(han))
-            self.goal, self.kq = None, None
-            fut = self.ac_lui.send_goal_async(g)
+            # 09/11 buoc 3 #7: handle /backup rieng (self.goal_lui), bi ngat thi huy_khi_ngat huy ca no (ke ca luc cho chap nhan)
+            self.goal_lui, self.kq_lui = None, None
+            fut = self.fut_lui = self.ac_lui.send_goal_async(g)
             t_het = time.monotonic() + 5.0
             while not fut.done() and time.monotonic() < t_het:
                 self.ngu(0.05)
             if not fut.done() or not fut.result().accepted:
                 return 'TU_CHOI', None
-            self.goal = fut.result()
-            self.goal.get_result_async().add_done_callback(self._on_result)
+            self.goal_lui = fut.result()
+            self.id_lui_gui.add(bytes(self.goal_lui.goal_id.uuid))       # #6: khong bao la LUI_RA bt
+            self.goal_lui.get_result_async().add_done_callback(self._on_ket_lui)
             t_het = time.monotonic() + han + 5.0
             kq = None
             while kq is None:
-                kq = self.kq
+                kq = self.kq_lui
                 lenh = self.lenh_sep()
                 if kq is None and lenh and lenh[0] == 'DUNG':
-                    self.huy()
+                    self._huy_lui()
                     kq = 'DUNG'
                 elif kq is None and time.monotonic() > t_het:
-                    self.huy()
+                    self._huy_lui()
                     kq = 'QUA_GIO'
                 if kq is None:
                     self.ngu(0.1)
             p1 = self.pose()
             return kq, (None if p0 is None or p1 is None else math.hypot(p1[0] - p0[0], p1[1] - p0[1]))
+
+        def _on_ket_lui(self, fut):
+            st = fut.result().status
+            self.kq_lui = {GoalStatus.STATUS_SUCCEEDED: 'SUCCEEDED', GoalStatus.STATUS_CANCELED: 'CANCELED'}.get(st, 'ABORTED')
+
+        def lui_dang_chay(self):
+            """09/11 #7: /backup cua gui dang chay (da chap nhan chua xong) hoac dang cho chap nhan."""
+            if self.fut_lui is None:
+                return False
+            if not self.fut_lui.done():
+                return True
+            return self.goal_lui is not None and self.kq_lui is None
+
+        def _huy_lui(self):
+            """Huy /backup cua gui (cho chap nhan toi 2 s neu chua). Tra 'ok' | 'khong_tra_loi' | 'khong_co_lui'."""
+            if not self.lui_dang_chay():
+                return 'khong_co_lui'
+            t_het = time.monotonic() + 2.0
+            while not self.fut_lui.done() and time.monotonic() < t_het:
+                self.ngu(0.05)
+            if not self.fut_lui.done():
+                return 'khong_tra_loi'
+            r = self.fut_lui.result()
+            if not r.accepted or self.kq_lui is not None:
+                return 'khong_co_lui'
+            fut = r.cancel_goal_async()
+            while not fut.done() and time.monotonic() < t_het + 2.0:
+                self.ngu(0.05)
+            return 'ok' if fut.done() else 'khong_tra_loi'
 
         def ghi_kinh_nghiem(self, x, y, huong, tuyen, ly_do):
             ghi_kinh_nghiem(self.tep_kinh_nghiem, time.strftime('%Y-%m-%d %H:%M:%S'), x, y, huong, tuyen, ly_do)
@@ -884,14 +1042,22 @@ if rclpy is not None:
                     f.write(c + '\n')
 
         def huy_khi_ngat(self):
-            """Bi ngat (SIGINT/SIGTERM): huy dich /follow_path dang chay (handle hien co) khi context con song, cho <= 2 s."""
-            if self.goal is None or self.kq is not None:
-                return 'khong_co_dich'
-            fut = self.goal.cancel_goal_async()
-            t_het = time.monotonic() + 2.0
-            while not fut.done() and time.monotonic() < t_het:
-                self.ngu(0.05)
-            return 'ok' if fut.done() else 'khong_tra_loi'
+            """Bi ngat (SIGINT/SIGTERM): huy dich /follow_path dang chay (handle hien co) khi context con song, cho <= 2 s.
+            09/11 buoc 3 #7 (kieu mat): huy ca /backup cua gui dang chay (in '   HUY /backup dang chay: ...'). Tra chung:
+            'ok' | 'khong_tra_loi' (mot trong hai khong tra loi) | 'khong_co_dich' (khong co gi dang chay)."""
+            kq = 'khong_co_dich'
+            if self.goal is not None and self.kq is None:
+                fut = self.goal.cancel_goal_async()
+                t_het = time.monotonic() + 2.0
+                while not fut.done() and time.monotonic() < t_het:
+                    self.ngu(0.05)
+                kq = 'ok' if fut.done() else 'khong_tra_loi'
+            if self.kieu == 'mat':
+                kl = self._huy_lui()
+                if kl != 'khong_co_lui':
+                    self.bao('   HUY /backup dang chay: %s' % kl)
+                    kq = kl if kq != 'khong_tra_loi' else kq
+            return kq
 
     def main():
         a = sys.argv[1:]

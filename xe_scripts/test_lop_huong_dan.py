@@ -85,9 +85,11 @@ def test_07_doc_kinh_nghiem_bo_dong_hong():
     p = os.path.join(d, 'kinh_nghiem.csv')
     assert LH.doc_kinh_nghiem(p) == []                                                   # khong co tep
     with open(p, 'w') as f:
-        f.write('gio,x,y,huong,tuyen,ly_do\n2026-11-08 20:00:00,0.70,0.80,di_B,1,CHO_VAT_30s\nhong\n,,,\n'
-                'g,nan,0.1,di_B,1,x\n2026-11-08 20:01:00,0.71,0.80,ve_A,2,KHONG_FEEDBACK\n')
-    assert LH.doc_kinh_nghiem(p) == [(0.70, 0.80), (0.71, 0.80)]
+        f.write('gio,x,y,huong,tuyen,ly_do\n2026-11-08 20:00:00,0.70,0.80,di_B,1,KET_CO_DUONG\nhong\n,,,\n'
+                'g,nan,0.1,di_B,1,KET_CO_DUONG\n2026-11-08 20:01:00,0.71,0.80,ve_A,2,KET_CO_DUONG\n'
+                '2026-11-08 20:02:00,0.30,0.10,di_B,1,VAT_CHAN\n2026-11-08 20:03:00,0.31,0.10,di_B,1,CHO_VAT_30s\n')
+    assert LH.doc_kinh_nghiem(p) == [(0.70, 0.80), (0.71, 0.80)]                         # 09/11 #5: chi KET_CO_DUONG
+    assert LH.doc_kinh_nghiem(p, ly_do=('VAT_CHAN',)) == [(0.30, 0.10)]
 
 
 def test_08_kich_thuoc_anh_png_pgm():

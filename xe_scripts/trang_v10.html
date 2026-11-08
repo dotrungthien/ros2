@@ -96,8 +96,8 @@ function phu(m){
       +(CHON.dau_trong_do?'\n출발점이 빨간 구역(차량 중심 금지) 안이에요':'')+(CHON.canh_bao.length?'\n회전 공간 부족 꼭짓점 '+CHON.canh_bao.length+'곳':'')
       +'\n정적 지도 기준 미리보기 · 출발하면 차량이 현재 costmap으로 다시 계산해요':'';
   case 'TT_DANG_DI':return chuan_bi()?'출발 전: 위치 확인 후 경로를 계산하고 있어요':'경로를 따라가고 있어요';
-  case 'TT_DANG_CHO':return '앞이 막혔어요. 기다리는 중 ('+han(S.ly_do)+')';
-  case 'TT_DANG_THOAT':return '보조 운전이 차량을 빼내고 있어요 ('+han(S.ly_do)+')';
+  case 'TT_DANG_CHO':return S.cho_vat?'앞이 막혔어요. 기다리는 중 '+S.cho_vat[0]+'/'+S.cho_vat[1]+'초':'앞이 막혔어요. 기다리는 중 ('+han(S.ly_do)+')';
+  case 'TT_DANG_THOAT':return (S.ly_do||'').indexOf('LUI_RA:')===0?'Nav2가 뒤로 빼내고 있어요 ('+S.ly_do.split(' ').slice(1,3).join(' ')+' m)':'보조 운전이 차량을 빼내고 있어요 ('+han(S.ly_do)+')';
   case 'TT_DANG_XOAY':return '제자리에서 회전해요 ('+han(S.ly_do)+')';
   case 'TT_DA_DEN':return '새 목적지를 고르세요\n'+(han(c.dong)||'');
   case 'TT_CAN_GIUP':return (S.ly_do||'').indexOf('LOI_DA_HUY')===0?'오류로 주행을 멈췄어요. 목표는 취소됐어요\n'+S.ly_do
@@ -200,12 +200,15 @@ function ve(){
   diem(BD.A[0],BD.A[1],'#2C2C2A','A');diem(BD.B[0],BD.B[1],'#A32D2D','B');
   if(typeof ve_them==='function')ve_them();
   ve_nho();
+  // 09/11 buoc 3 #3: duong /plan dang chay (gui_duong kieu mat ghi ~/vi_tri_xe moi 1 s)
+  if(co_xe()&&S.duong&&S.duong.length>1){c.strokeStyle='#185FA5';c.lineWidth=3;c.lineJoin='round';c.beginPath();
+    S.duong.forEach(function(p,k){var q=tp(p[0],p[1]);k?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});c.stroke();}
   if(co_xe()){var x=S.pose.x,y=S.pose.y,th=S.pose.goc_do*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th);
     c.fillStyle=vung_tai(x,y)===1?'#A32D2D':'#534AB7';c.beginPath();
     BD.footprint.forEach(function(f,k){var q=tp(x+f[0]*cs-f[1]*sn,y+f[0]*sn+f[1]*cs);k?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});c.closePath();c.fill();
     var m=tp(x,y),mx=Math.max.apply(null,BD.footprint.map(function(f){return f[0];})),n=tp(x+mx*cs,y+mx*sn);
     c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(m[0],m[1]);c.lineTo(n[0],n[1]);c.stroke();}
-  set('vitri',S.pose?'위치 (두뇌 기록 '+S.pose.gio.slice(11)+'): x '+S.pose.x.toFixed(2)+' m, y '+S.pose.y.toFixed(2)+' m, '+Math.round(S.pose.goc_do)+'°'
+  set('vitri',S.pose?'위치 ('+(S.pose.nguon==='gui_duong'?'주행 기록 ':'두뇌 기록 ')+S.pose.gio.slice(11)+'): x '+S.pose.x.toFixed(2)+' m, y '+S.pose.y.toFixed(2)+' m, '+Math.round(S.pose.goc_do)+'°'
       +(vung_tai(S.pose.x,S.pose.y)===1?' · 차량 중심이 금지 구역 안':''):'위치 없음 (두뇌 기록 없음)');
 }
 // ---- M3: 경로 확인. Chi B chuan va A (CHON_B_TU_DO tat). R_CHAM: ban kinh cham quanh B / A tren man hinh (giao dien, khong phai so cua xe) ----
@@ -245,9 +248,11 @@ function bang(){
   set('p5',ds.length?ds.join(' · '):'실행 중인 코드 없음');
   // 111-Q3: luc CHUAN_BI dong TU_THE cua sep la dong cu cua chuyen truoc (CHO / KHONG_CO_DICH = 목표 없음) => khong in
   var nt=chuan_bi()?'두뇌: 출발 준비 대기':'두뇌: '+(n.tu_the?han(n.tu_the[0])+(n.tu_the[1]?' ('+han(n.tu_the[1])+')':''):'-')+(n.lenh?' · 명령 '+han(n.lenh[0]):'');
-  if(n.tuoi_s!==null&&n.tuoi_s!==undefined&&n.tuoi_s>15&&S.link==='on')nt+=' · 기록 '+n.tuoi_s+'초 전 (sep.py 확인)';
+  // 09/11 buoc 3 #4: luon in tuoi dong 두뇌; cu hon 5 s thi lam mo
+  var cu=n.tuoi_s!==null&&n.tuoi_s!==undefined;
+  if(cu)nt+=' · '+n.tuoi_s+'초 전'+(n.tuoi_s>15&&S.link==='on'?' (sep.py 확인)':'');
   if(b.xoay&&b.xoay.trong_do)nt+=' · 차량 중심이 금지 구역 안 (벽에 가까움)';
-  set('brain',nt);
+  set('brain',nt);$('brain').style.opacity=cu&&n.tuoi_s>5?'0.45':'1';
 }
 function ve_nho(){(S.nho||[]).forEach(function(n){var q=tp(n[0],n[1]);c.strokeStyle='#A32D2D';c.lineWidth=2;c.beginPath();
   c.moveTo(q[0]-5,q[1]-5);c.lineTo(q[0]+5,q[1]+5);c.moveTo(q[0]+5,q[1]-5);c.lineTo(q[0]-5,q[1]+5);c.stroke();});}

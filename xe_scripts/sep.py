@@ -81,6 +81,7 @@ P_MAC_DINH = dict(               # tham so ROS (viec 100) [de xuat]
     sat_vat=0.10,                # m, diem LiDAR cach hinh chu nhat than xe tu so nay tro xuong = sat vat (BAT)
     sat_vat_tat=0.12,            # m, khoang tre (viec 105): da bat thi chi TAT khi diem gan nhat > so nay
     lop2_sau=True,               # 06/11 viec 120: false = tat rieng nhanh RA_TIEN (vat sau than) cua lop 2, giu RA_LUI nhu cu
+    dem_luot_thoat=True,         # 08/11 bo 1e: false (MAT_LAI: phu lai chi nhin, khong co luot thoat that) => het_luot luon False
 )
 CUA_SO_VONG = 10.0               # s, cu bay nhieu giay ghi mot dong VONG
 
@@ -704,7 +705,8 @@ class Sep:
                         self.luot_thoat, LUOT_THOAT_MAX, huong_thoang(pts), phia,
                         '-' if p_thoat is None else '(%.2f;%.2f)' % p_thoat)
                 else:
-                    se_kep = 'HET %d LUOT, DUNG_VA_BAO' % LUOT_THOAT_MAX
+                    se_kep = ('HET %d LUOT, DUNG_VA_BAO' % LUOT_THOAT_MAX if self.p['dem_luot_thoat'] else
+                              'HET %d LUOT, dem_luot_thoat=false: KHONG DUNG' % LUOT_THOAT_MAX)      # 08/11 bo 1e
             else:
                 kep = 'DUNG_YEN_KHONG_RO'
         thoat = None             # viec 109c-c1: cho node ghi ~/sep_thoat (chi khi dot ket con mo va con luot)
@@ -802,7 +804,7 @@ class Sep:
         """18:09: mo mot dot giao thoat (ma moi, luot du kien = luot da dem + 1). Het luot (hoac 3 dot lien tiep phu lai khong
         lam gi) => chot het_luot (DUNG). Tra True neu mo duoc."""
         if self.luot_thoat >= LUOT_THOAT_MAX or self.thoat_khong_chay >= LUOT_THOAT_MAX:
-            self.het_luot, self.thoat_ma = True, None
+            self.het_luot, self.thoat_ma = bool(self.p['dem_luot_thoat']), None      # 1e: dem_luot_thoat false => khong chot
             return False
         self.thoat_ma, self.thoat_luot = int(now * 10), self.luot_thoat + 1
         self.thoat_dem, self.thoat_xong_t = False, None
@@ -875,7 +877,7 @@ class Sep:
         if self.luot_thoat < LUOT_THOAT_MAX:
             self.luot_thoat += 1
             return True
-        self.het_luot = True
+        self.het_luot = bool(self.p['dem_luot_thoat'])          # 08/11 bo 1e: dem_luot_thoat false => khong chot het_luot
         return False
 
     def _co(self, ten, bat, ghi, nguon='', kiem='', se=''):

@@ -287,8 +287,9 @@ echo "== B2b: bat sep (ra_lenh=$SEP_RA_LENH ra_thoat=$SEP_RA_THOAT) va phu lai (
 # 08/11 bo 1e: MAT_LAI=true => cay bt_mat tinh lai duong 1 Hz, controller ABORTED dich /follow_path cu moi lan (Nav2 1.1.20
 #   simple_action_server.hpp:345-347) => sep + phu lai chi nghe /navigate_to_pose. Rong = dong lenh y nhu cu.
 NGHE_FP=""; [ "$MAT_LAI" = "true" ] && NGHE_FP="-p nghe_follow_path:=false"
+SEP_MAT=""; [ "$MAT_LAI" = "true" ] && SEP_MAT="-p dem_luot_thoat:=false"   # 08/11 1e: phu lai chi nhin => sep khong dem luot thoat
 [ -n "$NGHE_FP" ] && echo "sep + phu lai: nghe_follow_path:=false (MAT_LAI=true)"
-setsid nohup python3 ~/sep.py --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" $NGHE_FP > ~/log_sep.txt 2>&1 < /dev/null &
+setsid nohup python3 ~/sep.py --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" $NGHE_FP $SEP_MAT > ~/log_sep.txt 2>&1 < /dev/null &
 # 18:09: sep_ra_thoat = SEP_RA_THOAT (mot nguon): sep giao thoat thi phu lai khong tu THOAT_CUNG ma CHO_SEP
 setsid nohup python3 ~/lai_xe_lidar.py --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" -p sep_ra_thoat:="$SEP_RA_THOAT" $NGHE_FP > ~/log_phu_lai.txt 2>&1 < /dev/null &
 sleep 5

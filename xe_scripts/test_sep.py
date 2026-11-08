@@ -356,7 +356,7 @@ def test_25_ghi_lenh_doi_ten_nguyen_tep():
         shutil.rmtree(d)
 
 
-def _chay_kep(day, vong, plan=None):
+def _chay_kep(day, vong, plan=None, p=None):
     """Xe dung yen o K4 (co dich), khoang cach LiDAR gan than xe bi thay bang chuoi `day` (m, lap vong, moi vong mot
     gia tri). Chay 11 s cho du t_dung roi `vong` vong. Tra (c, toan bo nhat ky)."""
     that, i = S.sat_than_xe, [0]
@@ -367,12 +367,15 @@ def _chay_kep(day, vong, plan=None):
     S.sat_than_xe = gia
     try:
         c = Chay(vao(pose=(0.60, 0.02, -math.pi / 2)))
-        c.thoats = []                                                 # viec 109c-c1: tt['thoat'] moi vong
+        if p:                                                         # 08/11 bo 1e: tham so Sep rieng (vd dem_luot_thoat)
+            c.s.p.update(p)
+        c.thoats, c.dis = [], []                                      # viec 109c-c1: tt['thoat'] moi vong; 1e: (di, di_ly) moi vong
         tt, log = c(goals=[[(b'g', 2)]], plans=[plan] if plan else [])
         for _ in range(110 + vong):
             tt, l = c()
             log += l
             c.thoats.append(tt['thoat'])
+            c.dis.append((tt['di'], tt['di_ly']))
         c.tt = tt
     finally:
         S.sat_than_xe = that
@@ -798,6 +801,73 @@ def test_46_lop2_ra_tien_vat_sau_than():
     tt, _ = Chay(vao(pts=k1, ra_lenh=False))(luot=dict(luot, ma=66))    # ra_lenh = false: khong tien
     assert tt['ra2']['chu'] == 'KHONG_CAN' and tt['ra2']['ly'] == 'ra_lenh=false'
     assert S.P_MAC_DINH['lop2_sau'] is True
+
+
+def test_48_dem_luot_thoat_false_khong_bao_gio_het_luot():
+    """08/11 bo 1e (MAT_LAI: phu lai chi nhin, KHONG co luot thoat that): dem_luot_thoat=False => di qua nhanh het luot cua
+    _mo_thoat (sep.py:805) va _luot_moi (sep.py:878) ma het_luot van False; di_hay_khong khong bao gio DUNG 'HET_..._LUOT_THOAT'."""
+    assert S.P_MAC_DINH['dem_luot_thoat'] is True                    # mac dinh = nhu cu
+    het = 'HET_%d_LUOT_THOAT' % S.LUOT_THOAT_MAX
+    dem = {'805': 0, '878': 0}
+    goc_mo, goc_luot = S.Sep._mo_thoat, S.Sep._luot_moi
+
+    def mo(self, now):
+        if self.luot_thoat >= S.LUOT_THOAT_MAX or self.thoat_khong_chay >= S.LUOT_THOAT_MAX:
+            dem['805'] += 1                                           # vao nhanh het luot cua _mo_thoat
+        return goc_mo(self, now)
+
+    def luot(self):
+        if self.luot_thoat >= S.LUOT_THOAT_MAX:
+            dem['878'] += 1                                           # vao nhanh het luot cua _luot_moi
+        return goc_luot(self)
+    S.Sep._mo_thoat, S.Sep._luot_moi = mo, luot
+    try:
+        # (a) goi thang hai nhanh
+        s = S.Sep(dem_luot_thoat=False)
+        s.luot_thoat = S.LUOT_THOAT_MAX
+        assert s._luot_moi() is False and s.het_luot is False and s.luot_thoat == S.LUOT_THOAT_MAX
+        s = S.Sep(dem_luot_thoat=False)
+        s.luot_thoat = S.LUOT_THOAT_MAX
+        assert s._mo_thoat(1.0) is False and s.het_luot is False and s.thoat_ma is None
+        s = S.Sep(dem_luot_thoat=False)
+        s.thoat_khong_chay = S.LUOT_THOAT_MAX
+        assert s._mo_thoat(1.0) is False and s.het_luot is False
+        n_a = dict(dem)
+        # (b) kich ban test 27 / 31: ket lap ~20 lan (ban cu: het_luot + DUNG_VA_BAO + DUNG HET_3_LUOT_THOAT)
+        c, log = _chay_kep([0.05, 0.20], 40, PLAN_K4, p=dict(dem_luot_thoat=False))
+        assert c.s.het_luot is False and c.s.luot_thoat == S.LUOT_THOAT_MAX
+        assert not any('DUNG_VA_BAO' in d for d in log), [d for d in log if 'DUNG_VA_BAO' in d][:2]
+        assert any('HET %d LUOT; dem_luot_thoat=false: KHONG DUNG' % S.LUOT_THOAT_MAX in d for d in log)   # nhat ky doi ',' -> ';'
+        assert all(not (di == 'DUNG' and het in ly) for di, ly in c.dis), [x for x in c.dis if x[0] == 'DUNG']
+        assert dem['878'] > n_a['878'], dem                           # thuc su da vao nhanh :878 trong kich ban
+        # (c) kich ban test 40: ra_thoat, phu lai CHO_SEP sau 3 luot; va 3 dot lien tiep phu lai khong lam gi
+        doi = '%s -> %s (%s)%s | %s'
+        n_b = dict(dem)
+        c = Chay(vao())
+        c.s.p['dem_luot_thoat'] = False
+        (tt, _), day = _ra_thoat_mo_dot(c, doi)
+        c.s.luot_thoat, c.s.thoat_ma = 3, None
+        ds = [c(rosout=[('lai_xe_lidar', doi % ('CHO_SEP', 'NGHI', '', '', 'x'))], ra_thoat=True)[0]]
+        tt, log = c(rosout=[('lai_xe_lidar', doi % ('NGHI', 'CHO_SEP', 'KET_HINH_HOC', '', 'x'))], ra_thoat=True)
+        ds.append(tt)
+        assert c.s.het_luot is False and not any('DUNG_VA_BAO' in d for d in log)
+        c = Chay(vao())
+        c.s.p['dem_luot_thoat'] = False
+        (tt, _), day = _ra_thoat_mo_dot(c, doi)
+        for vong in range(4):
+            ds.append(c(rosout=[('lai_xe_lidar', doi % ('-', 'XOAY_XONG', '', '', 'x'))], duong_day=[day], ra_thoat=True)[0])
+            ds.append(c(rosout=[('lai_xe_lidar', doi % ('XOAY_XONG', 'CHO_SEP', 'XOAY_BI_CHAN_QUA_LAU', '', 'x'))], duong_day=[day], ra_thoat=True)[0])
+            for _ in range(31):
+                ds.append(c(duong_day=[day], ra_thoat=True)[0])
+        assert c.s.het_luot is False
+        assert all(not (t['di'] == 'DUNG' and het in t['di_ly']) for t in ds), [t['di_ly'] for t in ds if t['di'] == 'DUNG']
+        assert dem['805'] > n_b['805'], dem                           # thuc su da vao nhanh :805 trong kich ban
+    finally:
+        S.Sep._mo_thoat, S.Sep._luot_moi = goc_mo, goc_luot
+    assert S.di_hay_khong(dict(het_luot=False)) == ('DI', '')
+    s = S.Sep()                                                       # mac dinh (dem_luot_thoat True): nhu cu
+    s.luot_thoat = S.LUOT_THOAT_MAX
+    assert s._luot_moi() is False and s.het_luot is True
 
 if __name__ == '__main__':
     import sys

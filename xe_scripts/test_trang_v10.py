@@ -1075,7 +1075,12 @@ class MatLai(Nen):
                         'bat_xe.sh khong ghi de ~/goc_dang_chay moi lan bat')
         self.assertTrue('rm -f ~/goc_dang_chay' in bx, 'bat_xe.sh tat khong xoa ~/goc_dang_chay')
         self.assertTrue('|[m]ap_server|[l]op_huong_dan|' in bx, 'NODES thieu map_server / lop_huong_dan')
-        self.assertTrue(bx.count('$NGHE_FP >') == 2 and 'NGHE_FP="-p nghe_follow_path:=false"' in bx, 'nghe_follow_path')
+        self.assertTrue(bx.count('$NGHE_FP >') == 1 and bx.count('$NGHE_FP $SEP_MAT >') == 1 and 'NGHE_FP="-p nghe_follow_path:=false"' in bx,
+                        'nghe_follow_path')
+        self.assertTrue('SEP_MAT=""; [ "$MAT_LAI" = "true" ] && SEP_MAT="-p dem_luot_thoat:=false"' in bx, 'bat_xe.sh dem_luot_thoat')
+        S_ = V.nap(C, 'sep')
+        self.assertIs(S_.P_MAC_DINH['dem_luot_thoat'], True)                              # ben doc: tham so co that, mac dinh nhu cu
+        self.assertIn('for k, v in P_MAC_DINH.items():', doc('sep.py'))                    # nut khai bao moi khoa P_MAC_DINH
         for ten in ('sep.py', 'lai_xe_lidar.py'):                                          # ben doc: ten tham so co that
             self.assertIn("declare_parameter('nghe_follow_path', True)", doc(ten))
         kx = doc('kiem_xe.sh')

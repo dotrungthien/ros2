@@ -109,8 +109,9 @@ for i in $(seq "$T_CHO"); do
 done
 # ---- sep va phu lai, nhu bat_xe.sh B2b (chay tu ban trong kho; ghi ~/sep_* nhu tren xe) ----
 echo "== bat sep (ra_lenh=$SEP_RA_LENH ra_thoat=$SEP_RA_THOAT) va phu lai (phat_lenh=$PHU_LAI_PHAT_LENH) =="
-NGHE_FP=""; [ "$MAT_LAI" = "true" ] && NGHE_FP="-p nghe_follow_path:=false"   # 08/11 bo 1e, nhu bat_xe.sh
-setsid nohup python3 "$XS/sep.py" --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" $NGHE_FP \
+NGHE_FP=""; [ "$MAT_LAI" = "true" ] && NGHE_FP="-p nghe_follow_path:=false"
+SEP_MAT=""; [ "$MAT_LAI" = "true" ] && SEP_MAT="-p dem_luot_thoat:=false"   # 08/11 1e: phu lai chi nhin => sep khong dem luot thoat   # 08/11 bo 1e, nhu bat_xe.sh
+setsid nohup python3 "$XS/sep.py" --ros-args -p ra_lenh:="$SEP_RA_LENH" -p ra_thoat:="$SEP_RA_THOAT" $NGHE_FP $SEP_MAT \
   > "$TAM/log_sep.txt" 2>&1 < /dev/null &
 setsid nohup python3 "$XS/lai_xe_lidar.py" --ros-args -p phat_lenh:="$PHU_LAI_PHAT_LENH" -p sep_ra_thoat:="$SEP_RA_THOAT" $NGHE_FP \
   > "$TAM/log_phu_lai.txt" 2>&1 < /dev/null &

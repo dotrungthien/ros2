@@ -418,21 +418,31 @@ def theo_doi_mat(io, dich, yaw_cuoi, cfg, gui_lai_gan=False):
     'CHO_VAT_30s' | 'KHONG_FEEDBACK' (hai ly do bo khe: da huy dich) | 'GAN_DICH' (09/11 #2: cach dich < gan_dich_m, khong tien
     gan_dich_s s; da huy dich) | 'GAN_DICH_HET' (gui_lai_gan: khong tien gan_dich_s s o bat ky dau; da huy dich).
     09/11 #6: cay BT goi /backup => in 'LUI_RA: bt <m>' / '   LUI_XONG: bt => KQ' (io.su_kien_lui)."""
+    io.su_kien_lui()                                     # bo su kien /backup cu (vd CANCELED cua dich vua huy)
     if not io.gui_nav(dich, yaw_cuoi):
         return 'TU_CHOI'
+    kq, lui_dang = _theo_doi_mat(io, dich, cfg, gui_lai_gan)
+    if lui_dang:                                         # dich xong / bi huy giua luc cay BT dang lui: cay BT huy BackUp
+        io.bao('   LUI_XONG: bt => HUY (dich %s).' % kq)
+    return kq
+
+
+def _theo_doi_mat(io, dich, cfg, gui_lai_gan):
+    """Vong theo doi cua theo_doi_mat. Tra (ket qua, cay BT con dang lui khong)."""
     han = cfg['gan_dich_s'] if gui_lai_gan else cfg['cho_khe']
     dh = DongHo(io.now(), han, cfg['tien_min'])
-    n_rec, lan_in, da_in = 0, 0, False
+    n_rec, lan_in, da_in, lui_dang = 0, 0, False, False
     while True:
         for loai, chi_tiet in io.su_kien_lui():
+            lui_dang = loai == 'RA'
             io.bao('LUI_RA: bt %.2f' % LUI_BT_M if loai == 'RA' else '   LUI_XONG: bt => %s.' % chi_tiet)
         kq = io.ket_qua()
         if kq is not None:
-            return kq
+            return kq, lui_dang
         lenh = io.lenh_sep()
         if lenh and lenh[0] == 'DUNG':
             io.huy()
-            return 'DUNG'
+            return 'DUNG', lui_dang
         fb = io.feedback()
         p = io.pose()
         d_tf = None if p is None else math.hypot(p[0] - dich[0], p[1] - dich[1])
@@ -442,11 +452,11 @@ def theo_doi_mat(io, dich, yaw_cuoi, cfg, gui_lai_gan=False):
             io.bao('   Nav2 hoi phuc: number_of_recoveries = %d.' % n_rec)
         if tt == 'BO_KHE':
             io.huy()
-            return 'GAN_DICH_HET' if gui_lai_gan else ly
+            return ('GAN_DICH_HET' if gui_lai_gan else ly), lui_dang
         if (tt == 'DI' and not gui_lai_gan and d_tf is not None and d_tf < cfg['gan_dich_m']
                 and dung >= cfg['gan_dich_s']):
             io.huy()
-            return 'GAN_DICH'
+            return 'GAN_DICH', lui_dang
         if tt == 'TIEN':
             if da_in:
                 io.bao('   DI_TIEP: xe tien lai.')

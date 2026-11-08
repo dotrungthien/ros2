@@ -1162,6 +1162,13 @@ def test_49_mat_lui_ra_bt_va_gui_khop_bt_mat_va_trang():
     assert V.dong_chuyen_cuoi(io.cau[:i + 1]) == 'THOAT' and V.dong_chuyen_cuoi(io.cau[:i + 2]) in ('DI', 'THOAT')
     assert V.dong_chuyen_cuoi(['LUI_RA: gui 0.35 (truoc tuyen 2, /backup 0.10 m/s)']) == 'THOAT'
     assert V.dong_chuyen_cuoi(['LUI_RA: bt 0.25', '   LUI_XONG: bt => ABORTED.']) == 'DI'
+    # gia lap 09/11 (ong tai B): gui huy dich giua luc cay BT dang lui (BT huy BackUp) => van in LUI_XONG; su kien cu khong lan sang lan sau
+    io = IOMat([dict(ket=None, fb=lambda dt: (0.35, 0), pose=GAN_B, lui_bt=[(9.5, 'RA', None)]),
+                dict(ket=('SUCCEEDED', 6.0), fb=lambda dt: (max(0.05, 0.3 - 0.06 * dt), 0), pose=lambda dt: TOI_B(dt) if dt >= 6 else GAN_B(dt))])
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 0, io.cau
+    i = io.cau.index('LUI_RA: bt 0.25')
+    assert io.cau[i + 1] == '   LUI_XONG: bt => HUY (dich GAN_DICH).' and io.cau[i + 2].startswith('   GAN_DICH:'), io.cau
+    assert sum(c.startswith('   LUI_XONG') for c in io.cau) == 1
     assert V.dong_chuyen_cuoi(['   GAN_DICH: cach dich 0.30 m, khong tien 10 s => huy dich, dung yen 60 s roi gui lai 1 lan (khong doi khe).']) == 'CHO'
 
 

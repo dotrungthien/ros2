@@ -83,7 +83,7 @@ controller_server:
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.5
     min_theta_velocity_threshold: 0.001
-    failure_tolerance: 0.3
+    failure_tolerance: 3.0   # 08/11 mat lai: DWB co the tam khong co quy dao hop le khi ne vat; cho 3 s (nav2_params_cho: 0.3)
     odom_topic: /odom
     progress_checker_plugin: "progress_checker"
     goal_checker_plugins: ["general_goal_checker"]
@@ -102,7 +102,7 @@ controller_server:
       xy_goal_tolerance: 0.15
       yaw_goal_tolerance: 0.3
 
-    # 08/11 mat lai buoc 1: DWB thay Regulated Pure Pursuit (tep goc nav2_params_cho.yaml giu RPP). Ten "FollowPath" giu nguyen
+    # 08/11 mat lai: DWB thay Regulated Pure Pursuit (nav2_params_cho.yaml giu RPP). Ten "FollowPath" giu nguyen
     # (bt_cho.xml controller_id, gui_duong.py, kiem_xe.sh). DWB ne vat bang local costmap LiDAR (obstacle_layer o duoi).
     # XE KHONG CO ENCODER: /odom = lenh tich phan (odom_tu_lenh), DWB tuong xe chay dung lenh. Banh KHONG QUAY duoi ~0,092 m/s
     # (san duty toi thieu; do 07/11 v_banh_nang 0,121) => min_speed_xy 0.10: quy dao tinh tien phai >= 0,10 m/s, tru khi xoay
@@ -111,7 +111,7 @@ controller_server:
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: false      # tat de do ton CPU Pi (mac dinh Nav2 true)
-      min_vel_x: 0.0
+      min_vel_x: -0.10                     # cho lui toi 0,10 m/s (velocity_smoother min_velocity x -0.1)
       min_vel_y: 0.0
       max_vel_x: 0.15
       max_vel_y: 0.0
@@ -126,9 +126,9 @@ controller_server:
       decel_lim_x: -2.5
       decel_lim_y: 0.0
       decel_lim_theta: -3.2
-      vx_samples: 6
+      vx_samples: 8
       vy_samples: 1                        # khong di ngang (max_vel_y 0)
-      vtheta_samples: 12
+      vtheta_samples: 16
       sim_time: 1.2
       linear_granularity: 0.05
       angular_granularity: 0.025
@@ -270,3 +270,34 @@ velocity_smoother:
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
+
+# 08/11 mat lai: collision_monitor (chi bat khi navigation_my_bot.launch.py mat_lai:=true). Chuoi lenh:
+#   controller_server -> cmd_vel_nav_raw -> velocity_smoother -> /cmd_vel_nav_tho -> collision_monitor -> /cmd_vel_nav -> twist_mux (nav 20)
+# Chi chan lenh Nav2; phu lai (/cmd_vel_avoid 60) va lai tay (/cmd_vel_teleop 100) KHONG di qua day.
+collision_monitor:
+  ros__parameters:
+    use_sim_time: false
+    base_frame_id: "base_footprint"
+    odom_frame_id: "odom"
+    cmd_vel_in_topic: "/cmd_vel_nav_tho"
+    cmd_vel_out_topic: "/cmd_vel_nav"
+    transform_tolerance: 0.5             # mau Nav2 Humble
+    source_timeout: 5.0                  # mau
+    base_shift_correction: true          # mau
+    stop_pub_timeout: 2.0                # mau
+    polygons: ["ThanTruoc"]
+    ThanTruoc:
+      type: "polygon"
+      # footprint (x -0,105..0,145, y +-0,08) keo dai them 0,07 m truoc mui: mui 0,215
+      points: [0.215, 0.08, 0.215, -0.08, -0.105, -0.08, -0.105, 0.08]
+      action_type: "approach"            # giam toc de khong cham trong time_before_collision giay
+      time_before_collision: 1.5
+      simulation_time_step: 0.05
+      max_points: 1                      # Humble KHONG co min_points: kich khi so diem > max_points, tuc >= 2 diem
+      visualize: false
+      enabled: true
+    observation_sources: ["scan"]
+    scan:
+      type: "scan"
+      topic: "/scan"
+      enabled: true

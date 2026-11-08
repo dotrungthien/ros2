@@ -18,7 +18,8 @@ from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, GroupAction, SetEnvironmentVariable
-from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition, UnlessCondition
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.descriptions import ParameterFile
 from nav2_common.launch import RewrittenYaml
@@ -36,6 +37,9 @@ def generate_launch_description():
     container_name_full = (namespace, '/', container_name)
     use_respawn = LaunchConfiguration('use_respawn')
     log_level = LaunchConfiguration('log_level')
+    # 08/11 mat lai: true = velocity_smoother ra /cmd_vel_nav_tho, collision_monitor (tham so trong params_file) loc ra /cmd_vel_nav
+    mat_lai = LaunchConfiguration('mat_lai')
+    ra_smoother = PythonExpression(["'cmd_vel_nav_tho' if '", mat_lai, "'.lower() in ('true', '1') else 'cmd_vel_nav'"])
 
     # smoother_server 와 waypoint_follower 는 사용하지 않음
     lifecycle_nodes = ['controller_server',
@@ -100,6 +104,10 @@ def generate_launch_description():
         'log_level', default_value='info',
         description='log level')
 
+    declare_mat_lai_cmd = DeclareLaunchArgument(
+        'mat_lai', default_value='false',
+        description='true: velocity_smoother -> /cmd_vel_nav_tho -> collision_monitor -> /cmd_vel_nav (params_file phai co khoi collision_monitor)')
+
     # 각 노드를 개별 프로세스로 실행 (composition 미사용)
     load_nodes = GroupAction(
         actions=[
@@ -153,9 +161,9 @@ def generate_launch_description():
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
-                # 입력: cmd_vel_nav_raw, 평활화된 출력: cmd_vel_nav
+                # 입력: cmd_vel_nav_raw, 평활화된 출력: cmd_vel_nav (mat_lai:=true 이면 cmd_vel_nav_tho -> collision_monitor)
                 remappings=remappings +
-                        [('cmd_vel', 'cmd_vel_nav_raw'), ('cmd_vel_smoothed', 'cmd_vel_nav')]),
+                        [('cmd_vel', 'cmd_vel_nav_raw'), ('cmd_vel_smoothed', ra_smoother)]),
             Node(
                 package='nav2_lifecycle_manager',
                 executable='lifecycle_manager',
@@ -164,7 +172,30 @@ def generate_launch_description():
                 arguments=['--ros-args', '--log-level', log_level],
                 parameters=[{'use_sim_time': use_sim_time},
                             {'autostart': autostart},
-                            {'node_names': lifecycle_nodes}]),
+                            {'node_names': lifecycle_nodes}],
+                condition=UnlessCondition(mat_lai)),
+            # 08/11 mat lai: collision_monitor 와, 그것까지 관리하는 같은 이름의 lifecycle_manager (mat_lai:=true 일 때만)
+            Node(
+                package='nav2_collision_monitor',
+                executable='collision_monitor',
+                name='collision_monitor',
+                output='screen',
+                respawn=use_respawn,
+                respawn_delay=2.0,
+                parameters=[configured_params],
+                arguments=['--ros-args', '--log-level', log_level],
+                remappings=remappings,
+                condition=IfCondition(mat_lai)),
+            Node(
+                package='nav2_lifecycle_manager',
+                executable='lifecycle_manager',
+                name='lifecycle_manager_navigation',
+                output='screen',
+                arguments=['--ros-args', '--log-level', log_level],
+                parameters=[{'use_sim_time': use_sim_time},
+                            {'autostart': autostart},
+                            {'node_names': lifecycle_nodes + ['collision_monitor']}],
+                condition=IfCondition(mat_lai)),
         ]
     )
 
@@ -182,6 +213,7 @@ def generate_launch_description():
     ld.add_action(declare_container_name_cmd)
     ld.add_action(declare_use_respawn_cmd)
     ld.add_action(declare_log_level_cmd)
+    ld.add_action(declare_mat_lai_cmd)
     # 내비게이션 노드를 실행하는 액션 추가
     ld.add_action(load_nodes)
 

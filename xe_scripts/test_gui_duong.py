@@ -1105,7 +1105,7 @@ def test_46_mat_lui_hong_van_sang_tuyen_kia_dung_giua_lui_la_DUNG_SEP():
     assert CUA(io.rows)[-1] == 'DUNG_SEP' and not any(c.startswith('-- tuyen 2') for c in io.cau)
 
 
-GAN_B = lambda dt: (1.30, 0.82, 0.0)                    # cach B 0,30 m (< GAN_DICH_M 0,40)
+GAN_B = lambda dt: (1.30, 0.82, 0.0)                    # cach B 0,30 m (< GAN_DICH_M 0,60)
 
 
 def _gan_dich(kich2, lenh=None):
@@ -1115,8 +1115,8 @@ def _gan_dich(kich2, lenh=None):
 
 
 def test_47_mat_gan_dich_huy_cho_60s_gui_lai_mot_lan():
-    """09/11 buoc 3 #2: cach dich < 0,40 m, 10 s khong tien => huy, dung yen 60 s (CHO_VAT n/60), gui lai 1 lan cung tuyen."""
-    assert (CFG['gan_dich_m'], CFG['gan_dich_s'], CFG['cho_dich']) == (0.40, 10.0, 60.0)
+    """09/11 buoc 3 #2: cach dich < 0,60 m (Thien chot 09/11), 10 s khong tien => huy, dung yen 60 s (CHO_VAT n/60), gui lai 1 lan cung tuyen."""
+    assert (CFG['gan_dich_m'], CFG['gan_dich_s'], CFG['cho_dich']) == (0.60, 10.0, 60.0)
     io, ma = _gan_dich(dict(ket=('SUCCEEDED', 8.0), fb=lambda dt: (max(0.05, 0.3 - 0.04 * dt), 0), pose=lambda dt: TOI_B(dt) if dt >= 8 else GAN_B(dt)))
     assert ma == 0, io.cau
     i_gan = [k for k, c in enumerate(io.cau) if c.startswith('   GAN_DICH: cach dich 0.30 m, khong tien 10 s => huy dich, dung yen 60 s')]
@@ -1143,9 +1143,41 @@ def test_48_mat_gan_dich_lan_2_van_ket_het_duong_khong_doi_khe():
     assert [s.split()[0] for _, s in io.chon] == ['0', '1'] and CUA(io.rows) == ['KIEM_DAT', 'KHONG_DAT', 'KHONG_DAT', 'HET_DUONG']
     io, ma = _gan_dich(dict(ket=None, fb=lambda dt: (0.35, 0)), lenh=lambda t: ('DUNG', 'x') if t > 40 else None)
     assert ma == 4 and CUA(io.rows)[-1] == 'DUNG_SEP' and not any(c.startswith('-- tuyen 1, lan 2/2') for c in io.cau), io.cau
-    # xa dich (> 0,40 m) van theo dong ho 30 s bo khe (test_36), khong GAN_DICH
-    io = IOMat([dict(ket=None, fb=lambda dt: (0.45, 0), pose=lambda dt: (1.15, 0.82, 0.0)), None])
+    # xa dich (> 0,60 m) van theo dong ho 30 s bo khe (test_36), khong GAN_DICH; 0,55 m (truoc la xa) nay la GAN_DICH
+    io = IOMat([dict(ket=None, fb=lambda dt: (0.65, 0), pose=lambda dt: (0.95, 0.82, 0.0)), None])
     assert G.chay_mat(io, 'di_B', 1, CFG) == 1 and not any('GAN_DICH' in c for c in io.cau) and len(io.kn) == 1
+    io = IOMat([dict(ket=None, fb=lambda dt: (0.55, 0), pose=lambda dt: (1.05, 0.82, 0.0)), None])
+    assert G.chay_mat(io, 'di_B', 1, CFG) == 1 and any(c.startswith('   GAN_DICH: cach dich 0.55 m') for c in io.cau), io.cau
+
+
+def test_52_mat_gan_dich_gui_lai_hoi_sep_nhu_doi_khe():
+    """Thien chot 09/11: gui lai sau GAN_DICH dung chung hoi_sep_mat(gui_lai=True) voi gui lai sau doi khe."""
+    ok2 = lambda: dict(ket=('SUCCEEDED', 6.0), fb=lambda dt: (max(0.05, 0.3 - 0.06 * dt), 0), pose=lambda dt: TOI_B(dt) if dt >= 6 else GAN_B(dt))
+    sau_cho = lambda chu, ly: (lambda t: (chu, ly) if t >= 70 else None)       # sep chi noi sau 60 s cho (GAN_DICH luc ~14 s)
+    # CHO ly do vi tri: nghe (dung yen 10 s x 2) roi moi gui lai
+    io, ma = _gan_dich(ok2(), lenh=sau_cho('CHO', 'NHAY_VI_TRI 0.30 m'))
+    assert ma == 0, io.cau
+    i1 = io.cau.index('   sep bao CHO (NHAY_VI_TRI 0.30 m): dung yen 10 s (lan 1/2).')
+    i2 = io.cau.index('   sep bao CHO (NHAY_VI_TRI 0.30 m): dung yen 10 s (lan 2/2).')
+    i_l2 = [k for k, c in enumerate(io.cau) if c.startswith('-- tuyen 1, lan 2/2')][0]
+    i_cho = max(k for k, c in enumerate(io.cau) if c.startswith('CHO_VAT: 55/60'))
+    assert i_cho < i1 < i2 < i_l2, io.cau
+    # PLAN_* / ABORT_NHANH: bo qua, gui lai ngay
+    for ly in ('PLAN_RONG 3s', 'ABORT_NHANH 1s truoc'):
+        io, ma = _gan_dich(ok2(), lenh=sau_cho('CHO', ly))
+        assert ma == 0 and '   sep bao CHO (%s): bo qua (khe vua bo).' % ly in io.cau, io.cau
+        assert not any('dung yen 10 s' in c for c in io.cau)
+    # DUNG (luon nghe): khong gui lai
+    hop = []
+    io = IOMat([dict(ket=None, fb=lambda dt: (0.35, 0), pose=lambda dt: (0.05 * dt, 0.0, 0.0) if dt < 5 else GAN_B(dt), plan=lambda dt: 0.3),
+                ok2()], lenh=lambda t: ('DUNG', 'x') if hop[1:] and t >= hop[1] + 5.0 + 1e-6 else None)
+    hop.append(io)
+    _bao = io.bao
+    io.bao = lambda c: (_bao(c), hop.append(io.t) if c.startswith('CHO_VAT: 55/60') else None)
+    ma = G.chay_mat(io, 'di_B', 1, CFG)                                          # DUNG chi xuat hien SAU 60 s cho => do hoi_sep_mat bat
+    assert ma == 4 and not any(c.startswith('-- tuyen 1, lan 2/2') for c in io.cau) and CUA(io.rows)[-1] == 'DUNG_SEP', io.cau
+    assert io.t >= hop[1] + 5.0 and not any('sep bao CHO' in c for c in io.cau)           # het 60 s cho moi DUNG
+    assert G.gan_dich.__code__.co_names.count('hoi_sep_mat') == 1                 # cung mot ham, khong ban sao
 
 
 def test_49_mat_lui_ra_bt_va_gui_khop_bt_mat_va_trang():

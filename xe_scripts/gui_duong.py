@@ -41,7 +41,7 @@ Phan thuan (khong ROS) o nua tren, thu bang test_gui_duong.py.
   Bien moi: CHO_KHE (30 s), TIEN_MIN (0,10 m).
   08/11 buoc 2c: truoc khi gui tuyen kia: Nav2 BackUp (/backup) 0,35 m o 0,10 m/s, in "LUI_RA ..."; sep DUNG luc lui => DUNG_SEP.
   behavior_server ra cmd_vel_nav_raw -> velocity_smoother -> collision_monitor (nhu lenh controller).
-  09/11 buoc 3 (CHUA CHAY TREN XE): #2 GAN_DICH: xe cach dich < GAN_DICH_M (0,40 m) ma khong tien GAN_DICH_S (10 s) => huy dich,
+  09/11 buoc 3 (CHUA CHAY TREN XE): #2 GAN_DICH: xe cach dich < GAN_DICH_M (0,60 m; Thien chot 09/11, truoc 0,40) ma khong tien GAN_DICH_S (10 s) => huy dich,
   dung yen CHO_DICH (60 s, in "CHO_VAT: n/60 s"), gui lai 1 lan ("-- tuyen r, lan 2/2"); 10 s van khong tien => HET_DUONG,
   KHONG doi khe. #3 ~/vi_tri_xe moi 1 s (noi_dung_vi_tri). #5 ~/kinh_nghiem.csv ly_do KET_CO_DUONG (co /plan trong CHO_KHE s
   ma khong tien) | VAT_CHAN (planner khong ra duong). #6 "LUI_RA: bt|gui <m>" khi bat dau lui (bt: cay bt_mat goi /backup,
@@ -71,7 +71,7 @@ def cau_hinh(env=os.environ):
                 # 08/11 buoc 2c: truoc khi gui tuyen kia lui thang bang Nav2 BackUp (m, m/s): gia lap xe khong tu quay dau trong khe
                 lui_m=0.35, lui_v=0.10,
                 # 09/11 buoc 3 #2: gan dich (m), khong tien bao lau thi huy (s), dung yen bao lau roi gui lai 1 lan (s)
-                gan_dich_m=f('GAN_DICH_M', 0.40), gan_dich_s=f('GAN_DICH_S', 10.0), cho_dich=f('CHO_DICH', 60.0))
+                gan_dich_m=f('GAN_DICH_M', 0.60), gan_dich_s=f('GAN_DICH_S', 10.0), cho_dich=f('CHO_DICH', 60.0))
 
 
 # ---------- 08/11 bo 1e: kieu mat (phan thuan) ----------
@@ -354,7 +354,8 @@ def chay_mat(io, huong, tuyen_dau, cfg):
 
 def gan_dich(io, cfg, nhan, huong, r, dich, yaw_cuoi, lech, t_chuyen):
     """09/11 buoc 3 #2. Dich DA huy (theo_doi_mat). Dung yen cho_dich s (in 'CHO_VAT: n/60 s' moi nhip_cho s; Nav2 khong co
-    dich => cay BT khong chay, khong lui), sep DUNG => DUNG_SEP; roi gui lai 1 lan cung tuyen (khong /chon_tuyen moi, khong
+    dich => cay BT khong chay, khong lui), sep DUNG => DUNG_SEP; roi hoi sep NHU gui lai sau doi khe (hoi_sep_mat gui_lai=True:
+    nghe CHO ly do vi tri, bo qua PLAN_* / ABORT_NHANH, luon nghe DUNG) va gui lai 1 lan cung tuyen (khong /chon_tuyen moi, khong
     lui). Lan 2: gan_dich_s s khong tien (o dau cung vay) hoac hong => HET_DUONG (ma 1), KHONG doi khe."""
     io.bao('   GAN_DICH: cach dich %s, khong tien %d s => huy dich, dung yen %d s roi gui lai 1 lan (khong doi khe).' % (
         '?' if lech is None else '%.2f m' % lech, int(cfg['gan_dich_s']), int(cfg['cho_dich'])))
@@ -370,6 +371,8 @@ def gan_dich(io, cfg, nhan, huong, r, dich, yaw_cuoi, lech, t_chuyen):
             io.bao('CHO_VAT: %d/%d s%s' % (int(da), int(cfg['cho_dich']),
                                            '' if p is None else ' (cach dich %.2f m)' % math.hypot(p[0] - dich[0], p[1] - dich[1])))
         io.ngu(0.1)
+    if hoi_sep_mat(io, cfg, True) == 'DUNG':             # Thien chot 09/11: chung ham hoi sep voi gui lai sau doi khe
+        return dung_sep(io, nhan, r, 2)
     p = io.pose()
     t1 = io.now()
     io.bao('-- tuyen %d, lan 2/2: navigate_to_pose tu %s toi (%.2f; %.2f) (GAN_DICH gui lai)' % (

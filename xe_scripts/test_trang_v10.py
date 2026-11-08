@@ -1126,6 +1126,8 @@ class MatLai(Nen):
         self.assertIn('behavior_plugins: ["spin", "backup", "wait"]', pm)
         tm = doc('..', 'dev_ws', 'src', 'my_bot', 'config', 'twist_mux.yaml')
         self.assertTrue(_re.search(r'avoid:\n +topic: /cmd_vel_avoid\n +timeout: 0\.2\n +priority: 60\n', tm), 'twist_mux avoid 60')
+        self.assertIn('min_vel_x: 0.0 ', pm)                                               # DWB kieu mat khong lui
+        self.assertNotIn('min_vel_x: -', pm)
         loi = 'then echo "LOI: MAT_LAI=true thi PHU_LAI_PHAT_LENH phai false (/cmd_vel_avoid chi cho behavior_server)"; exit 1; fi'
         self.assertTrue(('if [ "${MAT_LAI:-false}" = "true" ] && [ "$PHU_LAI_PHAT_LENH" = "true" ]; ' + loi) in doc('bat_xe.sh'))
         self.assertIn('if [ "$MAT_LAI" = "true" ] && [ "$PHU_LAI_PHAT_LENH" = "true" ]; ' + loi, doc('gia_lap', 'bat_gia.sh'))

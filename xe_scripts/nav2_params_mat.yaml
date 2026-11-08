@@ -120,7 +120,7 @@ controller_server:
       max_angular_accel: 3.2
       simulate_ahead_time: 1.0
       debug_trajectory_details: false      # tat de do ton CPU Pi (mac dinh Nav2 true)
-      min_vel_x: -0.10                     # cho lui toi 0,10 m/s (velocity_smoother min_velocity x -0.1)
+      min_vel_x: 0.0                       # 08/11 buoc 2g: DWB khong lui (cu -0.10); lui chi do BackUp (behavior_server -> /cmd_vel_avoid)
       min_vel_y: 0.0
       max_vel_x: 0.15
       max_vel_y: 0.0

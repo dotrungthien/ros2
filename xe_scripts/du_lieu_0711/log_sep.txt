@@ -1,0 +1,79 @@
+[INFO] [1794041215.985933353] [sep]: sep san sang: CHI NHIN (buoc 1). Nhat ky: /home/project1/sep_nhat_ky.csv
+[INFO] [1794041216.060600853] [sep]: 5533.60,2026-11-07 17:46:56,TRUY_VET,MAT_SCAN,/scan hoac LiDAR,tuoi None s,BAT,,,,
+[INFO] [1794041216.081993871] [sep]: 5533.60,2026-11-07 17:46:56,TRUY_VET,TF_CU,dinh vi hoac duong truyen tf,tuoi None s,BAT,,,,
+[INFO] [1794041216.103884001] [sep]: 5533.60,2026-11-07 17:46:56,TU_THE,CHO,,,MAT_SCAN,SE_LAM=CHO (chi nhin),,,
+[INFO] [1794041216.146069704] [sep]: 5533.60,2026-11-07 17:46:56,LENH,CHO,,,MAT_SCAN,CHO (ra lenh),,,
+[INFO] [1794041216.241434315] [sep]: 5533.77,2026-11-07 17:46:56,TRUY_VET,MAT_SCAN,,,HET,,,,
+[INFO] [1794041216.642292463] [sep]: 5534.20,2026-11-07 17:46:56,TRUY_VET,TF_CU,,,HET,,0.01,0.01,-1
+[INFO] [1794041216.646320556] [sep]: 5534.20,2026-11-07 17:46:56,LENH,DI,,,,DI (ra lenh),0.01,0.01,-1
+[INFO] [1794041226.045720810] [sep]: 5543.60,2026-11-07 17:47:06,VONG,max_ms=167.9 phan_cham=tin_cay,,tin_cay 105.3 ms; tb_ms=15.6; 99 vong,,,0.01,0.01,-1
+[INFO] [1794041236.127326655] [sep]: 5553.70,2026-11-07 17:47:16,VONG,max_ms=307.6 phan_cham=tin_cay,,tin_cay 109.6 ms; tb_ms=25.7; 93 vong,,,0.01,0.01,-1
+[INFO] [1794041246.326591261] [sep]: 5563.76,2026-11-07 17:47:26,VONG,max_ms=149.4 phan_cham=tin_cay,,tin_cay 80.8 ms; tb_ms=21.9; 97 vong,,,0.01,0.01,-1
+[INFO] [1794041256.223734606] [sep]: 5573.80,2026-11-07 17:47:36,VONG,max_ms=203.4 phan_cham=ket,,ket 100.1 ms; tb_ms=26.8; 98 vong,,,0.01,0.01,-1
+[INFO] [1794041266.324290656] [sep]: 5583.90,2026-11-07 17:47:46,VONG,max_ms=189.6 phan_cham=tin_cay,,tin_cay 121.6 ms; tb_ms=24.4; 93 vong,,,0.01,0.01,-1
+[INFO] [1794041276.764918779] [sep]: 5594.22,2026-11-07 17:47:56,VONG,max_ms=188.2 phan_cham=tin_cay,,tin_cay 109.0 ms; tb_ms=23.2; 99 vong,,,0.01,0.01,-1
+[INFO] [1794041286.722096496] [sep]: 5604.30,2026-11-07 17:48:06,VONG,max_ms=33.1 phan_cham=tin_cay,,tin_cay 15.1 ms; tb_ms=8.6; 101 vong,,,0.01,0.01,-1
+[INFO] [1794041296.824142990] [sep]: 5614.40,2026-11-07 17:48:16,VONG,max_ms=10.8 phan_cham=tin_cay,,tin_cay 3.9 ms; tb_ms=7.8; 101 vong,,,0.01,0.01,-2
+[INFO] [1794041306.927825447] [sep]: 5624.50,2026-11-07 17:48:26,VONG,max_ms=13.0 phan_cham=tin_cay,,tin_cay 9.4 ms; tb_ms=7.9; 101 vong,,,0.01,0.01,-2
+[INFO] [1794041316.925739015] [sep]: 5634.50,2026-11-07 17:48:36,VONG,max_ms=280.8 phan_cham=tin_cay,,tin_cay 276.1 ms; tb_ms=15.9; 93 vong,,,0.01,0.01,-2
+[INFO] [1794041327.047581583] [sep]: 5644.53,2026-11-07 17:48:46,VONG,max_ms=179.3 phan_cham=vat,,vat 99.6 ms; tb_ms=24.0; 90 vong,,,0.01,0.01,-2
+[INFO] [1794041329.829107618] [sep]: 5647.40,2026-11-07 17:48:49,CSV,KIEM_DAT,,di_B_day t1 d1 KIEM_DAT,,,0.01,0.01,-2
+[INFO] [1794041329.832430655] [sep]: 5647.40,2026-11-07 17:48:49,CHUYEN,BAT_DAU,,di_B_day,,dem lai: Nav2 0/2; thoat 0/3,0.01,0.01,-2
+[INFO] [1794041329.838637618] [sep]: 5647.40,2026-11-07 17:48:49,LOP2,KHONG_CAN,gui_duong SAP_GUI,di_B t1 l1,vung_trong,gui_duong gui ngay,0.01,0.01,-2
+[INFO] [1794041329.943004266] [sep]: 5647.50,2026-11-07 17:48:49,CSV,KHONG_DAT,,di_B_day t1 d1 KHONG_DAT,,,0.01,0.01,-2
+[INFO] [1794041329.946353396] [sep]: 5647.50,2026-11-07 17:48:49,LOP2,KHONG_CAN,gui_duong SAP_GUI,di_B t2 l1,vung_trong,gui_duong gui ngay,0.01,0.01,-2
+[INFO] [1794041331.546447413] [sep]: 5649.10,2026-11-07 17:48:51,TU_THE,DI_THUONG,,,,SE_LAM=DI_THUONG (chi nhin),0.01,0.01,-2
+[INFO] [1794041337.038390132] [sep]: 5654.60,2026-11-07 17:48:57,VONG,max_ms=113.3 phan_cham=tin_cay,,tin_cay 47.7 ms; tb_ms=15.7; 100 vong,,,0.03,0.27,80
+[INFO] [1794041347.131972886] [sep]: 5664.70,2026-11-07 17:49:07,VONG,max_ms=24.3 phan_cham=nhin_xa,,nhin_xa 9.7 ms; tb_ms=15.8; 101 vong,,,0.55,0.82,-5
+[INFO] [1794041356.644604861] [sep]: 5674.20,2026-11-07 17:49:16,CSV,SUCCEEDED,,di_B_day t2 d1 SUCCEEDED,,,1.47,0.77,11
+[INFO] [1794041356.647741547] [sep]: 5674.20,2026-11-07 17:49:16,CSV,DEN_NOI,,di_B_day t2 dtong DEN_NOI,,,1.47,0.77,11
+[INFO] [1794041356.651292158] [sep]: 5674.20,2026-11-07 17:49:16,CHUYEN,KET_THUC,,di_B_day,DEN_NOI,,1.47,0.77,11
+[INFO] [1794041356.657051121] [sep]: 5674.20,2026-11-07 17:49:16,NAV2,SUCCEEDED,,sau 25.10 s; lech 14 cm,DAT,,1.47,0.77,11
+[INFO] [1794041356.660728139] [sep]: 5674.20,2026-11-07 17:49:16,TU_THE,CHO,,,KHONG_CO_DICH,SE_LAM=CHO (chi nhin),1.47,0.77,11
+[INFO] [1794041357.151800583] [sep]: 5674.70,2026-11-07 17:49:17,VONG,max_ms=41.1 phan_cham=nhin_xa,,nhin_xa 15.4 ms; tb_ms=15.6; 100 vong,,,1.47,0.77,11
+[INFO] [1794041367.225059263] [sep]: 5684.80,2026-11-07 17:49:27,VONG,max_ms=15.1 phan_cham=tin_cay,,tin_cay 4.0 ms; tb_ms=10.3; 101 vong,,,1.47,0.77,11
+[INFO] [1794041377.325624368] [sep]: 5694.90,2026-11-07 17:49:37,VONG,max_ms=13.3 phan_cham=tin_cay,,tin_cay 3.3 ms; tb_ms=10.2; 101 vong,,,1.47,0.77,11
+[INFO] [1794041387.331474102] [sep]: 5704.90,2026-11-07 17:49:47,VONG,max_ms=12.9 phan_cham=nhin_xa,,nhin_xa 5.3 ms; tb_ms=10.3; 100 vong,,,1.47,0.77,10
+[INFO] [1794041397.424996467] [sep]: 5715.00,2026-11-07 17:49:57,VONG,max_ms=13.5 phan_cham=tin_cay,,tin_cay 4.2 ms; tb_ms=10.3; 101 vong,,,1.47,0.77,10
+[INFO] [1794041407.528114294] [sep]: 5725.10,2026-11-07 17:50:07,VONG,max_ms=14.2 phan_cham=tin_cay,,tin_cay 3.5 ms; tb_ms=10.2; 101 vong,,,1.47,0.77,10
+[INFO] [1794041417.627041732] [sep]: 5735.20,2026-11-07 17:50:17,VONG,max_ms=13.6 phan_cham=scan,,scan 4.8 ms; tb_ms=10.4; 101 vong,,,1.47,0.77,10
+[INFO] [1794041427.727344967] [sep]: 5745.30,2026-11-07 17:50:27,VONG,max_ms=14.5 phan_cham=tin_cay,,tin_cay 7.3 ms; tb_ms=10.4; 101 vong,,,1.47,0.77,10
+[INFO] [1794041437.825956165] [sep]: 5755.40,2026-11-07 17:50:37,VONG,max_ms=13.3 phan_cham=tin_cay,,tin_cay 3.5 ms; tb_ms=10.3; 101 vong,,,1.47,0.77,10
+[INFO] [1794041447.828119307] [sep]: 5765.40,2026-11-07 17:50:47,VONG,max_ms=13.6 phan_cham=tf,,tf 5.1 ms; tb_ms=10.3; 100 vong,,,1.47,0.77,10
+[INFO] [1794041457.926835412] [sep]: 5775.50,2026-11-07 17:50:57,VONG,max_ms=12.4 phan_cham=tin_cay,,tin_cay 4.0 ms; tb_ms=10.3; 101 vong,,,1.47,0.77,9
+[INFO] [1794041468.029560721] [sep]: 5785.60,2026-11-07 17:51:08,VONG,max_ms=24.2 phan_cham=tin_cay,,tin_cay 13.6 ms; tb_ms=10.9; 101 vong,,,1.47,0.77,9
+[INFO] [1794041477.235035715] [sep]: 5794.80,2026-11-07 17:51:17,CSV,KIEM_DAT,,ve_A_day t1 d1 KIEM_DAT,,,1.47,0.77,9
+[INFO] [1794041477.239472641] [sep]: 5794.80,2026-11-07 17:51:17,CHUYEN,BAT_DAU,,ve_A_day,,dem lai: Nav2 0/2; thoat 0/3,1.47,0.77,9
+[INFO] [1794041477.242823660] [sep]: 5794.80,2026-11-07 17:51:17,LOP2,KHONG_CAN,gui_duong SAP_GUI,ve_A t1 l1,vung_trong,gui_duong gui ngay,1.47,0.77,9
+[INFO] [1794041478.129122974] [sep]: 5795.70,2026-11-07 17:51:18,VONG,max_ms=291.1 phan_cham=nhin_xa,,nhin_xa 144.4 ms; tb_ms=37.9; 89 vong,,,1.47,0.77,9
+[INFO] [1794041478.931218548] [sep]: 5796.50,2026-11-07 17:51:18,CSV,KHONG_DAT,,ve_A_day t1 d1 KHONG_DAT,,,1.47,0.77,9
+[INFO] [1794041478.935316863] [sep]: 5796.50,2026-11-07 17:51:18,LOP2,KHONG_CAN,gui_duong SAP_GUI,ve_A t2 l1,vung_trong,gui_duong gui ngay,1.47,0.77,9
+[INFO] [1794041480.661332973] [sep]: 5798.21,2026-11-07 17:51:20,TU_THE,DI_THUONG,,,,SE_LAM=DI_THUONG (chi nhin),1.47,0.77,9
+[INFO] [1794041488.131555357] [sep]: 5805.70,2026-11-07 17:51:28,VONG,max_ms=28.7 phan_cham=tin_cay,,tin_cay 14.5 ms; tb_ms=14.5; 100 vong,,,1.20,0.81,170
+[INFO] [1794041497.032357981] [sep]: 5814.60,2026-11-07 17:51:37,TU_THE,THAN_TRONG,,,TIN_CAY 0.69,SE_LAM=THAN_TRONG (chi nhin),0.27,0.73,-150
+[INFO] [1794041497.234564889] [sep]: 5814.80,2026-11-07 17:51:37,TU_THE,DI_THUONG,,,,SE_LAM=DI_THUONG (chi nhin),0.26,0.73,-148
+[INFO] [1794041497.744019444] [sep]: 5815.31,2026-11-07 17:51:37,TU_THE,THAN_TRONG,,,TIN_CAY 0.70,SE_LAM=THAN_TRONG (chi nhin),0.23,0.70,-142
+[INFO] [1794041497.835923796] [sep]: 5815.40,2026-11-07 17:51:37,TU_THE,DI_THUONG,,,,SE_LAM=DI_THUONG (chi nhin),0.22,0.70,-142
+[INFO] [1794041497.936526518] [sep]: 5815.50,2026-11-07 17:51:37,TU_THE,THAN_TRONG,,,TIN_CAY 0.67,SE_LAM=THAN_TRONG (chi nhin),0.21,0.69,-143
+[INFO] [1794041498.131565814] [sep]: 5815.70,2026-11-07 17:51:38,TU_THE,DI_THUONG,,,,SE_LAM=DI_THUONG (chi nhin),0.21,0.68,-143
+[INFO] [1794041498.233195592] [sep]: 5815.80,2026-11-07 17:51:38,VONG,max_ms=27.8 phan_cham=nhin_xa,,nhin_xa 13.8 ms; tb_ms=16.4; 101 vong,,,0.27,0.71,-144
+[INFO] [1794041503.631872459] [sep]: 5821.20,2026-11-07 17:51:43,TU_THE,THAN_TRONG,,,TIN_CAY 0.70,SE_LAM=THAN_TRONG (chi nhin),0.00,0.38,-107
+[INFO] [1794041503.740103255] [sep]: 5821.30,2026-11-07 17:51:43,TU_THE,DI_THUONG,,,,SE_LAM=DI_THUONG (chi nhin),0.05,0.40,-107
+[INFO] [1794041506.332697531] [sep]: 5823.90,2026-11-07 17:51:46,NAV2,SUCCEEDED,,sau 25.69 s; lech 14 cm,DAT,,-0.02,0.14,-101
+[INFO] [1794041506.338966550] [sep]: 5823.90,2026-11-07 17:51:46,TU_THE,CHO,,,KHONG_CO_DICH,SE_LAM=CHO (chi nhin),-0.02,0.14,-101
+[INFO] [1794041506.447455254] [sep]: 5824.00,2026-11-07 17:51:46,CSV,SUCCEEDED,,ve_A_day t2 d1 SUCCEEDED,,,-0.03,0.13,-101
+[INFO] [1794041506.457595346] [sep]: 5824.00,2026-11-07 17:51:46,CSV,DEN_NOI,,ve_A_day t2 dtong DEN_NOI,,,-0.03,0.13,-101
+[INFO] [1794041506.462374587] [sep]: 5824.00,2026-11-07 17:51:46,CHUYEN,KET_THUC,,ve_A_day,DEN_NOI,,-0.03,0.13,-101
+[INFO] [1794041508.326645364] [sep]: 5825.90,2026-11-07 17:51:48,VONG,max_ms=39.2 phan_cham=tin_cay,,tin_cay 21.1 ms; tb_ms=15.1; 101 vong,,,-0.03,0.13,-101
+[INFO] [1794041518.328646617] [sep]: 5835.90,2026-11-07 17:51:58,VONG,max_ms=13.8 phan_cham=scan,,scan 4.6 ms; tb_ms=10.2; 100 vong,,,-0.03,0.13,-101
+[INFO] [1794041528.426673611] [sep]: 5846.00,2026-11-07 17:52:08,VONG,max_ms=13.0 phan_cham=tin_cay,,tin_cay 5.3 ms; tb_ms=10.3; 101 vong,,,-0.03,0.13,-101
+[INFO] [1794041538.525557734] [sep]: 5856.10,2026-11-07 17:52:18,VONG,max_ms=13.8 phan_cham=tin_cay,,tin_cay 3.7 ms; tb_ms=10.2; 101 vong,,,-0.03,0.13,-101
+[INFO] [1794041548.526055451] [sep]: 5866.10,2026-11-07 17:52:28,VONG,max_ms=12.3 phan_cham=tin_cay,,tin_cay 3.7 ms; tb_ms=10.1; 100 vong,,,-0.03,0.13,-101
+[INFO] [1794041558.626425797] [sep]: 5876.20,2026-11-07 17:52:38,VONG,max_ms=13.1 phan_cham=scan,,scan 4.8 ms; tb_ms=10.2; 101 vong,,,-0.03,0.13,-101
+[INFO] [1794041568.625886124] [sep]: 5886.20,2026-11-07 17:52:48,VONG,max_ms=13.1 phan_cham=tin_cay,,tin_cay 4.9 ms; tb_ms=10.0; 100 vong,,,-0.03,0.13,-102
+[INFO] [1794041578.730462099] [sep]: 5896.30,2026-11-07 17:52:58,VONG,max_ms=14.2 phan_cham=nhin_xa,,nhin_xa 5.8 ms; tb_ms=10.1; 101 vong,,,-0.03,0.13,-102
+[INFO] [1794041588.827482001] [sep]: 5906.40,2026-11-07 17:53:08,VONG,max_ms=13.8 phan_cham=scan,,scan 5.8 ms; tb_ms=10.2; 101 vong,,,-0.03,0.13,-102
+[INFO] [1794041598.925512069] [sep]: 5916.50,2026-11-07 17:53:18,VONG,max_ms=14.1 phan_cham=scan,,scan 4.3 ms; tb_ms=10.2; 101 vong,,,-0.03,0.13,-102
+[INFO] [1794041608.927492600] [sep]: 5926.50,2026-11-07 17:53:28,VONG,max_ms=12.9 phan_cham=tin_cay,,tin_cay 5.5 ms; tb_ms=10.1; 100 vong,,,-0.03,0.13,-102
+[INFO] [1794041619.030239520] [sep]: 5936.60,2026-11-07 17:53:39,VONG,max_ms=23.2 phan_cham=nhin_xa,,nhin_xa 8.4 ms; tb_ms=10.8; 101 vong,,,-0.03,0.13,-103
+[INFO] [1794041629.025426347] [sep]: 5946.60,2026-11-07 17:53:49,VONG,max_ms=14.0 phan_cham=tin_cay,,tin_cay 7.0 ms; tb_ms=10.2; 100 vong,,,-0.03,0.13,-103

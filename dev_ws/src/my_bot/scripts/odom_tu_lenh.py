@@ -78,6 +78,9 @@ class OdomTuLenhNode(Node):
         self.declare_parameter('duty_min_phai', 0.21)
         self.declare_parameter('duty_ngung', 0.05)
         self.declare_parameter('he_so_xoay', 0.46)
+        # v_banh_nang (m/s, viec 118 B12): toc do odom tinh cho banh bi nang (duty < duty_min). < 0 = duty_min x max_wheel_speed
+        # nhu cu (0,21 x 0,437 = 0,09177 m/s, giu nguyen tung phep tinh). Do thuoc (do_xuong/do_toc_do.sh) roi truyen so that.
+        self.declare_parameter('v_banh_nang', -1.0)
         # tre_khoi_dong_xoay: 제자리 회전(v=0, w!=0) 명령이 시작된 뒤 이 시간(s) 동안은 아직 안 돌고 있다고 본다
         # (모터가 움직이기 시작하기까지의 지연). mo_hinh_san 이 True 일 때만 쓴다.
         self.declare_parameter('tre_khoi_dong_xoay', 0.5)
@@ -125,6 +128,7 @@ class OdomTuLenhNode(Node):
         self.duty_min_phai = float(param('duty_min_phai'))
         self.duty_ngung = float(param('duty_ngung'))
         self.he_so_xoay = float(param('he_so_xoay'))
+        self.v_banh_nang = float(param('v_banh_nang'))
         self.tre_khoi_dong_xoay = float(param('tre_khoi_dong_xoay'))
 
         if self.publish_rate <= 0.0:
@@ -277,7 +281,7 @@ class OdomTuLenhNode(Node):
                     eff.append(0.0)
                 else:   # 바퀴가 들린 상태: 최소 duty 로 구동
                     nang = True
-                    eff.append(math.copysign(dmin * self.max_wheel_speed, s))
+                    eff.append(math.copysign(dmin * self.max_wheel_speed if self.v_banh_nang < 0 else self.v_banh_nang, s))
             v = (eff[0] + eff[1]) / 2.0
             w = (eff[0] - eff[1]) / self.wheel_sep
             if nang:

@@ -19,6 +19,9 @@ ROTATE_MIN="${ROTATE_MIN:-}"       # rong = giu rotate_to_heading_min_angle cua 
 # minimum_travel_distance CHI trong ban chep slam.yaml cua gia lap (rong = giu 0.25 nhu xe)
 XE_GIA_THAM="${XE_GIA_THAM:-}"
 SLAM_MIN_TRAVEL="${SLAM_MIN_TRAVEL:-}"
+# 07/11 viec 118 B12: odom_tu_lenh nao chay va tham so them (rong = nhu cu), vd ODOM_THAM="-p v_banh_nang:=0.12"
+ODOM_PY="${ODOM_PY:-$HOME/ros2_ws/install/my_bot/lib/my_bot/odom_tu_lenh.py}"
+ODOM_THAM="${ODOM_THAM:-}"
 # ---- sep va phu lai, nhu bat_xe.sh (mac dinh false) ----
 SEP_RA_LENH="${SEP_RA_LENH:-false}"; SEP_RA_THOAT="${SEP_RA_THOAT:-false}"; PHU_LAI_PHAT_LENH="${PHU_LAI_PHAT_LENH:-false}"
 for b in "SEP_RA_LENH=$SEP_RA_LENH" "SEP_RA_THOAT=$SEP_RA_THOAT" "PHU_LAI_PHAT_LENH=$PHU_LAI_PHAT_LENH"; do
@@ -81,9 +84,9 @@ for i in $(seq 50); do pgrep -f "$ODOM_LAUNCH" > /dev/null && break; sleep 0.1; 
 pkill -TERM -f "$ODOM_LAUNCH"   # TERM: luc moi exec, INT con bi bo qua (thua tu launch) toi khi rclpy.init
 for i in $(seq 50); do pgrep -f "$ODOM_LAUNCH" > /dev/null || break; sleep 0.1; done
 if pgrep -f "$ODOM_LAUNCH" > /dev/null; then echo "LOI: khong tat duoc odom_tu_lenh cua launch"; exit 1; fi
-setsid nohup python3 ~/ros2_ws/install/my_bot/lib/my_bot/odom_tu_lenh.py --ros-args -r __node:=odom_tu_lenh \
-  -p yaw_nguon:=gyro -p mo_hinh_san:=true > "$TAM/log_odom.txt" 2>&1 < /dev/null &
-echo "odom_tu_lenh (yaw_nguon=gyro) PID $!"
+setsid nohup python3 "$ODOM_PY" --ros-args -r __node:=odom_tu_lenh \
+  -p yaw_nguon:=gyro -p mo_hinh_san:=true $ODOM_THAM > "$TAM/log_odom.txt" 2>&1 < /dev/null &
+echo "odom_tu_lenh (yaw_nguon=gyro) PID $! ODOM_PY=$ODOM_PY ODOM_THAM=${ODOM_THAM:-khong}"
 sleep 5
 if [ "$MAT_LAI" = "true" ]; then
   setsid nohup ros2 launch "$XS/../dev_ws/src/my_bot/launch/navigation_my_bot.launch.py" params_file:="$TAM/nav2.yaml" mat_lai:=true \

@@ -108,8 +108,16 @@ controller_server:
     # (san duty toi thieu; do 07/11 v_banh_nang 0,121) => min_speed_xy 0.10: quy dao tinh tien phai >= 0,10 m/s, tru khi xoay
     # >= min_speed_theta 0.40 rad/s. Chua chac du: quy dao vx nho + xoay (vd 0,03 m/s, 0,5 rad/s) van hop le ma mot banh duoi
     # nguong => xe co the dung im roi progress_checker bao hong sau 15 s.
+    # 08/11 buoc 1c: RotationShim boc ngoai DWB: lech huong duong > angular_dist_threshold thi xoay tai cho ve huong duong truoc,
+    # roi giao cho DWB (primary_controller). Tham so DWB van nam duoi FollowPath (shim dung chung ten plugin).
     FollowPath:
-      plugin: "dwb_core::DWBLocalPlanner"
+      plugin: "nav2_rotation_shim_controller::RotationShimController"
+      primary_controller: "dwb_core::DWBLocalPlanner"
+      angular_dist_threshold: 1.57
+      forward_sampling_distance: 0.5
+      rotate_to_heading_angular_vel: 0.6
+      max_angular_accel: 3.2
+      simulate_ahead_time: 1.0
       debug_trajectory_details: false      # tat de do ton CPU Pi (mac dinh Nav2 true)
       min_vel_x: -0.10                     # cho lui toi 0,10 m/s (velocity_smoother min_velocity x -0.1)
       min_vel_y: 0.0
@@ -139,11 +147,11 @@ controller_server:
       stateful: true
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
       BaseObstacle.scale: 0.05
-      PathAlign.scale: 16.0                # thap hon mac dinh 32 de duoc lech khoi duong ne vat
+      PathAlign.scale: 24.0                # 1c: 16 -> 24 (mac dinh 32; thap hon de duoc lech khoi duong ne vat)
       PathAlign.forward_point_distance: 0.1
       GoalAlign.scale: 24.0
       GoalAlign.forward_point_distance: 0.1
-      PathDist.scale: 16.0                 # thap hon mac dinh 32 de duoc lech khoi duong ne vat
+      PathDist.scale: 24.0                 # 1c: 16 -> 24 (mac dinh 32; thap hon de duoc lech khoi duong ne vat)
       GoalDist.scale: 24.0
       RotateToGoal.scale: 32.0
       RotateToGoal.slowing_factor: 5.0

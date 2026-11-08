@@ -1078,6 +1078,15 @@ class MatLai(Nen):
         self.assertLess(bt.index('<BackUp '), bt.index('name="RecoveryFallback"'))     # khong nam o nhanh ComputePathToPose / RecoveryFallback
         self.assertIn('nav2_back_up_action_bt_node', doc('nav2_params_mat.yaml'))
         self.assertIn('movement_time_allowance: 10.0', doc('nav2_params_mat.yaml'))
+        # 2e: nav2_params_mat_rpp.yaml = nav2_params_mat.yaml, chi FollowPath = RPP y het nav2_params_cho.yaml
+        import yaml
+        ym = lambda t: yaml.safe_load(doc(t))
+        r, m, c = ym('nav2_params_mat_rpp.yaml'), ym('nav2_params_mat.yaml'), ym('nav2_params_cho.yaml')
+        fp = lambda d: d['controller_server']['ros__parameters']['FollowPath']
+        self.assertEqual(fp(r), fp(c))
+        bo = lambda d: dict(d, controller_server={k: v for k, v in d['controller_server']['ros__parameters'].items() if k != 'FollowPath'})
+        self.assertEqual(bo(r), bo(m))
+        self.assertTrue('\nnav2_params_mat_rpp.yaml|~/nav2_params_mat_rpp.yaml\n' in doc('so_voi_pi.sh'), 'so_voi_pi.sh thieu mat_rpp')
         pm = doc('nav2_params_mat.yaml')
         self.assertIn('default_nav_to_pose_bt_xml: /home/project1/bt_mat.xml', pm)
         self.assertIn('yaml_filename: /home/project1/map_xuong_v3.yaml', pm)

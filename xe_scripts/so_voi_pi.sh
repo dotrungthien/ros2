@@ -30,6 +30,7 @@ bt_cho.xml|~/bt_cho.xml
 bt_mat.xml|~/bt_mat.xml
 nav2_params_cho.yaml|~/nav2_params_cho.yaml
 nav2_params_mat.yaml|~/nav2_params_mat.yaml
+nav2_params_mat_rpp.yaml|~/nav2_params_mat_rpp.yaml
 cai_cau_noi.sh|~/cai_cau_noi.sh
 cau_noi_xe.py|~/cau_noi/cau_noi_xe.py
 chon_b_v4.html|~/cau_noi/chon_b.html

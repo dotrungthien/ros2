@@ -1065,7 +1065,19 @@ class MatLai(Nen):
         # bt_mat.xml = bt_cho.xml, chi doi retries 15 -> 1000; nav2_params_mat tro toi bt_mat (kiem_xe so qua MONG_BT)
         bo_dau = lambda t: t[t.index('-->') + 3:]
         self.assertEqual(bo_dau(doc('bt_mat.xml')), bo_dau(doc('bt_cho.xml')).replace(
-            'number_of_retries="15" name="NavigateRecovery"', 'number_of_retries="1000" name="NavigateRecovery"'))
+            'number_of_retries="15" name="NavigateRecovery"', 'number_of_retries="1000" name="NavigateRecovery"').replace(
+            '''          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+        </RecoveryNode>''', '''          <Sequence name="LuiKhiKhongTien">
+            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+            <BackUp backup_dist="0.25" backup_speed="0.10"/>
+          </Sequence>
+        </RecoveryNode>''', 1))                                           # 2d: chi nhanh phuc hoi cua FollowPath them BackUp
+        bt = bo_dau(doc('bt_mat.xml'))
+        self.assertEqual(bt.count('<BackUp '), 1)
+        self.assertLess(bt.index('name="FollowPath"'), bt.index('<BackUp '))
+        self.assertLess(bt.index('<BackUp '), bt.index('name="RecoveryFallback"'))     # khong nam o nhanh ComputePathToPose / RecoveryFallback
+        self.assertIn('nav2_back_up_action_bt_node', doc('nav2_params_mat.yaml'))
+        self.assertIn('movement_time_allowance: 10.0', doc('nav2_params_mat.yaml'))
         pm = doc('nav2_params_mat.yaml')
         self.assertIn('default_nav_to_pose_bt_xml: /home/project1/bt_mat.xml', pm)
         self.assertIn('yaml_filename: /home/project1/map_xuong_v3.yaml', pm)

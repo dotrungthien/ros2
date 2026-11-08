@@ -4,6 +4,9 @@
   0,10 m => doi khe" la cua gui_duong.py (kieu mat), khong de hai dong ho canh tranh.
   Dung khi MAT_LAI=true: nav2_params_mat.yaml co  default_nav_to_pose_bt_xml: /home/project1/bt_mat.xml
   (kiem_xe.sh doi chieu qua MONG_BT do bat_xe.sh doc tu NAV_PARAMS). Bo cu (MAT_LAI=false) van dung bt_cho.xml.
+  08/11 buoc 2d (Thien duyet 21:08): nhanh phuc hoi CUA RIENG FollowPath = Sequence [xoa costmap cuc bo, BackUp 0,25 m o
+  0,10 m/s] (controller khong tien => lui ra roi thu lai). KHONG them vao nhanh ComputePathToPose / RecoveryFallback: planner
+  khong ra duong (ong chan kin) thi khong lui lap lai.
 -->
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
@@ -17,7 +20,10 @@
         </RateController>
         <RecoveryNode number_of_retries="1" name="FollowPath">
           <FollowPath path="{path}" controller_id="FollowPath"/>
-          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+          <Sequence name="LuiKhiKhongTien">
+            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+            <BackUp backup_dist="0.25" backup_speed="0.10"/>
+          </Sequence>
         </RecoveryNode>
       </PipelineSequence>
       <ReactiveFallback name="RecoveryFallback">

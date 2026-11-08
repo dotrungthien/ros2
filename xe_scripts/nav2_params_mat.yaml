@@ -94,7 +94,7 @@ controller_server:
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
       required_movement_radius: 0.2
-      movement_time_allowance: 15.0
+      movement_time_allowance: 10.0     # 08/11 buoc 2d: 15 -> 10 (FollowPath hong som hon => nhanh phuc hoi lui 0,25 m)
 
     # 목표 도달 판정: 오픈 루프 오도메트리라 너무 엄격하게 잡지 않는다
     general_goal_checker:

@@ -174,3 +174,54 @@ def test_05_yaml_sai_kieu_tung_khoa_ve_mac_dinh():
     assert tq == HV.MAC_DINH and len(loi) == 1 and loi[0].endswith('hong (ParserError)'), loi
     tq, _, _, loi = HV.doc(_tam('- 1\n- 2\n'))
     assert tq == HV.MAC_DINH and loi[0].endswith('khong phai bang')
+
+
+def _thu_muc_chep():
+    import shutil
+    d = tempfile.mkdtemp()
+    for f in ('nav2_params_mat.yaml', 'nav2_params_mat_rpp.yaml', 'bt_mat.xml', 'sep.py'):
+        shutil.copy(os.path.join(DAY, f), d)
+    return d
+
+
+def _sua(d, tep, cu, moi):
+    p = os.path.join(d, tep)
+    s = open(p).read()
+    assert s.count(cu) == 1, (tep, cu)
+    open(p, 'w').write(s.replace(cu, moi))
+
+
+def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
+    import kiem_hanh_vi as K
+    tq, at, tt = dict(HV.MAC_DINH), dict(HV.MAC_DINH_AN_TOAN), dict(HV.MAC_DINH_THAN_THE)
+    kq = K.kiem(DAY, tq, at, tt)
+    assert all(d for _, _, d in kq) and len(kq) == 15 and {m for m, _, _ in kq} == {'a', 'b', 'c'}, kq
+    # (a) so trong tep chay that lech yaml: progress 10 -> 12 (tep rpp), backup_dist 0.25 -> 0.30
+    d = _thu_muc_chep()
+    _sua(d, 'nav2_params_mat_rpp.yaml', 'movement_time_allowance: 10.0', 'movement_time_allowance: 12.0')
+    _sua(d, 'bt_mat.xml', 'backup_dist="0.25"', 'backup_dist="0.30"')
+    lech = [nd for m, nd, ok in K.kiem(d, tq, at, tt) if not ok]
+    assert lech == ['nav2_params_mat_rpp.yaml progress_s = 12, yaml 10', 'bt_mat.xml lui_thoat_goc_m = 0.3, yaml 0.25'], lech
+    # (b) thoi quen vuot than the: toc do lui 0.08 < v_min 0.092 (tep bt sua theo cho khop (a))
+    d = _thu_muc_chep()
+    _sua(d, 'bt_mat.xml', 'backup_speed="0.10"', 'backup_speed="0.08"')
+    lech = [(m, nd) for m, nd, ok in K.kiem(d, dict(tq, toc_do_lui_mps=0.08), at, tt) if not ok]
+    assert lech == [('b', 'toc_do_lui_mps 0.08 >= v_min_mps 0.092')], lech
+    # (c) trai an toan: vung phanh 0.05 < 6 cm; sep.py co publisher Twist
+    d = _thu_muc_chep()
+    _sua(d, 'nav2_params_mat.yaml', 'points: [0.215, 0.08, 0.215, -0.08,', 'points: [0.195, 0.08, 0.195, -0.08,')
+    _sua(d, 'nav2_params_mat_rpp.yaml', 'points: [0.215, 0.08, 0.215, -0.08,', 'points: [0.195, 0.08, 0.195, -0.08,')
+    with open(os.path.join(d, 'sep.py'), 'a') as f:
+        f.write('\n# gia: self.create_publisher(Twist, "/cmd_vel_avoid", 10)\n')
+    lech = [(m, nd) for m, nd, ok in K.kiem(d, dict(tq, vung_phanh_m=0.05), at, tt) if not ok]
+    assert lech == [('c', 'vung_phanh_m 0.05 >= cach_vat_toi_thieu_m 0.06'), ('c', 'sep_phat_toc_do false: sep.py CO publisher Twist')], lech
+    # thieu tep: KHONG DAT, khong vo
+    os.remove(os.path.join(d, 'bt_mat.xml'))
+    assert any(not ok and nd.startswith('bt_mat.xml: khong doc duoc (FileNotFoundError') for _, nd, ok in K.kiem(d, tq, at, tt))
+    e = _io.StringIO()
+    with contextlib.redirect_stdout(e):
+        assert K.main(['--thu-muc', DAY, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 0
+        assert K.main(['--thu-muc', d, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 1
+    assert e.getvalue().splitlines()[15] == 'KIEM HANH VI: DAT (15 dong, 0 lech)'
+    kx = open(os.path.join(DAY, 'kiem_xe.sh')).read()
+    assert 'python3 ~/kiem_hanh_vi.py || KQ=1' in kx and kx.index('# 8e.') > kx.index('# 8d.')

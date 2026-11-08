@@ -1,0 +1,694 @@
+[INFO] [1794127012.568796277] [lai_xe_lidar]: lai_xe_lidar san sang. phat_lenh=False (false = chi nhin)
+[INFO] [1794127012.594549795] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127012.700584684] [lai_xe_lidar]: - -> KHONG_CO_DICH () | TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35
+[INFO] [1794127012.710693425] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127013.780815683] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127014.882998905] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127015.414582164] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127015.883629071] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127016.987899607] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127018.081055199] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127019.184799069] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127020.282559957] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127020.444550661] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127021.473586975] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127022.532999289] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127023.615436418] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127024.682781862] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127025.414661639] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127025.680095565] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127026.781708379] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127027.880498990] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127028.916703545] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.36 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127030.134273396] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127030.697993006] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127031.080485710] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127032.186388339] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127033.109765135] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127034.183464690] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127035.282858319] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.36 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127035.417698318] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127036.383639744] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127037.417840040] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127038.483807854] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127039.581409723] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127040.415661853] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127040.597486889] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127041.586886222] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127042.586563351] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127043.587973591] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127044.602514776] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127045.423381664] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127045.835400683] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127046.832548127] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127047.844492163] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127048.933907347] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127049.872947291] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.36 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127050.511048995] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127050.880427346] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127051.984548105] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127053.080652401] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127054.080486289] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127055.259662159] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127055.414329566] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127056.401598436] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127057.501175287] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127058.610401564] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127059.604210267] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127060.415909711] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127060.680846952] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127061.682978636] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127062.681152969] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127063.680942524] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127064.782978560] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127065.415070190] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127065.790088615] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127066.805473652] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127068.051403466] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127069.054264391] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127070.043852520] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127070.561884798] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127071.035040371] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127072.086102000] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127073.185208907] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127074.282236147] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127075.383642906] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127075.415949924] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127076.485814627] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127077.585027904] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127078.584597015] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127079.683642088] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127080.417067903] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127080.783260884] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127081.882038124] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127082.882390272] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127083.982026660] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127084.981723548] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127085.416685215] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127085.982798640] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127087.084594028] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127088.081278417] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127089.083170138] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127090.186502138] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127090.414894008] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127091.287780619] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127092.383096599] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127093.484068858] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127094.483009246] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127095.417857153] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127095.590169968] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127096.585362819] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127097.683538411] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127098.783109521] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127099.881434650] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127100.415856206] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127100.881841261] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127101.981292483] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127103.050670537] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127104.080163648] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127105.212343925] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127105.608808517] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127106.350991480] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127107.380227479] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127108.393694831] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127109.489018608] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127110.415405829] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127110.582307903] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127111.583920495] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127112.702030680] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127113.911649549] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127114.967364234] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127115.849472659] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127115.899479956] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127116.956911085] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127118.149584806] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127119.145925917] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.29 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127120.186596953] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127120.414632509] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127121.279924693] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127122.281161822] [lai_xe_lidar]: KHONG_CO_DICH -> XANH_VANG () | TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35
+[INFO] [1794127122.288107082] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.28 PHAI=0.30 SAU-PHAI=0.32 TR-TRAI=0.35 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127123.383209692] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.22 TR-TRAI=0.28 PHAI=0.30 SAU-PHAI=0.31 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127124.482556210] [lai_xe_lidar]: vung gan nhat: PHAI=0.18 TR-PHAI=0.18 TR-TRAI=0.20 TRAI=0.21 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127125.414860524] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127125.585384191] [lai_xe_lidar]: vung gan nhat: PHAI=0.18 TR-PHAI=0.18 TRAI=0.19 TR-TRAI=0.20 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127126.688173227] [lai_xe_lidar]: vung gan nhat: PHAI=0.17 SAU-TRAI=0.19 TRAI=0.19 SAU-PHAI=0.19 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127127.785049486] [lai_xe_lidar]: vung gan nhat: PHAI=0.18 SAU-PHAI=0.19 SAU-TRAI=0.19 TRAI=0.19 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127128.784402152] [lai_xe_lidar]: vung gan nhat: SAU-TRAI=0.20 SAU-PHAI=0.20 TRAI=0.20 TR-PHAI=0.28 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127129.883139225] [lai_xe_lidar]: vung gan nhat: SAU-TRAI=0.21 TRAI=0.22 TR-PHAI=0.26 PHAI=0.27 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127130.414537540] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127130.884750521] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.25 PHAI=0.26 TRUOC=0.26 SAU-TRAI=0.26 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127131.983322539] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.19 SAU-PHAI=0.25 PHAI=0.25 SAU-TRAI=0.30 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127132.985057816] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.15 SAU-PHAI=0.25 PHAI=0.26 SAU-TRAI=0.33 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127134.084187260] [lai_xe_lidar]: vung gan nhat: PHAI=0.11 TR-PHAI=0.13 SAU-PHAI=0.31 TRUOC=0.37 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127135.082700815] [lai_xe_lidar]: vung gan nhat: PHAI=0.11 TR-PHAI=0.21 TRUOC=0.27 TR-TRAI=0.35 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127135.414514703] [lai_xe_lidar]: nhan ban do 52x32, 0.05 m/o
+[INFO] [1794127136.182579388] [lai_xe_lidar]: vung gan nhat: SAU-PHAI=0.12 PHAI=0.14 TR-PHAI=0.16 TRUOC=0.19 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127137.188361221] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.12 SAU-PHAI=0.15 TRUOC=0.17 PHAI=0.17 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127138.183400239] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.12 PHAI=0.14 SAU-PHAI=0.17 SAU=0.19 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127139.291269442] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.11 PHAI=0.12 SAU-PHAI=0.22 SAU=0.27 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127140.289324404] [lai_xe_lidar]: XANH_VANG -> NAV_DANG_DI () | TR-PHAI=0.07 PHAI=0.08 SAU-PHAI=0.16 TRUOC=0.26
+[INFO] [1794127140.385259997] [lai_xe_lidar]: NAV_DANG_DI -> XAC_NHAN () | TR-PHAI=0.07 PHAI=0.08 SAU-PHAI=0.16 TRUOC=0.25
+[INFO] [1794127140.394353423] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.07 PHAI=0.08 SAU-PHAI=0.16 TRUOC=0.25 | dich=True trang_thai=XAC_NHAN
+[INFO] [1794127140.416105015] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127140.483283552] [lai_xe_lidar]: XAC_NHAN -> NAV_DANG_DI () | TR-PHAI=0.07 PHAI=0.07 SAU-PHAI=0.16 TRUOC=0.24
+[INFO] [1794127141.081258607] [lai_xe_lidar]: NAV_DANG_DI -> XANH_VANG () | TR-PHAI=0.08 PHAI=0.08 SAU-PHAI=0.17 TRUOC=0.26
+[INFO] [1794127141.384890126] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 PHAI=0.09 SAU-PHAI=0.18 TRUOC=0.28 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127142.388785681] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.12 PHAI=0.12 SAU-PHAI=0.15 SAU=0.34 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127143.490392606] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.12 PHAI=0.12 SAU-PHAI=0.13 TRUOC=0.47 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127144.585758920] [lai_xe_lidar]: vung gan nhat: PHAI=0.13 TR-PHAI=0.13 SAU-PHAI=0.13 TR-TRAI=0.31 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127145.416373679] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127145.692762790] [lai_xe_lidar]: vung gan nhat: SAU-PHAI=0.11 PHAI=0.12 TR-PHAI=0.17 TRUOC=0.22 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127146.786333604] [lai_xe_lidar]: vung gan nhat: SAU-PHAI=0.10 PHAI=0.12 TR-PHAI=0.18 TRUOC=0.21 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127147.791061992] [lai_xe_lidar]: vung gan nhat: SAU-PHAI=0.12 PHAI=0.12 TR-PHAI=0.18 TRUOC=0.19 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127148.884113955] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.12 PHAI=0.13 TR-TRAI=0.16 TRUOC=0.17 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127149.883003658] [lai_xe_lidar]: XANH_VANG -> NAV_DANG_DI () | TR-PHAI=0.07 TRUOC=0.09 PHAI=0.12 TR-TRAI=0.16
+[INFO] [1794127149.983725065] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.07 TRUOC=0.08 PHAI=0.12 TR-TRAI=0.17 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127150.415283417] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127150.882969046] [lai_xe_lidar]: NAV_DANG_DI -> KHONG_CO_DICH () | TR-PHAI=0.07 TRUOC=0.07 TR-TRAI=0.10 TRAI=0.21
+[INFO] [1794127150.993064305] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.10 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127152.079108027] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127153.079951397] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127154.181693007] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127155.282712580] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127155.415344951] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127156.284557469] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127157.379131505] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127158.381015227] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127159.380966189] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127160.383286670] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127160.417420763] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127161.479675132] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127162.810530409] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127163.778387816] [lai_xe_lidar]: vung gan nhat: TRUOC=0.08 TR-PHAI=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127164.789149556] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127165.486690482] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127165.792000537] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127166.879935851] [lai_xe_lidar]: vung gan nhat: TRUOC=0.08 TR-PHAI=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127167.879315795] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127168.078602332] [lai_xe_lidar]: RA2 BAT DAU LUI (than-truoc 0.08 m, sau 1.00 m) [chi nhin]
+[INFO] [1794127168.084679017] [lai_xe_lidar]: RA XONG CHI_NHIN 0 cm
+[INFO] [1794127168.092194591] [lai_xe_lidar]: KHONG_CO_DICH -> RA_XONG () | TRUOC=0.08 TR-PHAI=0.08 TR-TRAI=0.09 TRAI=0.22
+[INFO] [1794127168.184405202] [lai_xe_lidar]: RA_XONG -> KHONG_CO_DICH () | TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22
+[INFO] [1794127168.879530591] [lai_xe_lidar]: vung gan nhat: TR-PHAI=0.08 TRUOC=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127169.880360553] [lai_xe_lidar]: KHONG_CO_DICH -> NGHI () | TRUOC=0.08 TR-PHAI=0.08 TR-TRAI=0.09 TRAI=0.22
+[INFO] [1794127169.885441461] [lai_xe_lidar]: vung gan nhat: TRUOC=0.08 TR-PHAI=0.08 TR-TRAI=0.09 TRAI=0.22 | dich=True trang_thai=NGHI
+[INFO] [1794127170.415347571] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127170.979828701] [lai_xe_lidar]: vung gan nhat: TR-TRAI=0.06 TRUOC=0.06 TR-PHAI=0.10 SAU-TRAI=0.20 | dich=True trang_thai=NGHI
+[INFO] [1794127171.083235108] [lai_xe_lidar]: NGHI -> NAV_DANG_DI () | TR-TRAI=0.06 TRUOC=0.06 TR-PHAI=0.11 SAU-TRAI=0.19
+[INFO] [1794127171.984561256] [lai_xe_lidar]: vung gan nhat: TR-TRAI=0.05 TRUOC=0.07 TRAI=0.08 SAU-TRAI=0.17 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127172.381057422] [lai_xe_lidar]: NAV_DANG_DI -> XANH_VANG () | TR-TRAI=0.07 TRAI=0.08 TRUOC=0.10 SAU-TRAI=0.17
+[INFO] [1794127172.986462199] [lai_xe_lidar]: vung gan nhat: TR-TRAI=0.09 TRAI=0.10 SAU-TRAI=0.18 SAU=0.19 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127174.078946884] [lai_xe_lidar]: vung gan nhat: TRAI=0.12 SAU-TRAI=0.12 TR-TRAI=0.14 SAU-PHAI=0.25 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127175.180860457] [lai_xe_lidar]: vung gan nhat: SAU-TRAI=0.12 TRAI=0.12 TR-TRAI=0.18 SAU-PHAI=0.40 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127175.415675217] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127176.281680438] [lai_xe_lidar]: vung gan nhat: SAU-TRAI=0.14 TRAI=0.15 TR-TRAI=0.25 SAU=0.42 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127177.282636141] [lai_xe_lidar]: vung gan nhat: SAU-TRAI=0.19 TR-TRAI=0.21 TRAI=0.22 SAU=0.40 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127178.383594752] [lai_xe_lidar]: vung gan nhat: TR-TRAI=0.10 TRAI=0.13 SAU-TRAI=0.26 SAU=0.45 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127179.380720085] [lai_xe_lidar]: vung gan nhat: TRAI=0.09 SAU-TRAI=0.23 TR-TRAI=0.24 TRUOC=0.36 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127180.382822936] [lai_xe_lidar]: vung gan nhat: SAU-TRAI=0.10 TR-TRAI=0.15 TRAI=0.15 TRUOC=0.25 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127180.416442028] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127181.383467787] [lai_xe_lidar]: vung gan nhat: TR-TRAI=0.10 TRAI=0.11 SAU-TRAI=0.18 TRUOC=0.20 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127182.482825916] [lai_xe_lidar]: vung gan nhat: TR-TRAI=0.11 TRAI=0.11 SAU-TRAI=0.14 SAU=0.27 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127183.579911360] [lai_xe_lidar]: vung gan nhat: SAU-TRAI=0.11 TRAI=0.11 TR-TRAI=0.12 TR-PHAI=0.39 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127184.678918841] [lai_xe_lidar]: vung gan nhat: TR-TRAI=0.04 SAU-TRAI=0.10 TRAI=0.10 TR-PHAI=0.37 | dich=True trang_thai=XANH_VANG
+[INFO] [1794127184.880486174] [lai_xe_lidar]: XANH_VANG -> NAV_DANG_DI () | TR-TRAI=0.03 TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.37
+[INFO] [1794127185.182839877] [lai_xe_lidar]: NAV_DANG_DI -> CHAN_XOAY ()  [chi nhin: SE gui v=0.00 w=0.00] | TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.36
+[INFO] [1794127185.280616748] [lai_xe_lidar]: CHAN_XOAY -> NAV_DANG_DI () | TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35
+[INFO] [1794127185.415917618] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127185.780662229] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127186.880634450] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127187.883368561] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127188.883300394] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127189.980348523] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127190.417002819] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127190.980377837] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127191.983916281] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127193.080037891] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127194.080785928] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127195.182695557] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127195.415286056] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127196.182245630] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127197.282965666] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127198.391999184] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127199.279977610] [lai_xe_lidar]: NAV_DANG_DI -> KHONG_CO_DICH () | TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35
+[INFO] [1794127199.383286795] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127200.415595776] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127200.483698053] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127201.484047423] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127202.581886126] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127203.588405181] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127204.680949532] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127205.416140088] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127205.785058439] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127206.883304679] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127207.885067068] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127208.985209715] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127209.988173918] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127210.415430844] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127211.084893343] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127212.182744898] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127213.284952287] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127214.381284378] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127215.380952841] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127215.417436970] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127216.483904044] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127217.483619914] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127218.581933728] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127219.682397579] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127220.415146579] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127220.782394838] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127221.882395559] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127222.886135799] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127223.885992632] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127224.983753706] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127225.415598446] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127226.084867538] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127227.180867223] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127228.185215648] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127229.282179370] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127229.479950592] [lai_xe_lidar]: RA2 BAT DAU LUI (than-truoc 0.02 m, sau 0.40 m) [chi nhin]
+[INFO] [1794127229.486843629] [lai_xe_lidar]: RA XONG CHI_NHIN 0 cm
+[INFO] [1794127229.492367388] [lai_xe_lidar]: KHONG_CO_DICH -> RA_XONG () | TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35
+[INFO] [1794127229.580529721] [lai_xe_lidar]: RA_XONG -> KHONG_CO_DICH () | TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35
+[INFO] [1794127230.379927962] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127230.418420665] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127231.280011794] [lai_xe_lidar]: KHONG_CO_DICH -> NGHI () | TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35
+[INFO] [1794127231.481777387] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NGHI
+[INFO] [1794127232.482509497] [lai_xe_lidar]: NGHI -> NAV_DANG_DI () | TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35
+[INFO] [1794127232.490333257] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127233.580892274] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127234.581846144] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127235.416248847] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127235.680032310] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127236.680491365] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127237.782505976] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127238.882328327] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127239.880615215] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127240.416877122] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127240.884179789] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127241.886435232] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127242.981299084] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127243.980642083] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127245.081507342] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127245.417778008] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127246.080667452] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127246.279269563] [lai_xe_lidar]: NAV_DANG_DI -> KHONG_CO_DICH () | TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35
+[INFO] [1794127247.180719896] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127248.184157229] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127249.184132136] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127250.284574339] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127250.415401061] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127251.383805801] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127252.481332226] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127253.482518707] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127254.485659558] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127255.417135132] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127255.587671817] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127256.682900798] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127257.684048519] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127258.682451000] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127259.785017796] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127260.416623870] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127260.885819832] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127261.985198906] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127263.082646127] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127264.182716015] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127265.283280719] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127265.415166163] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127266.280929644] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127267.384891143] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127268.480194013] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127269.486436457] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127270.415602123] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127270.583085438] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127271.681776585] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127272.681841955] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127273.685730510] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127274.782912361] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127275.418018212] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127275.882713564] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127276.480630138] [lai_xe_lidar]: RA2 BAT DAU LUI (than-truoc 0.02 m, sau 0.40 m) [chi nhin]
+[INFO] [1794127276.489426267] [lai_xe_lidar]: RA XONG CHI_NHIN 0 cm
+[INFO] [1794127276.494465397] [lai_xe_lidar]: KHONG_CO_DICH -> RA_XONG () | TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35
+[INFO] [1794127276.584846119] [lai_xe_lidar]: RA_XONG -> KHONG_CO_DICH () | TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35
+[INFO] [1794127276.981063582] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127278.079181174] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127278.382181600] [lai_xe_lidar]: KHONG_CO_DICH -> NGHI () | TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35
+[INFO] [1794127279.086801470] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NGHI
+[INFO] [1794127279.591098062] [lai_xe_lidar]: NGHI -> NAV_DANG_DI () | TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35
+[INFO] [1794127280.184377136] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127280.415190747] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127281.284870672] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127282.285485301] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127283.383610930] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127284.484028614] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127285.415955614] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127285.482668540] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127286.483238410] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127287.583340483] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127288.583339168] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127289.681993278] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127290.417274315] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127290.783944555] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127291.885099629] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127292.981748795] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=True trang_thai=NAV_DANG_DI
+[INFO] [1794127293.381177072] [lai_xe_lidar]: NAV_DANG_DI -> KHONG_CO_DICH () | TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35
+[INFO] [1794127294.080241312] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127295.082147627] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127295.421063275] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127296.085266867] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127297.181346829] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127298.282059495] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127299.386249402] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127300.389609549] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127300.418331457] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127301.483943401] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127302.583812789] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127303.682271085] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127304.681742862] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127305.417726102] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127305.781196417] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127306.781126731] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127307.784123064] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127308.788336230] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127309.881530173] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127310.415340747] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127310.885294599] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127311.982896635] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127312.984345190] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127313.982183282] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127314.984988300] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127315.416097374] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127316.081216799] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127317.183793336] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127318.183052131] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127319.282780409] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127320.283510704] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127320.416662908] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127321.382581518] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127322.384416425] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127323.384170647] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127324.384377387] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127325.384369553] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127325.416650183] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127326.485030441] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127327.582758422] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127328.584367514] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127329.683405884] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127330.415610161] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127330.783679513] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127331.786269142] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127332.881893419] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127333.982302511] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127335.081620918] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127335.417449992] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127336.182492417] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127337.184389046] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127338.283494323] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127339.282565452] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127340.382384914] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127340.417304303] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127341.483299636] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127342.483177210] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127343.484028524] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127344.589284912] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127345.417420134] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127345.680747726] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127346.680372003] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127347.781602540] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127348.785057724] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127349.883003483] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127350.417710131] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127350.883790686] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127351.985391926] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127352.982358037] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127353.985090147] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127355.083040869] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127355.417268572] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127356.181446887] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127357.182707442] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127358.183156182] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127359.282921977] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127360.284052940] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127360.416059773] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127361.285397198] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127362.386429105] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127363.481414975] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127364.580900474] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127365.418123381] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127365.583630399] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127366.681495584] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127367.782569657] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127368.787695435] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127369.882794712] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127370.416610748] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127370.882737841] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127371.881859951] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127372.984924765] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127374.081313857] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127375.083393949] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127375.416155227] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127376.189657282] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127377.182718763] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127378.283405836] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127379.286087336] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127380.383495854] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127380.419201391] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127381.482809334] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127382.484860982] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127383.582036537] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127384.585350573] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127385.417014147] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127385.681258425] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127386.684866628] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127387.783496442] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127388.884794663] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127389.883221404] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127390.415502329] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127390.982392995] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127391.988624162] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127392.985520068] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127394.085776864] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127395.086336752] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127395.417462197] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127396.084830770] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127397.182269658] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127398.181876732] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127399.181746916] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127400.281651397] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127400.417359527] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127401.281852156] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127402.284245618] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127403.284811099] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127404.382938876] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127405.415533616] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127405.483870802] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127406.583096171] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127407.583289319] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127408.683388948] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127409.681749058] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127410.416152799] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127410.783000669] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127411.783753465] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127412.886092482] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127413.985379648] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127415.081127426] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127415.416674833] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127416.084647203] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127417.181695609] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127418.181525850] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127419.282325701] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127420.282960867] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127420.417924515] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127421.382459514] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127422.483703458] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127423.583619383] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127424.582470772] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127425.416014030] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127425.583171438] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127426.683394789] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127427.781368307] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127428.884249528] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127429.985776380] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127430.417704472] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127431.085487268] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127432.183252101] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127433.282317878] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127434.383370488] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127435.384319710] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127435.416104821] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127436.479612283] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127437.480843042] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127438.484856486] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127439.581620615] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127440.417690410] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127440.682390225] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127441.683844910] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127442.783826631] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127443.885942242] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127444.984431519] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127445.417921278] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127446.085522296] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127447.084712240] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127448.180665850] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127449.184404813] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127450.280677571] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127450.418540460] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127451.284714941] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127452.282229644] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127453.282553569] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127454.383029902] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127455.385838420] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127455.417816772] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127456.483499993] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127457.581850956] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127458.584428844] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127459.683942714] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127460.417789176] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127460.682563584] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127461.782451713] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127462.782780230] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127463.883092785] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127464.982811507] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127465.416882710] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127465.982727988] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127466.982870228] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127468.083439135] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127469.184908875] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127470.281278207] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127470.419138818] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127471.284474966] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127472.283339743] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127473.385207854] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127474.483452816] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127475.418915501] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127475.581525186] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127476.585109778] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127477.685949166] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127478.782298517] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127479.782827572] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127480.416685905] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127480.881254090] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127481.982353978] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127483.085013626] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127484.183912347] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127485.183183273] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127485.416419013] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127486.184016568] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127487.281797827] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127488.388807511] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127489.382175159] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127490.384051270] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127490.418226455] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127491.385648621] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127492.383431361] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127493.484695749] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127494.581936934] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127495.415491118] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127495.683066248] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127496.683268081] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127497.781997228] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127498.882413653] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127499.881924042] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127500.416037727] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127500.881959300] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127501.882901466] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127502.984930651] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127504.079911761] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127505.084825446] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127505.418418261] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127506.085341797] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127507.087196871] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127508.183060148] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127509.281458962] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127510.283222924] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127510.417347980] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127511.382355479] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127512.382642386] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127513.482362682] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127514.583030422] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127515.416025347] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127515.685076662] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127516.783466143] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127517.786527142] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127518.881671808] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127519.883796919] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127520.417030159] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127520.882454251] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127521.884894436] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127522.981604528] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127523.981908861] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127525.084316619] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127525.418491360] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127526.083123730] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127527.183839155] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127528.184097617] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127529.282787561] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127530.388477023] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127530.416469838] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127531.384771467] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127532.481689541] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127533.584147910] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127534.583745928] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127535.418131335] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127535.683126687] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127536.682550927] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127537.684760889] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127538.784706518] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127539.881762610] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127540.417712462] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127540.882729628] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127541.983121387] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127543.081168127] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127544.183546015] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127545.185107404] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127545.415788737] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127546.182181310] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127547.282426773] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127548.284023717] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127549.382592475] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127550.415521752] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127550.482751956] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127551.483219566] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127552.582136436] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127553.582520769] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127554.682970824] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127555.415985749] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127555.684566805] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127556.685304582] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127557.782232063] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127558.883413025] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127559.981773247] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127560.416362894] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127560.986714616] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127562.082631486] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127563.082515837] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127564.079781189] [lai_xe_lidar]: vung gan nhat: TRAI=0.03 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127565.183747021] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127565.416019595] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127566.283860187] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127567.382276890] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127568.381787149] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127569.384519352] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.10 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127570.418077611] [lai_xe_lidar]: nhan ban do 52x33, 0.05 m/o
+[INFO] [1794127570.484671296] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127571.484644332] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127572.583096054] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.03 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+[INFO] [1794127573.682381850] [lai_xe_lidar]: vung gan nhat: TRAI=0.02 TR-TRAI=0.04 SAU-TRAI=0.11 TR-PHAI=0.35 | dich=False trang_thai=KHONG_CO_DICH
+Traceback (most recent call last):
+  File "/home/project1/lai_xe_lidar.py", line 912, in <module>
+    main()
+  File "/home/project1/lai_xe_lidar.py", line 899, in main
+    rclpy.spin(node)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 229, in spin
+    executor.spin_once()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 812, in spin_once
+    self._spin_once_impl(timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 801, in _spin_once_impl
+    handler, entity, node = self.wait_for_ready_callbacks(timeout_sec=timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 784, in wait_for_ready_callbacks
+    return next(self._cb_iter)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 685, in _wait_for_ready_callbacks
+    raise ExternalShutdownException()
+rclpy.executors.ExternalShutdownException

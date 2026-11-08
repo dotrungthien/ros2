@@ -147,12 +147,12 @@ controller_server:
       stateful: true
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
       BaseObstacle.scale: 0.05
-      PathAlign.scale: 24.0                # 1c: 16 -> 24 (mac dinh 32; thap hon de duoc lech khoi duong ne vat)
+      PathAlign.scale: 40.0                # 1d: 24 -> 40 (1c: 16 -> 24; mac dinh 32)
       PathAlign.forward_point_distance: 0.1
       GoalAlign.scale: 24.0
       GoalAlign.forward_point_distance: 0.1
-      PathDist.scale: 24.0                 # 1c: 16 -> 24 (mac dinh 32; thap hon de duoc lech khoi duong ne vat)
-      GoalDist.scale: 24.0
+      PathDist.scale: 40.0                 # 1d: 24 -> 40 (1c: 16 -> 24; mac dinh 32)
+      GoalDist.scale: 12.0                 # 1d: 24 -> 12
       RotateToGoal.scale: 32.0
       RotateToGoal.slowing_factor: 5.0
       RotateToGoal.lookahead_time: -1.0

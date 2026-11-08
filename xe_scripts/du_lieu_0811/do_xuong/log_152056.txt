@@ -1,0 +1,25 @@
+== cau_noi_xe 15:17:05: di_B (BANG=day) ==
+-- tuyen 1, lan 1/3: 47 diem tu (0.01; 0.00) toi (1.60; 0.82)
+   khong den duoc (ABORTED, cach dich 1.39 m).
+   tuyen 1: khong tim duoc duong (21, 8) -> (43, 24) => doi tuyen
+== Tuyen 1 hong. ==
+-- tuyen 2, lan 1/3: 56 diem tu (0.49; -0.01) toi (1.60; 0.82)
+   phu lai vua XOAY xong: tinh lai duong tu cho xe (lan 1/3).
+   lop 2: sep bao RA_TIEN: cho phu lai tien ra, toi da 12 s.
+   lop 2: RA_XONG sau 1.2 s.
+-- tuyen 2, lan 1/3: 53 diem tu (0.31; 0.09) toi (1.60; 0.82)
+   phu lai vua XOAY xong: tinh lai duong tu cho xe (lan 2/3).
+   lop 2: sep bao RA_LUI (vat sat mui): cho phu lai lui ra, toi da 12 s.
+   lop 2: RA_XONG sau 3.0 s.
+-- tuyen 2, lan 1/3: 28 diem tu (0.34; 0.81) toi (1.60; 0.82)
+   khong den duoc (ABORTED, cach dich 0.83 m).
+   lop 2: sep bao RA_LUI (vat sat mui): cho phu lai lui ra, toi da 12 s.
+   lop 2: RA_XONG sau 3.3 s.
+-- tuyen 2, lan 2/3: 27 diem tu (0.43; 0.82) toi (1.60; 0.82)
+   khong den duoc (ABORTED, cach dich 0.82 m).
+   lop 2: sep bao RA_LUI (vat sat mui): cho phu lai lui ra, toi da 12 s.
+   lop 2: RA_XONG sau 3.1 s.
+-- tuyen 2, lan 3/3: 27 diem tu (0.44; 0.83) toi (1.60; 0.82)
+   khong den duoc (ABORTED, cach dich 0.76 m).
+== Tuyen 2 hong. ==
+HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.

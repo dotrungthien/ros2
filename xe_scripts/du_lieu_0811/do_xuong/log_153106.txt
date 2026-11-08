@@ -1,0 +1,6 @@
+== cau_noi_xe 15:30:22: ve_A (BANG=day) ==
+   tuyen 1: dich nam trong o do => doi tuyen
+== Tuyen 1 hong. ==
+   tuyen 2: dich nam trong o do => doi tuyen
+== Tuyen 2 hong. ==
+HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.

@@ -34,7 +34,7 @@ T1="${T1:-60}"    # giay cho dong "bias" cua launch chinh
 T2="${T2:-120}"   # giay cho dong "Managed nodes are active" cua Nav2
 HAN="${HAN:-480}" # 8 phut ke tu luc con quay lay so 0
 # Danh sach ten tien trinh (khop lenh don trong chat 30/10; Quy trinh chuan 71 buoc 14, 15 can cap nhat theo).
-NODES='[g]yro_mpu6050|[o]dom_tu_lenh|[s]lam_toolbox|[d]ieu_khien|[y]dlidar|[t]eleop_web|[b]t_navigator|[p]lanner_server|[c]ontroller_server|[b]ehavior_server|[v]elocity_smoother|[l]ifecycle_manager|[r]obot_state_publisher|[j]oint_state_publisher|[t]wist_mux|[s]tatic_transform_publisher|[c]amera_csi|[r]f2o_laser_odometry_node|[k]et_detector'
+NODES='[g]yro_mpu6050|[o]dom_tu_lenh|[s]lam_toolbox|[d]ieu_khien|[y]dlidar|[t]eleop_web|[b]t_navigator|[p]lanner_server|[c]ontroller_server|[b]ehavior_server|[v]elocity_smoother|[c]ollision_monitor|[l]ifecycle_manager|[r]obot_state_publisher|[j]oint_state_publisher|[t]wist_mux|[s]tatic_transform_publisher|[c]amera_csi|[r]f2o_laser_odometry_node|[k]et_detector'
 # 31/10 chieu: them 7 ten cua launch ma truoc day thieu (rsp/jsp/twist_mux/static_tf sot lai sau "tat" -> bo mo coi, xem BAO_CAO muc 4). Duong lui: cp bat_xe.sh.v3 bat_xe.sh
 
 # 0 neu con node hoac launch cua he thong dang chay
@@ -226,6 +226,8 @@ fi
 
 # ---------- B2 ----------
 echo "== B2: bat Nav2 =="
+MAT_LAI="${MAT_LAI:-false}"   # 08/11 mat lai: true = collision_monitor loc lenh Nav2 (NAV_PARAMS phai co khoi collision_monitor, vd nav2_params_mat.yaml)
+echo "MAT_LAI=$MAT_LAI"
 [ -f "$LOG2" ] && mv -f "$LOG2" "$LOG2.cu"
 # NAV_PARAMS (tuy chon): duong dan tep tham so Nav2, vi du /home/project1/nav2_params_cho.yaml (cay hanh vi cho, khong quay/lui)
 # viec 110: chua dat thi doc dong NAV_PARAMS=... trong ~/cau_noi/cau_noi.env (cai_cau_noi.sh tao; chi doc, khong source)
@@ -238,9 +240,9 @@ if [ -z "$NAV_PARAMS" ] && [ -f "$HOME/cau_noi/cau_noi.env" ]; then
 fi
 if [ -n "$NAV_PARAMS" ]; then
   echo "Nav2 dung tham so: $NAV_PARAMS"
-  setsid nohup ros2 launch my_bot navigation_my_bot.launch.py params_file:="$NAV_PARAMS" > "$LOG2" 2>&1 < /dev/null &
+  setsid nohup ros2 launch my_bot navigation_my_bot.launch.py params_file:="$NAV_PARAMS" mat_lai:="$MAT_LAI" > "$LOG2" 2>&1 < /dev/null &
 else
-  setsid nohup ros2 launch my_bot navigation_my_bot.launch.py > "$LOG2" 2>&1 < /dev/null &
+  setsid nohup ros2 launch my_bot navigation_my_bot.launch.py mat_lai:="$MAT_LAI" > "$LOG2" 2>&1 < /dev/null &
 fi
 
 doi "$LOG2" "Managed nodes are active" "$T2" "[r]os2 launch my_bot navigation_my_bot"

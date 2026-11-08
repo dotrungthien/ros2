@@ -267,6 +267,8 @@ velocity_smoother:
 # 08/11 mat lai: collision_monitor (chi bat khi navigation_my_bot.launch.py mat_lai:=true). Chuoi lenh:
 #   controller_server -> cmd_vel_nav_raw -> velocity_smoother -> /cmd_vel_nav_tho -> collision_monitor -> /cmd_vel_nav -> twist_mux (nav 20)
 # Chi chan lenh Nav2; phu lai (/cmd_vel_avoid 60) va lai tay (/cmd_vel_teleop 100) KHONG di qua day.
+# 08/11 buoc 2g: behavior_server (BackUp cua BT va /backup cua gui_duong) ra thang /cmd_vel_avoid (60) => cung KHONG qua day;
+#   lui chi duoc kiem boi chinh BackUp (local_costmap/costmap_raw, vien footprint cham o LETHAL, nhin truoc <= 2 s).
 collision_monitor:
   ros__parameters:
     use_sim_time: false

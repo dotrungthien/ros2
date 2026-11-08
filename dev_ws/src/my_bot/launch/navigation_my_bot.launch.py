@@ -40,6 +40,8 @@ def generate_launch_description():
     # 08/11 mat lai: true = velocity_smoother ra /cmd_vel_nav_tho, collision_monitor (tham so trong params_file) loc ra /cmd_vel_nav
     mat_lai = LaunchConfiguration('mat_lai')
     ra_smoother = PythonExpression(["'cmd_vel_nav_tho' if '", mat_lai, "'.lower() in ('true', '1') else 'cmd_vel_nav'"])
+    # 08/11 bo 1e buoc 2g: true = behavior_server (BackUp...) ra thang /cmd_vel_avoid (twist_mux 60), KHONG qua smoother/collision_monitor
+    ra_behavior = PythonExpression(["'cmd_vel_avoid' if '", mat_lai, "'.lower() in ('true', '1') else 'cmd_vel_nav_raw'"])
 
     # smoother_server 와 waypoint_follower 는 사용하지 않음
     lifecycle_nodes = ['controller_server',
@@ -140,8 +142,8 @@ def generate_launch_description():
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
-                # 복구 동작(spin, backup 등)의 속도 명령도 velocity_smoother 를 거치게 한다
-                remappings=remappings + [('cmd_vel', 'cmd_vel_nav_raw')]),
+                # 복구 동작(spin, backup 등)의 속도 명령도 velocity_smoother 를 거치게 한다 (mat_lai:=true 이면 /cmd_vel_avoid)
+                remappings=remappings + [('cmd_vel', ra_behavior)]),
             Node(
                 package='nav2_bt_navigator',
                 executable='bt_navigator',

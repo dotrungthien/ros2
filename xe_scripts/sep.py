@@ -42,48 +42,49 @@ import re
 import time
 from collections import deque
 
+import hanh_vi as HV      # 09/11 nao xe viec 2: so hanh vi lay tu ~/hanh_vi_xe.yaml (mac dinh = so 2607fee)
 import lai_xe_lidar as L
 
 INF = 1e9
 
-LECH_MAX = 0.30                  # m, diem dau /plan lech xe (muc 5 dong 1) [uoc]
-TF_CU = 5.0                      # s, tf map->base_footprint cu tu so nay = dinh vi hong (muc 5 dong 2)
-SCAN_CU = 0.5                    # s, /scan cu hon so nay = MAT_SCAN
-R_TIN_CAY = 3.0                  # m, chi tinh do tin cay tren diem LiDAR trong ban kinh nay
-TC_TIN, TC_NGHI = 0.70, 0.50     # do tin cay vi tri (muc 3) [de xuat]
-T_KHONG_TIN, T_BAO = 5.0, 15.0   # s, thap lien tuc tu luc bat dau thap: khong tin / dung va bao (#16)
-CUA_SO_KET = 2.0                 # s, cua so so sanh LiDAR va vi tri khi nghi ket (giong cua_so cua ket_detector)
-LIDAR_DOI, POSE_DOI = 0.02, 0.02 # m, duoi so nay la "khong doi" [de xuat]
-SUC_LECH, SUC_LECH_MAX, SUC_NHANH = 0.15, 0.20, 0.05   # m, m, s (#15, muc 5 dong 4)
-NHAY_M, NHAY_DEG, NHAY_DT = 0.10, 5.0, 1.0             # nhay vi tri giua chuyen (muc 4) [de xuat]
-NAV2_LAN_MAX = 2                 # lan khoi dong lai Nav2 moi chuyen (#8)
-LUOT_THOAT_MAX = 3               # luot thoat moi chuyen (muc 7)
-DAY_TUOI = 3.0                   # s, viec 109b: /duong_day cu hon so nay thi P lay lai diem cuoi /plan nhu c1
-P_DAY_XA = 0.40                  # m, viec 109b: P = diem tren /duong_day cach dau duong (canh xe) bay nhieu [de xuat]
-GOC_DINH = math.radians(5.0)     # 18:09: /duong_day doan thang: doi huong hon so nay la mot dinh
+LECH_MAX = HV.so('lech_max_m')    # m, diem dau /plan lech xe (muc 5 dong 1) [uoc]
+TF_CU = HV.so('tf_cu_s')          # s, tf map->base_footprint cu tu so nay = dinh vi hong (muc 5 dong 2)
+SCAN_CU = HV.so('scan_cu_s')      # s, /scan cu hon so nay = MAT_SCAN
+R_TIN_CAY = HV.so('r_tin_cay_m')  # m, chi tinh do tin cay tren diem LiDAR trong ban kinh nay
+TC_TIN, TC_NGHI = HV.so('tc_tin'), HV.so('tc_nghi')     # do tin cay vi tri (muc 3) [de xuat]
+T_KHONG_TIN, T_BAO = HV.so('t_khong_tin_s'), HV.so('t_bao_s')   # s, thap lien tuc tu luc bat dau thap: khong tin / dung va bao (#16)
+CUA_SO_KET = HV.so('cua_so_ket_s')   # s, cua so so sanh LiDAR va vi tri khi nghi ket (giong cua_so cua ket_detector)
+LIDAR_DOI, POSE_DOI = HV.so('lidar_doi_m'), HV.so('pose_doi_m')   # m, duoi so nay la "khong doi" [de xuat]
+SUC_LECH, SUC_LECH_MAX, SUC_NHANH = HV.so('suc_lech_m'), HV.so('suc_lech_max_m'), HV.so('suc_nhanh_s')   # m, m, s (#15, muc 5 dong 4)
+NHAY_M, NHAY_DEG, NHAY_DT = HV.so('nhay_m'), HV.so('nhay_deg'), HV.so('nhay_dt_s')   # nhay vi tri giua chuyen (muc 4) [de xuat]
+NAV2_LAN_MAX = HV.so('nav2_lan_max')   # lan khoi dong lai Nav2 moi chuyen (#8)
+LUOT_THOAT_MAX = HV.so('luot_thoat_max')   # luot thoat moi chuyen (muc 7)
+DAY_TUOI = HV.so('day_tuoi_s')     # s, viec 109b: /duong_day cu hon so nay thi P lay lai diem cuoi /plan nhu c1
+P_DAY_XA = HV.so('p_day_xa_m')     # m, viec 109b: P = diem tren /duong_day cach dau duong (canh xe) bay nhieu [de xuat]
+GOC_DINH = math.radians(HV.so('goc_dinh_deg'))   # 18:09: /duong_day doan thang: doi huong hon so nay la mot dinh
 DANG_LAM = ('CHO_SEP', 'RA_TIEN', 'RA_LUI', 'RA_XONG', 'XOAY_P')   # 18:09: lai_xe_lidar dang cho sep / lam RA, XOAY (RA_XONG: XOAY ngay sau)
-T_LAI_THOAT = 3.0                # s, 18:09: phu lai xong XOAY ma van ket bay lau thi giao luot moi
-KHE_TANG, KHE_CUA_SO = 0.02, 3.0 # m, s: khe phia truoc rong them it nhat bay nhieu trong cua so (#12) [de xuat]
-NHIN_XA = 0.6                    # m dau cua /plan dat len LiDAR (muc 4 buoc D) [de xuat]
-XA_TRUOC = 0.15                  # m tu mep mui: vat trong dai nay la "vat phia truoc" (vung vang cua lai_xe_lidar, #20)
-T_CHO, T_CHO_THEM, T_CHO_B = 30.0, 10.0, 60.0          # s (#9, #12; vat tai B: 2 x 30 s)
-T_PLAN_XAU = 10.0                # s, muc B: ABORT_NHANH / PLAN_RONG / PLAN_LECH vua xay ra trong chung nay giay => CHO
-B_XY, R_B = (1.60, 0.82), 0.20   # B (chuyen.sh) va ban kinh coi la "dich tai B"
+T_LAI_THOAT = HV.so('t_lai_thoat_s')   # s, 18:09: phu lai xong XOAY ma van ket bay lau thi giao luot moi
+KHE_TANG, KHE_CUA_SO = HV.so('khe_tang_m'), HV.so('khe_cua_so_s')   # m, s: khe phia truoc rong them it nhat bay nhieu trong cua so (#12) [de xuat]
+NHIN_XA = HV.so('nhin_xa_m')       # m dau cua /plan dat len LiDAR (muc 4 buoc D) [de xuat]
+XA_TRUOC = HV.so('xa_truoc_m')     # m tu mep mui: vat trong dai nay la "vat phia truoc" (vung vang cua lai_xe_lidar, #20)
+T_CHO, T_CHO_THEM, T_CHO_B = HV.so('t_cho_s'), HV.so('t_cho_them_s'), HV.so('t_cho_b_s')   # s (#9, #12; vat tai B: 2 x 30 s)
+T_PLAN_XAU = HV.so('t_plan_xau_s')   # s, muc B: ABORT_NHANH / PLAN_RONG / PLAN_LECH vua xay ra trong chung nay giay => CHO
+B_XY, R_B = (1.60, 0.82), HV.so('r_b_m')   # B (chuyen.sh) va ban kinh coi la "dich tai B"
 A_XY = (0.0, 0.0)                # A (goc map, chuyen.sh)
-T_RA2_TRA, T_RA2_CHO = 3.0, 12.0  # s, 04/11 lop 2: giu cau KHONG_CAN / lenh RA_LUI, RA_TIEN trong ~/sep_thoat toi da bay lau
-R_VAT_DICH = 0.30                # m, F4 (03/11): vat la cach dich chuyen <= so nay moi la "vat tai B" (#9); xa hon = giua duong
-TREO = 1.0                       # s, mot vong cham hon so nay = sep treo (muc 9.9) [de xuat]
-ABORT_NHANH = 2.0                # s, ABORTED som hon so nay = nghi "0 poses"
+T_RA2_TRA, T_RA2_CHO = HV.so('t_ra2_tra_s'), HV.so('t_ra2_cho_s')   # s, 04/11 lop 2: giu cau KHONG_CAN / lenh RA_LUI, RA_TIEN trong ~/sep_thoat toi da bay lau
+R_VAT_DICH = HV.so('r_vat_dich_m')   # m, F4 (03/11): vat la cach dich chuyen <= so nay moi la "vat tai B" (#9); xa hon = giua duong
+TREO = HV.so('treo_s')             # s, mot vong cham hon so nay = sep treo (muc 9.9) [de xuat]
+ABORT_NHANH = HV.so('abort_nhanh_s')   # s, ABORTED som hon so nay = nghi "0 poses"
 L1_KET = ('KET_HINH_HOC', 'XOAY_BI_CHAN_QUA_LAU')     # ly do thoat cua lai_xe_lidar = no bao ket
 P_MAC_DINH = dict(               # tham so ROS (viec 100) [de xuat]
-    t_dung=10.0,                 # s, co dich ma tam xe dung yen lau tu so nay
-    dich_dung=0.03,              # m, "dung yen" = tam xe dich duoi so nay trong t_dung
-    sat_vat=0.10,                # m, diem LiDAR cach hinh chu nhat than xe tu so nay tro xuong = sat vat (BAT)
-    sat_vat_tat=0.12,            # m, khoang tre (viec 105): da bat thi chi TAT khi diem gan nhat > so nay
+    t_dung=HV.so('t_dung_s'),     # s, co dich ma tam xe dung yen lau tu so nay
+    dich_dung=HV.so('dich_dung_m'),   # m, "dung yen" = tam xe dich duoi so nay trong t_dung
+    sat_vat=HV.so('sat_vat_m'),   # m, diem LiDAR cach hinh chu nhat than xe tu so nay tro xuong = sat vat (BAT)
+    sat_vat_tat=HV.so('sat_vat_tat_m'),   # m, khoang tre (viec 105): da bat thi chi TAT khi diem gan nhat > so nay
     lop2_sau=True,               # 06/11 viec 120: false = tat rieng nhanh RA_TIEN (vat sau than) cua lop 2, giu RA_LUI nhu cu
     dem_luot_thoat=True,         # 08/11 bo 1e: false (MAT_LAI: phu lai chi nhin, khong co luot thoat that) => het_luot luon False
 )
-CUA_SO_VONG = 10.0               # s, cu bay nhieu giay ghi mot dong VONG
+CUA_SO_VONG = HV.so('cua_so_vong_s')   # s, cu bay nhieu giay ghi mot dong VONG
 
 COT_NHAT_KY = 'gio_mono,gio,loai,dau_hieu,nguon_nghi,phep_kiem,ket_qua,se_lam,x,y,goc_do'
 COT_CSV = ('gio', 'huong', 'tuyen', 'diem', 'lan', 'ket_qua', 'giay', 'lech_kiem_m', 'lech_costmap_m', 'tuoi_costmap_s')

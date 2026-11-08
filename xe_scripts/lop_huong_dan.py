@@ -22,15 +22,16 @@ import re
 import struct
 import sys
 
+import hanh_vi as HV      # 09/11 nao xe viec 2: so lay tu ~/hanh_vi_xe.yaml (mac dinh = so 2607fee)
 import tinh_tuyen as TT
 
 YAML_MAC_DINH = '/home/project1/map_xuong_v3.yaml'
 TEP_KINH_NGHIEM = os.path.expanduser('~/kinh_nghiem.csv')
-R_THA = 0.35          # m: dia quanh xe khong cam (thiet ke 1e muc 2 #4)
-R_CUM = 0.20          # m: cac dong kinh nghiem trong ban kinh nay tinh la mot cum
-N_CUM = 3             # so dong toi thieu cua mot cum
-R_VUNG = 0.15         # m: ban kinh vung ton diem
-GIA_CAM, GIA_TON = 100, 50
+R_THA = HV.so('lo_quanh_xe_m')             # m: dia quanh xe khong cam (thiet ke 1e muc 2 #4)
+R_CUM = HV.so('kinh_nghiem_ban_kinh_m')    # m: cac dong kinh nghiem trong ban kinh nay tinh la mot cum
+N_CUM = HV.so('kinh_nghiem_so_lan')        # so dong toi thieu cua mot cum
+R_VUNG = HV.so('vung_ton_diem_m')          # m: ban kinh vung ton diem
+GIA_CAM, GIA_TON = HV.so('o_cam_gia_tri'), HV.so('vung_ton_diem_gia_tri')
 
 
 def doc_khoa(text, khoa):

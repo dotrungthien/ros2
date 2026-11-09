@@ -94,3 +94,13 @@ thoi_quen:
   sat_vat_m: {gia_tri: 0.1, dung_o: "sep.py", cho: "P_MAC_DINH['sat_vat'] (tham so ROS)"}
   sat_vat_tat_m: {gia_tri: 0.12, dung_o: "sep.py", cho: "P_MAC_DINH['sat_vat_tat'] (tham so ROS)"}
   kinh_nghiem_quan_sat_s: {gia_tri: 15.0, dung_o: "gui_duong.py", cho: "MOI 09/11 nao xe viec 4 (khong co o 2607fee): BT_LUI / GUI_LUI / CHO_DICH DUOC neu tien trong bay nhieu giay sau do"}
+  gac_vat_la: {gia_tri: true, dung_o: "gac_vat_la.py, gui_duong.py", cho: "MOI 09/11 dung im ban 2 (A1): bat gac vat la (false = hanh vi 48995c2)"}
+  gac_truoc_m: {gia_tri: 0.3, dung_o: "gac_vat_la.py", cho: "MOI 09/11 dung im ban 2 (A1): vung gac truoc: tu mui toi (vao)"}
+  gac_hong_m: {gia_tri: 0.1, dung_o: "gac_vat_la.py", cho: "MOI 09/11 dung im ban 2 (A1): vung gac hong: ra ngoai than (vao)"}
+  gac_ra_truoc_m: {gia_tri: 0.4, dung_o: "gac_vat_la.py", cho: "MOI 09/11 dung im ban 2 (A1): vung RA truoc (tre hai nguong K2)"}
+  gac_ra_hong_m: {gia_tri: 0.15, dung_o: "gac_vat_la.py", cho: "MOI 09/11 dung im ban 2 (A1): vung RA hong (tre hai nguong K2)"}
+  gac_le_tuong_m: {gia_tri: 0.1, dung_o: "gac_vat_la.py", cho: "MOI 09/11 dung im ban 2 (A1): diem cach o tuong /map_tinh hon so nay moi la vat la"}
+  gac_so_diem: {gia_tri: 3, dung_o: "gac_vat_la.py", cho: "MOI 09/11 dung im ban 2 (A1): so diem vat la toi thieu trong mot vung"}
+  gac_sach_s: {gia_tri: 2.0, dung_o: "gac_vat_la.py, gui_duong.py", cho: "MOI 09/11 dung im ban 2 (A1): vung RA sach lien tuc bay lau => het chan"}
+  gac_scan_cu_s: {gia_tri: 0.5, dung_o: "gui_duong.py", cho: "MOI 09/11 dung im ban 2 (A1): /scan cu hon so nay => gac mu (K13)"}
+  footprint_padding_m: {gia_tri: 0.06, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (local + global costmap; kiem_hanh_vi.py so)", cho: "MOI 09/11 dung im ban 2 (A3, de xuat 83.8): footprint_padding (mac dinh Nav2 0.01)"}

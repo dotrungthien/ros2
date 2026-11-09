@@ -104,6 +104,16 @@ MAC_DINH = {
     'sat_vat_m': 0.1,     # P_MAC_DINH['sat_vat'] (tham so ROS)
     'sat_vat_tat_m': 0.12,    # P_MAC_DINH['sat_vat_tat'] (tham so ROS)
     'kinh_nghiem_quan_sat_s': 15.0,  # MOI (nao xe viec 4, khong co o 2607fee): ket qua su co = co tien trong bay nhieu giay sau do
+    'gac_vat_la': True,    # MOI (dung im ban 2, A1): bat gac vat la (false = hanh vi 48995c2)
+    'gac_truoc_m': 0.3,     # MOI (dung im ban 2, A1): vung gac truoc: tu mui toi (vao)
+    'gac_hong_m': 0.1,     # MOI (dung im ban 2, A1): vung gac hong: ra ngoai than (vao)
+    'gac_ra_truoc_m': 0.4,     # MOI (dung im ban 2, A1): vung RA truoc (tre hai nguong K2)
+    'gac_ra_hong_m': 0.15,    # MOI (dung im ban 2, A1): vung RA hong (tre hai nguong K2)
+    'gac_le_tuong_m': 0.1,     # MOI (dung im ban 2, A1): diem cach o tuong /map_tinh hon so nay moi la vat la
+    'gac_so_diem': 3,       # MOI (dung im ban 2, A1): so diem vat la toi thieu trong mot vung
+    'gac_sach_s': 2.0,     # MOI (dung im ban 2, A1): vung RA sach lien tuc bay lau => het chan
+    'gac_scan_cu_s': 0.5,     # MOI (dung im ban 2, A1): /scan cu hon so nay => gac mu (K13)
+    'footprint_padding_m': 0.06,     # MOI (dung im ban 2, A3): footprint_padding ca hai costmap (nav2_params_mat*.yaml)
 }
 
 COT_KINH_NGHIEM = 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do'     # ~/kinh_nghiem.csv tu 09/11 (nao xe viec 4)

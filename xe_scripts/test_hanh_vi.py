@@ -93,7 +93,10 @@ CU_2607FEE = {
     'sat_vat_tat_m': 0.12,
 }
 CU_THAN_THE = {'v_min_mps': 0.092, 'lidar_range_min_m': 0.10, 'ban_kinh_xoay_m': 0.186, 'o_luoi_m': 0.05, 'rong_xe_m': 0.16, 'dai_xe_m': 0.25}
-MOI_NAO_XE = {'kinh_nghiem_quan_sat_s': 15.0}           # so MOI cua nao xe (khong co o 2607fee)
+MOI_NAO_XE = {'kinh_nghiem_quan_sat_s': 15.0,           # so MOI cua nao xe (khong co o 2607fee)
+              'gac_vat_la': True, 'gac_truoc_m': 0.30, 'gac_hong_m': 0.10, 'gac_ra_truoc_m': 0.40, 'gac_ra_hong_m': 0.15,
+              'gac_le_tuong_m': 0.10, 'gac_so_diem': 3, 'gac_sach_s': 2.0, 'gac_scan_cu_s': 0.5,   # dung im ban 2 (A1)
+              'footprint_padding_m': 0.06}                                                        # A3
 CU_AN_TOAN = {'cach_vat_toi_thieu_m': 0.06, 'sep_phat_toc_do': False}
 
 
@@ -106,7 +109,7 @@ def _tam(noi_dung):
 
 def test_01_mac_dinh_tung_so_bang_2607fee():
     sai = [(k, HV.MAC_DINH.get(k), v) for k, v in CU_2607FEE.items() if HV.MAC_DINH.get(k) != v or type(HV.MAC_DINH.get(k)) is not type(v)]
-    assert not sai and set(HV.MAC_DINH) - set(CU_2607FEE) == set(MOI_NAO_XE) and all(HV.MAC_DINH[k] == v for k, v in MOI_NAO_XE.items()), sai
+    assert not sai and set(HV.MAC_DINH) - set(CU_2607FEE) == set(MOI_NAO_XE) and all(HV.MAC_DINH[k] == v and type(HV.MAC_DINH[k]) is type(v) for k, v in MOI_NAO_XE.items()), sai
     assert HV.MAC_DINH_THAN_THE == CU_THAN_THE and HV.MAC_DINH_AN_TOAN == CU_AN_TOAN
 
 
@@ -128,6 +131,7 @@ def test_03_cac_tep_lay_so_tu_hanh_vi_bang_so_cu():
                cho_sep='cho_sep_s', sep_tuoi='sep_lenh_tuoi_max_s', toi_sai_so='toi_sai_so_m', tf_tuoi='tf_tuoi_max_s',
                cho_chon='cho_chon_tuyen_s', nhip_cho='nhip_in_cho_s', lui_m='lui_ra_khe_m', lui_v='toc_do_lui_mps', luot='luot_lan_gui',
                cho_hong='cho_hong_s', to='qua_gio_lan_gui_s', lop2_cho='lop2_cho_s', lop2_tra='lop2_tra_s')
+    assert c.pop('gac') is True                                                        # dung im ban 2: so MOI
     assert set(c) == set(cap) and all(c[k] == CU_2607FEE[v] and type(c[k]) is type(CU_2607FEE[v]) for k, v in cap.items()), c
     assert G.LUI_BT_M == 0.25 and G.cho_tf_costmap.__defaults__[0] == 15.0 and G.doc_sep_lenh.__defaults__[0] == 3.0
     assert (LH.R_THA, LH.R_CUM, LH.N_CUM, LH.R_VUNG, LH.GIA_CAM, LH.GIA_TON) == (0.35, 0.20, 3, 0.15, 100, 50)
@@ -196,7 +200,7 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     import kiem_hanh_vi as K
     tq, at, tt = dict(HV.MAC_DINH), dict(HV.MAC_DINH_AN_TOAN), dict(HV.MAC_DINH_THAN_THE)
     kq = K.kiem(DAY, tq, at, tt)
-    assert all(d for _, _, d in kq) and len(kq) == 15 and {m for m, _, _ in kq} == {'a', 'b', 'c'}, kq
+    assert all(d for _, _, d in kq) and len(kq) == 19 and {m for m, _, _ in kq} == {'a', 'b', 'c'}, kq
     # (a) so trong tep chay that lech yaml: progress 10 -> 12 (tep rpp), backup_dist 0.25 -> 0.30
     d = _thu_muc_chep()
     _sua(d, 'nav2_params_mat_rpp.yaml', 'movement_time_allowance: 10.0', 'movement_time_allowance: 12.0')
@@ -216,6 +220,16 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
         f.write('\n# gia: self.create_publisher(Twist, "/cmd_vel_avoid", 10)\n')
     lech = [(m, nd) for m, nd, ok in K.kiem(d, dict(tq, vung_phanh_m=0.05), at, tt) if not ok]
     assert lech == [('c', 'vung_phanh_m 0.05 >= cach_vat_toi_thieu_m 0.06'), ('c', 'sep_phat_toc_do false: sep.py CO publisher Twist')], lech
+    # 09/11 A3: footprint_padding 2 costmap lech nhau (global con 0.06, local 0.05) => KHONG DAT
+    d2 = _thu_muc_chep()
+    p2 = os.path.join(d2, 'nav2_params_mat.yaml')
+    s2 = open(p2).read()
+    open(p2, 'w').write(s2.replace('footprint_padding: 0.06', 'footprint_padding: 0.05', 1))
+    lech = [nd for m, nd, ok in K.kiem(d2, tq, at, tt) if not ok]
+    assert lech == ['nav2_params_mat.yaml footprint_padding_m = nan, yaml 0.06'], lech
+    # 09/11 A4: vung gac nho hon luat => KHONG DAT
+    lech = [(m, nd) for m, nd, ok in K.kiem(DAY, dict(tq, gac_hong_m=0.05, gac_truoc_m=0.05), at, tt) if not ok]
+    assert lech == [('b', 'gac_hong_m 0.05 >= cach_vat_toi_thieu_m 0.06'), ('b', 'gac_truoc_m 0.05 >= vung_phanh_m 0.07')], lech
     # thieu tep: KHONG DAT, khong vo
     os.remove(os.path.join(d, 'bt_mat.xml'))
     assert any(not ok and nd.startswith('bt_mat.xml: khong doc duoc (FileNotFoundError') for _, nd, ok in K.kiem(d, tq, at, tt))
@@ -223,6 +237,6 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     with contextlib.redirect_stdout(e):
         assert K.main(['--thu-muc', DAY, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 0
         assert K.main(['--thu-muc', d, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 1
-    assert e.getvalue().splitlines()[15] == 'KIEM HANH VI: DAT (15 dong, 0 lech)'
+    assert e.getvalue().splitlines()[19] == 'KIEM HANH VI: DAT (19 dong, 0 lech)'
     kx = open(os.path.join(DAY, 'kiem_xe.sh')).read()
     assert 'python3 ~/kiem_hanh_vi.py || KQ=1' in kx and kx.index('# 8e.') > kx.index('# 8d.')

@@ -42,6 +42,10 @@ gui_duong.py|~/gui_duong.py
 dung_xe.py|~/dung_xe.py|tuychon
 tinh_tuyen.py|~/tinh_tuyen.py
 lop_huong_dan.py|~/lop_huong_dan.py
+hanh_vi_xe.yaml|~/hanh_vi_xe.yaml
+hanh_vi.py|~/hanh_vi.py
+kiem_hanh_vi.py|~/kiem_hanh_vi.py
+gac_vat_la.py|~/gac_vat_la.py
 slam_dinh_vi_xuong.yaml|~/slam_dinh_vi_xuong.yaml
 slam_dinh_vi_xuong_mat.yaml|~/slam_dinh_vi_xuong_mat.yaml
 du_lieu_0111/map_xuong_v3_pg.posegraph|~/map_xuong_v3_pg.posegraph

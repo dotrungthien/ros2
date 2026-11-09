@@ -4,8 +4,10 @@
 Chay: python3 ~/kiem_hanh_vi.py [--thu-muc DIR] [--yaml TEP]   (DIR mac dinh = thu muc chua tep nay; Pi: ~)
   (a) so trong nav2_params_mat.yaml, nav2_params_mat_rpp.yaml, bt_mat.xml khop thoi_quen: vung_phanh_m (mui ThanTruoc -
       mui footprint), nhin_truoc_phanh_s (time_before_collision), progress_s (movement_time_allowance), lui_thoat_goc_m
-      (BackUp backup_dist), toc_do_lui_mps (BackUp backup_speed), ve_lai_duong_hz (RateController hz);
+      (BackUp backup_dist), toc_do_lui_mps (BackUp backup_speed), ve_lai_duong_hz (RateController hz), footprint_padding_m
+      (local + global costmap, phai bang nhau; 09/11 dung im A3);
   (b) thoi_quen khong vuot than_the: toc_do_lui_mps >= v_min_mps; lui_thoat_goc_m, lui_ra_khe_m, tien_toi_thieu_m >= o_luoi_m;
+      09/11 dung im A4: gac_hong_m >= cach_vat_toi_thieu_m; gac_truoc_m >= vung_phanh_m;
   (c) thoi_quen khong trai an_toan: vung_phanh_m >= cach_vat_toi_thieu_m; sep_phat_toc_do false => sep.py khong tao
       publisher Twist.
 In bang ngan (DAT / KHONG DAT moi dong) roi "KIEM HANH VI: DAT | KHONG DAT"; ma thoat 0 / 1. CHI DOC, khong sua tep nao.
@@ -29,7 +31,9 @@ def _so_nav2(path):
         y = yaml.safe_load(f)
     cm = y['collision_monitor']['ros__parameters']['ThanTruoc']
     fp = ast.literal_eval(y['local_costmap']['local_costmap']['ros__parameters']['footprint'])
-    return {'vung_phanh_m': round(max(cm['points'][0::2]) - max(p[0] for p in fp), 6),
+    pad = [y[k][k]['ros__parameters'].get('footprint_padding', 0.01) for k in ('local_costmap', 'global_costmap')]   # mac dinh Nav2 0.01
+    return {'footprint_padding_m': float(pad[0]) if pad[0] == pad[1] else float('nan'),     # 2 costmap lech nhau => nan => KHONG DAT
+            'vung_phanh_m': round(max(cm['points'][0::2]) - max(p[0] for p in fp), 6),
             'nhin_truoc_phanh_s': float(cm['time_before_collision']),
             'progress_s': float(y['controller_server']['ros__parameters']['progress_checker']['movement_time_allowance'])}
 
@@ -53,10 +57,14 @@ def kiem(thu_muc, tq, at, tt):
             out.append(('a', '%s: khong doc duoc (%s: %s)' % (ten_tep, e.__class__.__name__, str(e)[:60]), False))
             continue
         for ten, x in so.items():
-            out.append(('a', '%s %s = %g, yaml %g' % (ten_tep, ten, x, tq[ten]), abs(x - tq[ten]) <= SAI_SO))
+            out.append(('a', '%s %s = %g, yaml %g' % (ten_tep, ten, x, tq[ten]), abs(x - tq[ten]) <= SAI_SO))   # nan => False
     out.append(('b', 'toc_do_lui_mps %g >= v_min_mps %g' % (tq['toc_do_lui_mps'], tt['v_min_mps']), tq['toc_do_lui_mps'] >= tt['v_min_mps']))
     for ten in ('lui_thoat_goc_m', 'lui_ra_khe_m', 'tien_toi_thieu_m'):
         out.append(('b', '%s %g >= o_luoi_m %g' % (ten, tq[ten], tt['o_luoi_m']), tq[ten] >= tt['o_luoi_m'] - SAI_SO))
+    # 09/11 dung im ban 2 A4: vung gac khong nho hon luat cach vat / vung phanh
+    out.append(('b', 'gac_hong_m %g >= cach_vat_toi_thieu_m %g' % (tq['gac_hong_m'], at['cach_vat_toi_thieu_m']),
+                tq['gac_hong_m'] >= at['cach_vat_toi_thieu_m'] - SAI_SO))
+    out.append(('b', 'gac_truoc_m %g >= vung_phanh_m %g' % (tq['gac_truoc_m'], tq['vung_phanh_m']), tq['gac_truoc_m'] >= tq['vung_phanh_m'] - SAI_SO))
     out.append(('c', 'vung_phanh_m %g >= cach_vat_toi_thieu_m %g' % (tq['vung_phanh_m'], at['cach_vat_toi_thieu_m']),
                 tq['vung_phanh_m'] >= at['cach_vat_toi_thieu_m'] - SAI_SO))
     if not at['sep_phat_toc_do']:

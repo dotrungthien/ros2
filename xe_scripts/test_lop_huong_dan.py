@@ -61,6 +61,17 @@ def test_04_chon_tuyen_hong():
 
 
 def test_05_vung_ton_diem_cum_3_dong():
+    ba0 = [(0.70, 0.80), (0.72, 0.81), (0.71, 0.79)]
+    assert LH.GIA_TON == 0 and set(LH.luoi(HH, None, ba0)) == {0}                   # 09/11 gia X: GIA_TON 0 => khong to vung ton
+    goc = LH.GIA_TON                                                                    # ma van giu: thu lai voi gia cu 50
+    LH.GIA_TON = 50
+    try:
+        _vung_ton_50()
+    finally:
+        LH.GIA_TON = goc
+
+
+def _vung_ton_50():
     hai = [(0.70, 0.80), (0.72, 0.81)]
     assert LH.tam_vung_ton(hai) == [] and set(LH.luoi(HH, None, hai)) == {0}            # 2 dong: chua thanh cum
     ba = hai + [(0.71, 0.79), (1.50, 0.10)]                                            # 3 dong trong 0,20 m + 1 dong le

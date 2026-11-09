@@ -50,6 +50,7 @@ Phan thuan (khong ROS) o nua tren, thu bang test_gui_duong.py.
 """
 import math
 import os
+import re
 import signal
 import sys
 import time
@@ -116,6 +117,100 @@ def ghi_kinh_nghiem(path, dong):
             f.write(COT_KINH_NGHIEM + '\n')
         f.write(','.join(so(dong.get(c)) if c in ('x', 'y') else str(dong.get(c, '-')).replace(',', ';')
                          for c in COT_KINH_NGHIEM.split(',')) + '\n')
+
+
+# ---------- 09/11 gia X (Thien chot 17:50-17:57): X = cho KET_CO_DUONG chua DA_GIAI = cho can tim cach giai, KHONG phai vung ne ----------
+DA_GIAI = 'DA_GIAI'      # ly_do (va su_co) dong ~/kinh_nghiem.csv: chuyen DEN_NOI di qua X ma khong co su co gan X
+
+
+def _xy(d):
+    try:
+        return float(d['x']), float(d['y'])
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def diem_x(dong, r, giay_mac_dinh):
+    """(b) dong = hanh_vi.doc_kinh_nghiem(...). Dong ly_do KET_CO_DUONG gop lan luot vao X dau tien co tam cach <= r (tam = trung binh);
+    giay X = trung binh cho=N (cot cach) cac dong co so, khong co thi giay_mac_dinh. X co dong DA_GIAI cach tam <= r SAU dong
+    KET_CO_DUONG cuoi cung cua no => da giai, bo. -> [(x, y, giay)]."""
+    cum = []
+    for d in dong:
+        p = _xy(d)
+        if p is None or d.get('ly_do') != KET_CO_DUONG:
+            continue
+        c = next((c for c in cum if math.hypot(p[0] - c['x'], p[1] - c['y']) <= r), None)
+        if c is None:
+            c = dict(diem=[], giay=[], cuoi=0)
+            cum.append(c)
+        c['diem'].append(p)
+        c['x'], c['y'] = sum(a for a, _ in c['diem']) / len(c['diem']), sum(b for _, b in c['diem']) / len(c['diem'])
+        m = re.match(r'cho=([0-9.]+)$', d.get('cach') or '')
+        if m:
+            c['giay'].append(float(m.group(1)))
+        c['cuoi'] = max(c['cuoi'], d.get('so_dong', 0))
+    giai = [(_xy(d), d.get('so_dong', 0)) for d in dong if d.get('ly_do') == DA_GIAI and _xy(d) is not None]
+    return [(c['x'], c['y'], sum(c['giay']) / len(c['giay']) if c['giay'] else giay_mac_dinh) for c in cum
+            if not any(n > c['cuoi'] and math.hypot(q[0] - c['x'], q[1] - c['y']) <= r for q, n in giai)]
+
+
+def kc_duong(p, duong):
+    """Khoang cach (m) tu diem p toi duong gap khuc duong [(x, y), ...]."""
+    if len(duong) == 1:
+        return math.hypot(p[0] - duong[0][0], p[1] - duong[0][1])
+    best = 1e9
+    for (ax, ay), (bx, by) in zip(duong, duong[1:]):
+        L2 = (bx - ax) ** 2 + (by - ay) ** 2
+        t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((p[0] - ax) * (bx - ax) + (p[1] - ay) * (by - ay)) / L2))
+        best = min(best, math.hypot(p[0] - ax - t * (bx - ax), p[1] - ay - t * (by - ay)))
+    return best
+
+
+def gia_tuyen(duong, xs, r, v):
+    """(c) (dai m, tong giay X cach duong <= r, gia = dai + v x giay)."""
+    dai = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(duong, duong[1:]))
+    giay = sum(g for x, y, g in xs if kc_duong((x, y), duong) <= r)
+    return dai, giay, dai + v * giay
+
+
+def thu_tu_gia_x(io, thu_tu, pose, ban, dich, yaw_cuoi):
+    """(c) Xep tuyen tang dan theo gia (hoa giu thu_tu = tuyen_dau truoc). gia_x_bat false / khong co X => thu_tu, khong log.
+    tinh_duong loi hoac rong o mot tuyen => bo gia X chuyen nay, giu thu_tu, log 1 dong."""
+    if not HV.so('gia_x_bat'):
+        return thu_tu
+    r, v = HV.so('gia_x_r_m'), HV.so('gia_x_v_ms')
+    xs = diem_x(io.doc_kinh_nghiem(), r, HV.so('gia_x_giay_mac_dinh'))
+    if not xs:
+        return thu_tu
+    gia = {}
+    for t in thu_tu:
+        try:
+            duong = [(x, y) for x, y, _ in TT.tinh_duong(ban, (pose[0], pose[1]), dich, t, yaw_cuoi=yaw_cuoi)]
+            ly = 'duong rong' if not duong else ''
+        except Exception as e:                   # noqa: BLE001 (KhongCoDuong hoac loi khac: bo gia X, giu thu tu cu)
+            duong, ly = [], '%s: %s' % (e.__class__.__name__, str(e)[:80])
+        if not duong:
+            io.bao('GIA_X: bo (tuyen %d %s); thu tu (%d,%d)' % (t, ly, thu_tu[0], thu_tu[1]))
+            return thu_tu
+        gia[t] = gia_tuyen(duong, xs, r, v)
+    moi = tuple(sorted(thu_tu, key=lambda t: gia[t][2]))
+    io.bao('GIA_X: %s; thu tu (%d,%d)' % ('; '.join('t%d %.2fm + %gs' % (t, gia[t][0], gia[t][1]) for t in (1, 2)), moi[0], moi[1]))
+    return moi
+
+
+def ghi_da_giai(io, huong, chuyen):
+    """(d) Chuyen DEN_NOI: moi X chua giai ma vet xe that (io.vet_chuyen) di cach X <= r va chuyen nay (cot chuyen) khong co dong
+    su co nao cach X <= r => them 1 dong DA_GIAI (khong xoa dong nao). gia_x_bat false => khong lam gi."""
+    if not HV.so('gia_x_bat'):
+        return
+    r = HV.so('gia_x_r_m')
+    dong = io.doc_kinh_nghiem()
+    vet = io.vet_chuyen()
+    su_co = [_xy(d) for d in dong if d.get('chuyen') == chuyen and d.get('ly_do') != DA_GIAI and _xy(d) is not None]
+    for x, y, _ in diem_x(dong, r, HV.so('gia_x_giay_mac_dinh')):
+        if any(math.hypot(a - x, b - y) <= r for a, b in vet) and not any(math.hypot(a - x, b - y) <= r for a, b in su_co):
+            io.ghi_kinh_nghiem(dict(chuyen=chuyen, x=x, y=y, huong=huong, su_co=DA_GIAI, cach='-', ket_qua='DUOC', ly_do=DA_GIAI))
+            io.bao('GIA_X: DA_GIAI (%.2f; %.2f)' % (x, y))
 
 
 class SoKinhNghiem:
@@ -395,6 +490,8 @@ def chay_mat(io, huong, tuyen_dau, cfg):
     kn = SoKinhNghiem(io, huong, io.ma_chuyen(), HV.so('kinh_nghiem_quan_sat_s'), HV.than_the('o_luoi_m'))
     ma = _chay_mat(io, huong, tuyen_dau, cfg, kn)
     kn.het_chuyen(ma == 0)
+    if ma == 0:
+        ghi_da_giai(io, huong, kn.chuyen)                # 09/11 gia X (d)
     return ma
 
 
@@ -411,6 +508,7 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
         io.bao('DUNG: SAI_VI_TRI (%s). KHONG gui lenh nao.' % ly)
         io.ghi(nhan, '-', 1, 0, 'SAI_VI_TRI', 0)
         return 3
+    thu_tu = thu_tu_gia_x(io, thu_tu, pose, ban, (dx, dy), yaw_cuoi)     # 09/11 gia X (c)
     io.ghi(nhan, thu_tu[0], 1, 0, 'KIEM_DAT', 0)
     gui_lai = False
     for r in thu_tu:
@@ -980,6 +1078,7 @@ if rclpy is not None:
                 self.create_subscription(LaserScan, '/scan', self._on_scan, qos_profile_sensor_data)
                 self.create_subscription(OccupancyGrid, '/map_tinh', self._on_map_tinh, giu)
                 self.tep_kinh_nghiem = os.path.expanduser('~/kinh_nghiem.csv')
+                self.vet_xe = []                         # 09/11 gia X (d): (x, y) moi nhip_vi_tri_s trong chuyen
                 self.thu_muc_chup = os.path.expanduser('~/chup')
                 self.tep_log = os.path.expanduser('~/log_gui_duong.txt')
 
@@ -1015,9 +1114,12 @@ if rclpy is not None:
             """09/11 buoc 3 #3: ~/vi_tri_xe (tep tam roi doi ten): vi tri tf + /plan cua dich navigate_to_pose dang chay."""
             self.t_vi_tri = time.monotonic()
             dang = self.goal is not None and self.kq is None
+            p = self.pose()
+            if p is not None:
+                self.vet_xe.append((p[0], p[1]))         # 09/11 gia X (d): vet that cua chuyen
             try:
                 with open(self.tep_vi_tri + '.tam', 'w') as f:
-                    f.write(noi_dung_vi_tri(time.time(), self.pose(), self.plan_cuoi if dang else []))
+                    f.write(noi_dung_vi_tri(time.time(), p, self.plan_cuoi if dang else []))
                 os.replace(self.tep_vi_tri + '.tam', self.tep_vi_tri)
             except OSError:
                 pass
@@ -1349,6 +1451,12 @@ if rclpy is not None:
 
         def ghi_kinh_nghiem(self, dong):
             ghi_kinh_nghiem(self.tep_kinh_nghiem, dict(dong, gio=time.strftime('%Y-%m-%d %H:%M:%S')))
+
+        def doc_kinh_nghiem(self):
+            return HV.doc_kinh_nghiem(self.tep_kinh_nghiem)
+
+        def vet_chuyen(self):
+            return list(self.vet_xe)
 
         def ma_chuyen(self):
             """09/11 nao xe viec 4: cot chuyen cua ~/kinh_nghiem.csv = gio bat dau chuyen."""

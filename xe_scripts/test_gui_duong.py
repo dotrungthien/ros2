@@ -788,6 +788,8 @@ class IOMat:
 
     def ngu(self, s):
         self.vet.append((round(self.t, 2), self.dang is not None, self.lui_dang))   # 09/11 #2: co dich / dang lui luc cho
+        p = self._pose_luc()
+        self.vet_xy = getattr(self, 'vet_xy', []) + [(p[0], p[1])]                # 09/11 gia X: vet that (moi ngu)
         self.t += s
 
     def tuoi_plan(self):                                  # 09/11 #5: kich ban 'plan' = lambda dt: tuoi /plan (s) | None
@@ -873,6 +875,15 @@ class IOMat:
 
     def ma_chuyen(self):
         return 'thu'
+
+    def doc_kinh_nghiem(self):                           # 09/11 gia X: kn_doc (tep co san, dict nhu hanh_vi.doc_kinh_nghiem) + dong moi
+        cu = list(getattr(self, 'kn_doc', []))
+        moi = [dict({k: ('' if v is None else ('%.3f' % v if k in ('x', 'y') else str(v))) for k, v in d.items()}, so_dong=len(cu) + i + 1)
+               for i, d in enumerate(getattr(self, 'kn_moi', []))]
+        return cu + moi
+
+    def vet_chuyen(self):
+        return list(getattr(self, 'vet_xy', []))
 
     def gac_quet(self):                                   # 09/11 dung im: self.gac_fn(t) -> None (khong quet moi) | 'MU' | [diem khung xe]
         f = getattr(self, 'gac_fn', None)
@@ -1564,6 +1575,95 @@ def test_69_d1_dong_gac_khong_doi_trang_va_cau_noi():
     assert 'python3 ~/gac_vat_la.py --kiem-map 10 || KQ=1' in kx                          # K13
     sv = open(os.path.join(DAY, 'so_voi_pi.sh')).read()
     assert all(('\n%s|~/%s\n' % (t, t)) in sv for t in ('hanh_vi_xe.yaml', 'hanh_vi.py', 'kiem_hanh_vi.py', 'gac_vat_la.py'))
+
+# ---------- 09/11 gia X (Thien chot 17:50-17:57): X = cho KET_CO_DUONG chua DA_GIAI; xep tuyen theo dai + v x giay X; DA_GIAI ----------
+def _kn_x(x, y, n, ly_do='KET_CO_DUONG', cach='cho=30', chuyen='c0', su_co='DOI_KHE'):
+    """Mot dong nhu hanh_vi.doc_kinh_nghiem tra (chuoi + so_dong)."""
+    return dict(gio='g', chuyen=chuyen, x='%.3f' % x, y='%.3f' % y, huong='di_B', su_co=su_co, cach=cach, ket_qua='HONG', ly_do=ly_do, so_dong=n)
+
+
+X1 = (0.66, 0.07)          # nam tren tuyen 1 (BAN: cach 0,013 m), cach tuyen 2 0,64 m
+DI_QUA_X1 = lambda dt: TOI_B(dt) if dt >= 20 else (0.08 * dt, 0.07, 0.0)     # vet that di qua X1 (dt ~ 8 s)
+
+
+def _mat_gia_x(kn_doc, pose=DI_QUA_X1):
+    io = IOMat([dict(ket=('SUCCEEDED', 20.0), fb=lambda dt: (max(0.05, 1.8 - 0.09 * dt), 0), pose=pose)])
+    io.kn_doc = kn_doc
+    return io, G.chay_mat(io, 'di_B', 1, CFG)
+
+
+def _voi_so(thay, f):
+    """Chay f() voi HV.so tra so khac cho cac khoa trong `thay` (khong dung fixture pytest: tep cung chay bang python3)."""
+    goc = G.HV.so
+    G.HV.so = lambda k: thay[k] if k in thay else goc(k)
+    try:
+        return f()
+    finally:
+        G.HV.so = goc
+
+
+def test_70_gia_x_diem_x_gop_giay_da_giai():
+    d = [_kn_x(0.66, 0.07, 1), _kn_x(0.70, 0.08, 2, cach='cho=20'), _kn_x(1.50, 0.80, 3, cach=''), _kn_x(0.30, 0.10, 4, ly_do='VAT_CHAN'),
+         _kn_x(1.0, 1.0, 5, su_co='BT_LUI', cach='lui=0.25', ly_do='-')]
+    xs = G.diem_x(d, 0.20, 10.0)
+    assert len(xs) == 2 and abs(xs[0][0] - 0.68) < 1e-9 and abs(xs[0][2] - 25.0) < 1e-9 and xs[1][2] == 10.0, xs   # TB cho=N; khong co => mac dinh
+    assert G.diem_x(d + [_kn_x(0.67, 0.07, 6, ly_do='DA_GIAI', cach='-')], 0.20, 10.0) == [xs[1]]            # DA_GIAI sau => da giai
+    assert G.diem_x([_kn_x(0.67, 0.07, 1, ly_do='DA_GIAI', cach='-')] + d[:2], 0.20, 10.0)[0][:2] == xs[0][:2]   # DA_GIAI truoc => van la X
+    duong = [(0.0, 0.0), (1.0, 0.0)]
+    assert G.kc_duong((0.5, 0.2), duong) == 0.2 and G.gia_tuyen(duong, [(0.5, 0.1, 30.0), (0.5, 0.5, 9.0)], 0.2, 0.11) == (1.0, 30.0, 1.0 + 3.3)
+
+
+def test_71_gia_x_khong_co_X_y_het_cu():
+    io, ma = _mat_gia_x([])
+    assert ma == 0 and [s for _, s in io.chon] == ['0', '1 0.000 0.000'] and not any(c.startswith('GIA_X') for c in io.cau), io.cau
+    assert io.rows[0][1] == '1' and CUA(io.rows) == ['KIEM_DAT', 'SUCCEEDED', 'DEN_NOI'] and not getattr(io, 'kn_moi', [])
+
+
+def test_72_gia_x_co_X_tren_tuyen_1_doi_thu_tu_va_DA_GIAI():
+    io, ma = _mat_gia_x([_kn_x(X1[0], X1[1], 1)])
+    g = [c for c in io.cau if c.startswith('GIA_X: t1')]
+    assert ma == 0 and len(g) == 1 and g[0].endswith('thu tu (2,1)') and '+ 30s' in g[0].split(';')[0] and 't2 2.12m + 0s' in g[0], io.cau
+    assert [s for _, s in io.chon] == ['0', '2 0.000 0.000'] and io.rows[0][1] == '2', (io.chon, io.rows)   # KIEM_DAT ghi tuyen dau moi
+    dg = [d for d in io.kn_moi if d['ly_do'] == 'DA_GIAI']                                                    # vet di qua X, khong su co
+    assert len(dg) == 1 and dg[0]['su_co'] == 'DA_GIAI' and abs(dg[0]['x'] - X1[0]) < 1e-9 and dg[0]['chuyen'] == 'thu', io.kn_moi
+    assert any(c.startswith('GIA_X: DA_GIAI (0.66; 0.07)') for c in io.cau)
+
+
+def test_73_gia_x_X_da_giai_bo_qua():
+    io, ma = _mat_gia_x([_kn_x(X1[0], X1[1], 1), _kn_x(0.67, 0.07, 2, ly_do='DA_GIAI', cach='-', su_co='DA_GIAI')])
+    assert ma == 0 and [s for _, s in io.chon] == ['0', '1 0.000 0.000'] and not any(c.startswith('GIA_X') for c in io.cau), io.cau
+
+
+def test_74_gia_x_tat_y_het_cu():
+    io, ma = _voi_so({'gia_x_bat': False}, lambda: _mat_gia_x([_kn_x(X1[0], X1[1], 1)]))
+    assert ma == 0 and [s for _, s in io.chon] == ['0', '1 0.000 0.000'] and not any(c.startswith('GIA_X') for c in io.cau), io.cau
+    assert not getattr(io, 'kn_moi', [])                                                                     # khong ghi DA_GIAI
+
+
+def test_75_gia_x_khong_DA_GIAI_khi_vet_xa_hoac_co_su_co_gan_X():
+    io, ma = _mat_gia_x([_kn_x(X1[0], X1[1], 1)], pose=lambda dt: TOI_B(dt) if dt >= 20 else (0.03 * dt, 0.03 * dt * 0.8 / 0.6, 0.0))
+    assert ma == 0 and not [d for d in getattr(io, 'kn_moi', []) if d['ly_do'] == 'DA_GIAI'], getattr(io, 'kn_moi', [])                    # vet khe tren, khong qua X
+    su_co = _kn_x(0.70, 0.07, 2, ly_do='-', cach='lui=0.25', chuyen='thu', su_co='BT_LUI')                    # dong su co CUA chuyen nay gan X
+    io, ma = _mat_gia_x([_kn_x(X1[0], X1[1], 1), su_co])
+    assert ma == 0 and not [d for d in getattr(io, 'kn_moi', []) if d['ly_do'] == 'DA_GIAI'], getattr(io, 'kn_moi', [])
+
+
+def test_76_gia_x_tinh_duong_loi_giu_thu_tu_log_1_dong():
+    goc = G.TT.tinh_duong
+
+    def hong(ban, dau, cuoi, tuyen, **k):
+        if tuyen == 2:
+            raise G.TT.KhongCoDuong('gia: khong toi duoc dich')
+        return goc(ban, dau, cuoi, tuyen, **k)
+    G.TT.tinh_duong = hong
+    try:
+        io, ma = _mat_gia_x([_kn_x(X1[0], X1[1], 1)])
+    finally:
+        G.TT.tinh_duong = goc
+    g = [c for c in io.cau if c.startswith('GIA_X')]
+    assert ma == 0 and g[0] == 'GIA_X: bo (tuyen 2 KhongCoDuong: gia: khong toi duoc dich); thu tu (1,2)', g
+    assert [s for _, s in io.chon] == ['0', '1 0.000 0.000'], io.chon
+
 
 if __name__ == '__main__':
     import sys

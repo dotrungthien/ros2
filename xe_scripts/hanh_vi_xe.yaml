@@ -49,7 +49,7 @@ thoi_quen:
   kinh_nghiem_so_lan: {gia_tri: 3, dung_o: "lop_huong_dan.py; tong_ket_kinh_nghiem.py", cho: "N_CUM"}
   kinh_nghiem_ban_kinh_m: {gia_tri: 0.2, dung_o: "lop_huong_dan.py", cho: "R_CUM"}
   vung_ton_diem_m: {gia_tri: 0.15, dung_o: "lop_huong_dan.py", cho: "R_VUNG"}
-  vung_ton_diem_gia_tri: {gia_tri: 50, dung_o: "lop_huong_dan.py", cho: "GIA_TON"}
+  vung_ton_diem_gia_tri: {gia_tri: 0, dung_o: "lop_huong_dan.py", cho: "GIA_TON; 09/11 gia X: 50 -> 0 (thoi to vung ton diem, giu ma)"}
   o_cam_gia_tri: {gia_tri: 100, dung_o: "lop_huong_dan.py", cho: "GIA_CAM"}
   t_cho_s: {gia_tri: 30.0, dung_o: "sep.py", cho: "T_CHO"}
   t_cho_them_s: {gia_tri: 10.0, dung_o: "sep.py", cho: "T_CHO_THEM"}
@@ -103,4 +103,8 @@ thoi_quen:
   gac_so_diem: {gia_tri: 3, dung_o: "gac_vat_la.py", cho: "MOI 09/11 dung im ban 2 (A1): so diem vat la toi thieu trong mot vung"}
   gac_sach_s: {gia_tri: 2.0, dung_o: "gac_vat_la.py, gui_duong.py", cho: "MOI 09/11 dung im ban 2 (A1): vung RA sach lien tuc bay lau => het chan"}
   gac_scan_cu_s: {gia_tri: 0.5, dung_o: "gui_duong.py", cho: "MOI 09/11 dung im ban 2 (A1): /scan cu hon so nay => gac mu (K13)"}
+  gia_x_bat: {gia_tri: true, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: X = cho KET_CO_DUONG chua DA_GIAI (~/kinh_nghiem.csv) = cho can tim cach giai, KHONG phai vung ne; false = thu tu tuyen va khong ghi DA_GIAI nhu 8601d4c"}
+  gia_x_giay_mac_dinh: {gia_tri: 10.0, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: giay cua X khi cac dong khong co cho=N (cot cach)"}
+  gia_x_r_m: {gia_tri: 0.2, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: gop dong thanh X; X cach duong tuyen / vet xe <= so nay"}
+  gia_x_v_ms: {gia_tri: 0.11, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: gia tuyen = dai + v x tong giay X gan tuyen"}
   footprint_padding_m: {gia_tri: 0.03, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (local + global costmap; kiem_hanh_vi.py so)", cho: "MOI 09/11 dung im ban 2 (A3, de xuat 83.8): footprint_padding (mac dinh Nav2 0.01); 09/11 17:07 0.06 -> 0.03 (ket cua K2)"}

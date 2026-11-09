@@ -59,7 +59,7 @@ MAC_DINH = {
     'kinh_nghiem_so_lan': 3,       # N_CUM
     'kinh_nghiem_ban_kinh_m': 0.2,     # R_CUM
     'vung_ton_diem_m': 0.15,    # R_VUNG
-    'vung_ton_diem_gia_tri': 50,      # GIA_TON
+    'vung_ton_diem_gia_tri': 0,       # GIA_TON (09/11 gia X: 50 -> 0, thoi to vung ton diem)
     'o_cam_gia_tri': 100,     # GIA_CAM
     't_cho_s': 30.0,    # T_CHO
     't_cho_them_s': 10.0,    # T_CHO_THEM
@@ -113,6 +113,10 @@ MAC_DINH = {
     'gac_so_diem': 3,       # MOI (dung im ban 2, A1): so diem vat la toi thieu trong mot vung
     'gac_sach_s': 2.0,     # MOI (dung im ban 2, A1): vung RA sach lien tuc bay lau => het chan
     'gac_scan_cu_s': 0.5,     # MOI (dung im ban 2, A1): /scan cu hon so nay => gac mu (K13)
+    'gia_x_bat': True,     # MOI (gia X 09/11): xep tuyen theo gia X + ghi DA_GIAI (false = y het 8601d4c)
+    'gia_x_giay_mac_dinh': 10.0,    # MOI (gia X): giay cua X khi khong co cho=N
+    'gia_x_r_m': 0.2,     # MOI (gia X): ban kinh gop X / X gan tuyen / vet qua X
+    'gia_x_v_ms': 0.11,    # MOI (gia X): gia tuyen = dai + v x tong giay X
     'footprint_padding_m': 0.03,     # MOI (dung im ban 2, A3): footprint_padding ca hai costmap (nav2_params_mat*.yaml); 09/11 17:07 0.06 -> 0.03
 }
 

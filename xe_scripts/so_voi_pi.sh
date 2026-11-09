@@ -52,6 +52,7 @@ du_lieu_0111/map_xuong_v3_pg.posegraph|~/map_xuong_v3_pg.posegraph
 du_lieu_0111/map_xuong_v3_pg.data|~/map_xuong_v3_pg.data
 du_lieu_0111/map_xuong_v3.yaml|~/map_xuong_v3.yaml
 du_lieu_0111/map_xuong_v3.png|~/map_xuong_v3.png
+du_lieu_0111/map_xuong_v3_tinh.yaml|~/map_xuong_v3_tinh.yaml
 HUONG_DAN_CAU_NOI.md|?
 HUONG_DAN_THU_31_10.md|?
 THIET_KE_LAI_XE_LIDAR.md|?

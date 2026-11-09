@@ -172,6 +172,7 @@ def bat_dau_job(gio, max_s=None, env=None):
         if JOB["running"] or CHUYEN["chay"] or TAT["chay"]:   # /nut: moi luc mot viec (dang co chuyen thi khong tat/bat)
             return False
         JOB.update(running=True, t_start=time.monotonic(), ket_qua=None, chi_tiet="", t0=None, ma=None, dong="")
+        CHUYEN.update(ma=None, ket_qua="", dong="", t_ket=None)   # 09/11 18:44 ③: bat moi xoa ket qua chuyen cu (khoa B)
     threading.Thread(target=chay_job, args=(gio, max_s, env), daemon=True).start()
     return True
 
@@ -179,11 +180,12 @@ def bat_dau_job(gio, max_s=None, env=None):
 # ---------- Buoc 4 (03/11): trang /nut. Bat du doi (muc B), Di B / Ve A (chuyen.sh BANG=day), Dung chuyen ----------
 # Dung khan van la cong tac motor. NAV_PARAMS: systemd nap cau_noi.env vao moi truong (EnvironmentFile); bat_xe.sh
 # tu doc ~/cau_noi/cau_noi.env neu thieu. CHUA CHAY TREN PI.
-CHUYEN = {"chay": False, "huong": "", "t_start": 0.0, "ma": None, "ket_qua": "", "dong": "", "pgid": None}
+CHUYEN = {"chay": False, "huong": "", "t_start": 0.0, "ma": None, "ket_qua": "", "dong": "", "pgid": None,
+          "t_ket": None}   # 09/11 18:44 ③: epoch luc chuyen web ket thuc (trang_v10: DEN_NOI moi hon trong ket_qua_chuyen.csv)
 DUNG = {"ket_qua": "", "ms": None, "gio": ""}
 TAT = {"chay": False, "t_start": 0.0, "ma": None, "dong": ""}
 MA_CHUYEN = {0: "DEN_NOI", 1: "HET_DUONG", 3: "SAI_VI_TRI", 4: "DUNG_SEP", 130: "NGAT"}   # "Ma thoat" dau chuyen.sh
-DONG_CHUYEN = re.compile(r"^(DEN_NOI|HET_DUONG|DUNG_SEP|DUNG: SAI_VI_TRI|HUY_DICH_KHI_NGAT|LOI|SAI )")
+DONG_CHUYEN = re.compile(r"^(DEN_NOI|HET_DUONG|CHO_NGUOI|DUNG_SEP|DUNG: SAI_VI_TRI|HUY_DICH_KHI_NGAT|LOI|SAI )")   # 09/11 18:47: + CHO_NGUOI
 DONG_BAT = re.compile(r"^(SAN SANG|CHUA SAN SANG|QUA 8 PHUT|DA BAT|LOI)")
 DONG_TAT = re.compile(r"^(DA_DON|CON_ROS_SONG|CON_CHAY)")   # bat_xe.sh tat: 0 = DA_DON n tep; 1 = CON_CHAY / CON_ROS_SONG
 ENV_MUC_B = {"SEP_RA_LENH": "true", "SEP_RA_THOAT": "true", "PHU_LAI_PHAT_LENH": "true"}
@@ -281,7 +283,7 @@ def cho_chuyen(p, lf):
     lf.close()
     dong = dong_khop(CFG["log_chuyen"], DONG_CHUYEN)
     with LOCK:
-        CHUYEN.update(chay=False, ma=rc, ket_qua=MA_CHUYEN.get(rc, "LOI"), dong=dong, pgid=None)
+        CHUYEN.update(chay=False, ma=rc, ket_qua=MA_CHUYEN.get(rc, "LOI"), dong=dong, pgid=None, t_ket=time.time())
 
 
 def dung_chuyen():

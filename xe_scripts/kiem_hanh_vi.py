@@ -69,6 +69,8 @@ def kiem(thu_muc, tq, at, tt):
     out.append(('b', 'gia_x_r_m %g >= o_luoi_m %g' % (tq['gia_x_r_m'], tt['o_luoi_m']), tq['gia_x_r_m'] >= tt['o_luoi_m'] - SAI_SO))
     out.append(('b', 'gia_x_v_ms %g >= v_min_mps %g' % (tq['gia_x_v_ms'], tt['v_min_mps']), tq['gia_x_v_ms'] >= tt['v_min_mps']))
     out.append(('b', 'gia_x_giay_mac_dinh %g >= 0' % tq['gia_x_giay_mac_dinh'], tq['gia_x_giay_mac_dinh'] >= 0))
+    out.append(('b', 'so_vong_khe %d >= 1' % tq['so_vong_khe'], tq['so_vong_khe'] >= 1))     # 09/11 18:44 ②a
+    out.append(('b', 'cho_lai_s %g > 0 (het vong cho nguoi, khong thoat)' % tq['cho_lai_s'], tq['cho_lai_s'] > 0))   # 09/11 18:47 (i)
     import tinh_tuyen as TT
     out.append(('c', 'vung_ton_diem_gia_tri %g < NGUONG_CAM %g' % (tq['vung_ton_diem_gia_tri'], TT.NGUONG_CAM),
                 tq['vung_ton_diem_gia_tri'] < TT.NGUONG_CAM))

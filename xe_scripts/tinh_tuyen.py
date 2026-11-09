@@ -41,6 +41,9 @@ R_XOAY_CAN = 0.1856 + 0.05   # m, dinh re phai cach o CO VAT > R_XOAY (lai_xe_li
 # 04/11 lop 1 (Thien chot >= 72): OccupancyGrid >= NGUONG_CAM la CAM khi tim duong (tam xe cach o vat < 0,20 m tam o, Nav2
 # inflation 0,20 / scaling 3,0 / o 5 cm); >= NGUONG_VAT la o CO VAT (vat + inscribed 8 cm, nhu cu) - luat dinh re do toi day.
 NGUONG_CAM, NGUONG_VAT = 72, 98
+# 09/11 18:47 (Thien: cam chi cho nguy hiem): khi TIM DUONG chi o CO VAT (>= NGUONG_VAT: vat / LiDAR + inscribed) chan; o
+# NGUONG_CAM..97 la TON: moi buoc vao cong them K_TON x do dai buoc (khong chan). ban.do() giu nghia cu (hien thi, doan_hop_le).
+K_TON = 4.0            # ponytail: he so co dinh (1 m qua dai ton tinh nhu 5 m); dua vao hanh_vi_xe.yaml neu can chinh tren xe
 DOI_MAX = 0.30         # m, tim cho dat dinh moi trong khoang nay (theo chieu dai duong goc) quanh dinh cu
 
 
@@ -106,7 +109,7 @@ class Ban:
             return {k: (0.0 if k in tap else min((math.hypot(k[0] - a, k[1] - b) for a, b in tap), default=1e9)) for k in self.v}
         vat = {k for k, v in self.v.items() if v == 0}
         self.d_vat = kc(vat)
-        self.d = self.d_vat if self.cam <= vat else kc(vat | self.cam)
+        self.d = self.d_vat                   # 09/11 18:47: gia Dijkstra do toi o CO VAT; dai ton cong rieng (K_TON), khong chan
 
     def o(self, x, y):
         return int(math.floor((x - self.ox) / self.res)), int(math.floor((y - self.oy) / self.res))
@@ -117,6 +120,10 @@ class Ban:
     def do(self, k):
         """Cam khi tim duong: o CO VAT hoac o >= NGUONG_CAM (lop 1). Ngoai ban do cung coi la do."""
         return self.v.get(k, 0) == 0 or k in self.cam
+
+    def ton(self, k):
+        """09/11 18:47: o NGUONG_CAM..97 (khong co vat): di duoc nhung ton (K_TON)."""
+        return k in self.cam and not self.vat(k)
 
     def vat(self, k):
         """O CO VAT (>= NGUONG_VAT, nghia cu cua 'do'). Ngoai ban do cung coi la vat."""
@@ -134,7 +141,7 @@ def pixel_tu_chi_phi(c):
 def dijkstra(ban, dau, cuoi, cam, tha=lambda k: False):
     """Duong (danh sach o) tu o dau toi o cuoi; cam(o) = True thi khong vao. tha(o) = True: o lop 1 (do ma khong co vat)
     van vao duoc (xe dang dung trong dai cam); o co vat thi khong bao gio."""
-    chan = lambda k: ban.vat(k) or (ban.do(k) and not tha(k))
+    chan = ban.vat                       # 09/11 18:47: chi o CO VAT chan; o 72-97 ton (duoi); tha giu cho cuoc goi cu
     gia = {dau: 0.0}
     truoc = {}
     pq = [(0.0, dau)]
@@ -146,11 +153,11 @@ def dijkstra(ban, dau, cuoi, cam, tha=lambda k: False):
             continue
         for di, dj in HUONG8:
             v = (u[0] + di, u[1] + dj)
-            if chan(v) or cam(v):
+            if chan(v):                      # 09/11 19:05: cam(v) (vung CAM[tuyen], khe kia) nay la TON nhu dai 72-97, khong loai
                 continue
             if di and dj and (chan((u[0] + di, u[1])) or chan((u[0], u[1] + dj))):
                 continue
-            g2 = g + math.hypot(di, dj) * (1.0 + K_GIA / max(ban.d[v], 0.5) ** 3)   # o tha (d = 0): gia cao, khong chia 0
+            g2 = g + math.hypot(di, dj) * (1.0 + K_GIA / max(ban.d[v], 0.5) ** 3 + (K_TON if ban.ton(v) or cam(v) else 0.0))
             if g2 < gia.get(v, math.inf):
                 gia[v] = g2
                 truoc[v] = u
@@ -309,8 +316,8 @@ def tinh_duong(ban, dau, cuoi, tuyen, buoc=BUOC_DAY, yaw_cuoi=None, kieu='doan',
     o_dau, o_cuoi = ban.o(*dau), ban.o(*cuoi)
     if o_dau not in ban.v or o_cuoi not in ban.v:
         raise KhongCoDuong('diem dau hoac dich nam ngoai costmap')
-    if ban.do(o_cuoi):
-        raise KhongCoDuong('dich nam trong o do')
+    if ban.vat(o_cuoi):                  # 09/11 18:47: chi o CO VAT; dich trong dai ton van tinh duoc
+        raise KhongCoDuong('dich nam trong o vat')
     x0, x1, y0, y1 = CAM[tuyen]
 
     def cam(k):

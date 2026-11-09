@@ -155,6 +155,12 @@ class M1HamThuan(unittest.TestCase):
         self.assertEqual(f(link('on'), nut(ket_qua='DEN_NOI'), SEP0, None, None, None, now)[0], 'TT_DA_DEN')
         self.assertEqual(f(link('on'), nut(ket_qua='HET_DUONG'), SEP0, None, None, None, now)[0], 'TT_CAN_GIUP')
         self.assertEqual(f(link('on'), nut(ket_qua='DUNG_SEP'), SEP0, None, None, None, now)[0], 'TT_CAN_GIUP')
+        # 09/11 18:44 ③: DEN_NOI moi hon chuyen web (ca terminal) => khong khoa B; den_noi_cuoi doc cot ket_qua thu 6
+        self.assertEqual(f(link('on'), nut(ket_qua='HET_DUONG'), SEP0, None, None, None, now, den_noi_sau=True), ('TT_DA_DEN', 'DEN_NOI sau HET_DUONG'))
+        self.assertEqual(V.den_noi_cuoi(['gio,huong,tuyen,diem,lan,ket_qua', '2026-11-09 18:20:00,ve_A_day,2,tong,0,DEN_NOI,33',
+                                         '2026-11-09 18:21:00,di_B_day,1,1,1,KHONG_DAT,15', 'hong']),
+                         time.mktime(time.strptime('2026-11-09 18:20:00', '%Y-%m-%d %H:%M:%S')))
+        self.assertIsNone(V.den_noi_cuoi(['2026-11-09 18:21:00,di_B_day,-,het,0,HET_DUONG,0']))
         # gui_duong chet vi RuntimeError khi bi SIGINT (gia lap 06/11): ma 1 nhung dong khong phai HET_DUONG -> LOI_THOAT
         n1 = nut(ket_qua='HET_DUONG')
         n1['chuyen'].update(ma=1, dong='RuntimeError: Unable to convert call argument to Python object')
@@ -176,6 +182,10 @@ class M1HamThuan(unittest.TestCase):
         self.assertEqual(f(link('on'), n, SEP0, None, None, 'RA_TIEN', now)[0], 'TT_DANG_THOAT')
         self.assertEqual(f(link('on'), n, SEP0, None, 'CHO', None, now)[0], 'TT_DANG_CHO')
         self.assertEqual(f(link('on'), n, SEP0, None, 'THOAT', None, now)[0], 'TT_DANG_THOAT')
+        # 09/11 18:47 (i): gui_duong het vong khe => CHO_NGUOI (chuyen con chay) => 도움이 필요해요, nut 정지
+        self.assertEqual(f(link('on'), n, SEP0, None, 'CHO_NGUOI', None, now), ('TT_CAN_GIUP', 'CHO_NGUOI'))
+        self.assertEqual(V.chuyen_cuoi_ct(['-- tuyen 2, lan 1/1: x', 'CHO_NGUOI: da thu 6 lan khe, ...', 'CHO_NGUOI: 5/60 s'])[0], 'CHO_NGUOI')
+        self.assertEqual(V.chuyen_cuoi_ct(['CHO_NGUOI: 55/60 s', 'CHO_NGUOI: het 60 s, thu lai 1 vong khe.', 'LUI_RA: gui 0.35'])[0], 'THOAT')
         self.assertEqual(f(link('on'), n, dict(SEP0, tu_the=('CHO', 'KHONG_CO_DICH', '')), None, None, None, now)[0], 'TT_DANG_DI')   # sep chi nhin
         self.assertEqual(f(link('on'), n, dict(SEP0, tu_the=('CHO', 'VAT_LA 3s', '')), None, None, None, now)[0], 'TT_DANG_DI')
         self.assertEqual(f(link('on'), n, dict(SEP0, dung_va_bao=True), ('RA_LUI', '', now), None, None, now)[0], 'TT_CAN_GIUP')
@@ -254,6 +264,31 @@ class M1Http(Nen):
         self.assertTrue(C.bat_dau_tat())
         self.assertTrue(cho(lambda: not C.trang_thai_nut()['tat']['chay']))
         self.assertEqual(self.ma(), 'TT_DA_NGAT')
+
+    def test_khoa_B_xoa_khi_bat_moi_hoac_DEN_NOI_moi_hon(self):
+        """09/11 18:44 ③: HET_DUONG web roi (a) co dong DEN_NOI moi hon trong ~/ket_qua_chuyen.csv (ca chuyen terminal) => TT_DA_DEN;
+        (b) bat moi (bat_dau_job) xoa ket qua chuyen cu => TT_SAN_SANG; DEN_NOI cu hon chuyen web van TT_CAN_GIUP."""
+        csv = os.path.join(TAM, 'ket_qua_chuyen.csv')
+        gio = lambda t: time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t))
+        with open(csv, 'w') as f:
+            f.write('gio,huong,tuyen,diem,lan,ket_qua,giay,lech_kiem_m,lech_costmap_m,tuoi_costmap_s\n')
+            f.write('%s,di_B_day,1,tong,0,DEN_NOI,30,-,-,-\n' % gio(time.time() - 100))      # DEN_NOI CU hon chuyen web
+        LINK['on'] = True
+        os.environ.update(GIA_KET='HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.', GIA_MA='1', GIA_CHUYEN_S='0.1')
+        self.assertTrue(C.bat_dau_chuyen('ve_A'))
+        self.assertTrue(cho(lambda: not C.trang_thai_nut()['chuyen']['chay']))
+        self.assertEqual(self.ma(), 'TT_CAN_GIUP')
+        with open(csv, 'a') as f:                                            # chuyen terminal DEN_NOI sau chuyen web
+            f.write('%s,ve_A_day,2,tong,0,DEN_NOI,33,-,-,-\n' % gio(time.time() + 2))
+        st, j = js(self.port, 'GET', '/v10/trang_thai')
+        self.assertEqual((j['ma'], j['ly_do']), ('TT_DA_DEN', 'DEN_NOI sau HET_DUONG'))
+        os.remove(csv)
+        self.assertEqual(self.ma(), 'TT_CAN_GIUP')
+        self.assertTrue(C.bat_dau_job(None))                                  # bat moi => xoa ket qua chuyen cu
+        self.assertTrue(cho(lambda: not C.trang_thai_nut()['bat']['chay']))
+        self.assertEqual(C.trang_thai_nut()['chuyen']['ket_qua'], '')
+        self.assertEqual(self.ma(), 'TT_SAN_SANG')
+        LINK['on'] = False
 
     def test_loi_v10_khong_lam_hong_nut(self):
         cu = V.trang_thai
@@ -351,14 +386,15 @@ class M2BanDo(Nen):
         self.assertEqual((j['inflation_radius'], j['cost_scaling_factor'], j['r_noi_tiep']), (0.2, 3.0, 0.09))
         self.assertTrue(j['nguon']['ban_do'].endswith('du_lieu_0111/map_xuong_v3.yaml'))   # map_xuong_v3_pg -> map_xuong_v3.yaml
         self.assertEqual((j['A'], j['B']), ([0.0, 0.0], [1.6, 0.82]))
-        # vung do = dung tap o tinh_tuyen cam (Ban.do) tren costmap dung lai; o vat = vung 0
+        # 09/11 19:05: vung 1 (차량 중심 금지) = chi o >= 98 (Ban.vat); dai 72-97 = vung 2 (주의 구역); o vat ban do = vung 0
         TT = V.nap(C, 'tinh_tuyen')
         ban = V._CACHE_BAN['ban']
         for k in range(52 * 32):
             i, jj = k % 52, k // 52
             z = j['vung'][jj * 52 + i]
             if z in '12' or z == '3':
-                self.assertEqual(z == '1', ban.do((i, jj)))
+                self.assertEqual(z == '1', ban.vat((i, jj)))
+                self.assertTrue(z == '2' or not ban.ton((i, jj)))
         w_, h_, _, _, _, occ, _ = V.doc_ban_do(j['nguon']['ban_do'])
         self.assertEqual(j['vung'].count('0'), sum(1 for v in occ if v != 0))     # vat + chua biet
         za = j['vung'][ban.o(*TT.A)[1] * 52 + ban.o(*TT.A)[0]]
@@ -1127,7 +1163,7 @@ class MatLai(Nen):
         self.assertTrue('\nnav2_params_mat_rpp.yaml|~/nav2_params_mat_rpp.yaml\n' in doc('so_voi_pi.sh'), 'so_voi_pi.sh thieu mat_rpp')
         pm = doc('nav2_params_mat.yaml')
         self.assertIn('default_nav_to_pose_bt_xml: /home/project1/bt_mat.xml', pm)
-        self.assertIn('yaml_filename: /home/project1/map_xuong_v3.yaml', pm)
+        self.assertIn('yaml_filename: /home/project1/map_xuong_v3_tinh.yaml', pm)   # 09/11 18:44
         bx = doc('bat_xe.sh')
         self.assertTrue("MONG_BT=$(sed -n 's/^ *default_nav_to_pose_bt_xml: *//p' \"$NAV_PARAMS\"" in bx, 'bat_xe.sh MONG_BT doi')
         self.assertTrue('if [ "$MAT_LAI" = "true" ]; then echo mat > ~/goc_dang_chay; else echo cu > ~/goc_dang_chay; fi' in bx,

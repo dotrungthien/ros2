@@ -149,3 +149,27 @@ if __name__ == '__main__':
             traceback.print_exc()
     print('TONG: %d/%d dat' % (dat, len(ca)))
     sys.exit(0 if dat == len(ca) else 1)
+
+
+def test_11_map_tinh_scale_tuong_99_cung_hinh_hoc():
+    """09/11 18:44 ①: map_xuong_v3_tinh.yaml (map_server /map_tinh) cung anh, do phan giai, goc voi map_xuong_v3.yaml; mode scale,
+    occupied_thresh 1.01 => tuong 99 (global 251, khong inflation). Mo hinh map_io scale (Humble 1.1.20) khop so DO bang
+    loadMapFromYaml da cai 09/11: occupied_thresh 1.0 / 1.001 => 100; 1.005 / 1.01 => 99; o 254 va 205 => 0."""
+    import yaml
+    import trang_v10 as V
+    cu = yaml.safe_load(open(YAML_V3))
+    moi = yaml.safe_load(open(os.path.join(DAY, 'du_lieu_0111', 'map_xuong_v3_tinh.yaml')))
+    assert {k: cu[k] for k in ('image', 'resolution', 'origin', 'negate', 'free_thresh')} == {k: moi[k] for k in ('image', 'resolution', 'origin', 'negate', 'free_thresh')}
+    assert (cu['mode'], moi['mode'], moi['occupied_thresh']) == ('trinary', 'scale', 1.01)
+
+    def scale(p, occ_t, free_t=0.25):
+        occ = (255 - p) / 255.0
+        return 0 if occ < free_t else (100 if occ >= occ_t else int(round((occ - free_t) / (occ_t - free_t) * 100)))
+    assert [scale(0, t) for t in (1.0, 1.001, 1.005, 1.01)] == [100, 100, 99, 99] and scale(254, 1.01) == scale(205, 1.01) == 0
+    w, h, hang = V.doc_png(os.path.join(DAY, 'du_lieu_0111', moi['image']))
+    gia = [scale(p, moi['occupied_thresh']) for r in hang for p in r]
+    assert (w, h) == (52, 32) and sorted(set(gia)) == [0, 99] and gia.count(99) == 252
+    for f in ('nav2_params_mat.yaml', 'nav2_params_mat_rpp.yaml'):
+        y = yaml.safe_load(open(os.path.join(DAY, f)))
+        assert y['map_server']['ros__parameters']['yaml_filename'] == '/home/project1/map_xuong_v3_tinh.yaml', f
+    assert LH.GIA_CAM == 99                                                          # o cam lop huong dan cung 99 => 251

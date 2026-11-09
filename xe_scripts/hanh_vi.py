@@ -60,7 +60,7 @@ MAC_DINH = {
     'kinh_nghiem_ban_kinh_m': 0.2,     # R_CUM
     'vung_ton_diem_m': 0.15,    # R_VUNG
     'vung_ton_diem_gia_tri': 0,       # GIA_TON (09/11 gia X: 50 -> 0, thoi to vung ton diem)
-    'o_cam_gia_tri': 100,     # GIA_CAM
+    'o_cam_gia_tri': 99,      # GIA_CAM (09/11 18:44: 100 -> 99, chi phi 251 khong inflation)
     't_cho_s': 30.0,    # T_CHO
     't_cho_them_s': 10.0,    # T_CHO_THEM
     't_cho_b_s': 60.0,    # T_CHO_B
@@ -113,6 +113,8 @@ MAC_DINH = {
     'gac_so_diem': 3,       # MOI (dung im ban 2, A1): so diem vat la toi thieu trong mot vung
     'gac_sach_s': 2.0,     # MOI (dung im ban 2, A1): vung RA sach lien tuc bay lau => het chan
     'gac_scan_cu_s': 0.5,     # MOI (dung im ban 2, A1): /scan cu hon so nay => gac mu (K13)
+    'so_vong_khe': 3,       # MOI (09/11 18:44 ②a): luan phien khe bay nhieu vong (truoc: 1)
+    'cho_lai_s': 60.0,      # MOI (09/11 18:47 (i)): CHO_NGUOI roi tu thu lai 1 vong khe sau bay nhieu giay (<= 0: HET_DUONG)
     'gia_x_bat': True,     # MOI (gia X 09/11): xep tuyen theo gia X + ghi DA_GIAI (false = y het 8601d4c)
     'gia_x_giay_mac_dinh': 10.0,    # MOI (gia X): giay cua X khi khong co cho=N
     'gia_x_r_m': 0.2,     # MOI (gia X): ban kinh gop X / X gan tuyen / vet qua X
@@ -213,6 +215,7 @@ def nap_lai():
 
 def doc_kinh_nghiem(path):
     """~/kinh_nghiem.csv -> [dict theo COT_KINH_NGHIEM + 'so_dong'] (so dong trong tep, dem tu 1, de lam bang chung).
+    09/11 18:36: kinh nghiem CHI LA HUONG DAN (xe tham khao, khong bi khoa); luat cam chi o ban_nang.
     Dong 'gio,...' la dong dau: doi bang cot (tep co the co dong dau cu roi dong dau moi). Dong cu (COT_KINH_NGHIEM_CU):
     su_co = DOI_KHE, chuyen / cach / ket_qua rong, giu tuyen. Dong sai so cot bo qua. Khong co tep => []."""
     out, cot = [], COT_KINH_NGHIEM.split(',')

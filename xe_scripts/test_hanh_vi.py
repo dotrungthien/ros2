@@ -48,7 +48,7 @@ CU_2607FEE = {
     'kinh_nghiem_ban_kinh_m': 0.2,
     'vung_ton_diem_m': 0.15,
     'vung_ton_diem_gia_tri': 0,      # 09/11 gia X (Thien chot 17:50-17:57): 50 -> 0, thoi to vung ton diem (2607fee: 50)
-    'o_cam_gia_tri': 100,
+    'o_cam_gia_tri': 99,      # 09/11 18:44: 100 -> 99 (2607fee: 100)
     't_cho_s': 30.0,
     't_cho_them_s': 10.0,
     't_cho_b_s': 60.0,
@@ -97,6 +97,8 @@ MOI_NAO_XE = {'kinh_nghiem_quan_sat_s': 15.0,           # so MOI cua nao xe (kho
               'gac_vat_la': True, 'gac_truoc_m': 0.30, 'gac_hong_m': 0.10, 'gac_ra_truoc_m': 0.40, 'gac_ra_hong_m': 0.15,
               'gac_le_tuong_m': 0.10, 'gac_so_diem': 3, 'gac_sach_s': 2.0, 'gac_scan_cu_s': 0.5,   # dung im ban 2 (A1)
               'footprint_padding_m': 0.03,                                                        # A3
+              'so_vong_khe': 3,                                                                    # 09/11 18:44 ②a
+              'cho_lai_s': 60.0,                                                                   # 09/11 18:47 (i)
               'gia_x_bat': True, 'gia_x_giay_mac_dinh': 10.0, 'gia_x_r_m': 0.2, 'gia_x_v_ms': 0.11}           # gia X 09/11
 CU_AN_TOAN = {'cach_vat_toi_thieu_m': 0.06, 'sep_phat_toc_do': False}
 
@@ -133,9 +135,10 @@ def test_03_cac_tep_lay_so_tu_hanh_vi_bang_so_cu():
                cho_chon='cho_chon_tuyen_s', nhip_cho='nhip_in_cho_s', lui_m='lui_ra_khe_m', lui_v='toc_do_lui_mps', luot='luot_lan_gui',
                cho_hong='cho_hong_s', to='qua_gio_lan_gui_s', lop2_cho='lop2_cho_s', lop2_tra='lop2_tra_s')
     assert c.pop('gac') is True                                                        # dung im ban 2: so MOI
+    assert c.pop('so_vong') == 3 and c.pop('cho_lai') == 60.0                         # 09/11 18:44 ②a, 18:47 (i): so MOI
     assert set(c) == set(cap) and all(c[k] == CU_2607FEE[v] and type(c[k]) is type(CU_2607FEE[v]) for k, v in cap.items()), c
     assert G.LUI_BT_M == 0.25 and G.cho_tf_costmap.__defaults__[0] == 15.0 and G.doc_sep_lenh.__defaults__[0] == 3.0
-    assert (LH.R_THA, LH.R_CUM, LH.N_CUM, LH.R_VUNG, LH.GIA_CAM, LH.GIA_TON) == (0.35, 0.20, 3, 0.15, 100, 0)
+    assert (LH.R_THA, LH.R_CUM, LH.N_CUM, LH.R_VUNG, LH.GIA_CAM, LH.GIA_TON) == (0.35, 0.20, 3, 0.15, 99, 0)
     assert (S.T_CHO, S.T_CHO_THEM, S.T_CHO_B, S.LECH_MAX, S.TF_CU, S.SCAN_CU, S.R_TIN_CAY, S.TC_TIN, S.TC_NGHI) == (30.0, 10.0, 60.0, 0.30, 5.0, 0.5, 3.0, 0.70, 0.50)
     assert (S.T_KHONG_TIN, S.T_BAO, S.CUA_SO_KET, S.LIDAR_DOI, S.POSE_DOI, S.SUC_LECH, S.SUC_LECH_MAX, S.SUC_NHANH) == (5.0, 15.0, 2.0, 0.02, 0.02, 0.15, 0.20, 0.05)
     assert (S.NHAY_M, S.NHAY_DEG, S.NHAY_DT, S.NAV2_LAN_MAX, S.LUOT_THOAT_MAX, S.DAY_TUOI, S.P_DAY_XA) == (0.10, 5.0, 1.0, 2, 3, 3.0, 0.40)
@@ -201,7 +204,7 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     import kiem_hanh_vi as K
     tq, at, tt = dict(HV.MAC_DINH), dict(HV.MAC_DINH_AN_TOAN), dict(HV.MAC_DINH_THAN_THE)
     kq = K.kiem(DAY, tq, at, tt)
-    assert all(d for _, _, d in kq) and len(kq) == 23 and {m for m, _, _ in kq} == {'a', 'b', 'c'}, kq
+    assert all(d for _, _, d in kq) and len(kq) == 25 and {m for m, _, _ in kq} == {'a', 'b', 'c'}, kq
     # (a) so trong tep chay that lech yaml: progress 10 -> 12 (tep rpp), backup_dist 0.25 -> 0.30
     d = _thu_muc_chep()
     _sua(d, 'nav2_params_mat_rpp.yaml', 'movement_time_allowance: 10.0', 'movement_time_allowance: 12.0')
@@ -238,6 +241,6 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     with contextlib.redirect_stdout(e):
         assert K.main(['--thu-muc', DAY, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 0
         assert K.main(['--thu-muc', d, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 1
-    assert e.getvalue().splitlines()[23] == 'KIEM HANH VI: DAT (23 dong, 0 lech)'
+    assert e.getvalue().splitlines()[25] == 'KIEM HANH VI: DAT (25 dong, 0 lech)'
     kx = open(os.path.join(DAY, 'kiem_xe.sh')).read()
     assert 'python3 ~/kiem_hanh_vi.py || KQ=1' in kx and kx.index('# 8e.') > kx.index('# 8d.')

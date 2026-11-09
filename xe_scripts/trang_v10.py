@@ -102,9 +102,12 @@ def sep_cuoi(dong, tu_gio=''):
 
 
 def chuyen_cuoi_ct(dong):
-    """Dong co nghia cuoi cua ~/log_nut_chuyen.txt (stdout gui_duong.py) -> ('THOAT' | 'CHO' | 'DI' | None, dong da strip)."""
+    """Dong co nghia cuoi cua ~/log_nut_chuyen.txt (stdout gui_duong.py) -> ('THOAT' | 'CHO' | 'DI' | 'CHO_NGUOI' | None, dong da strip)."""
     for l in reversed(dong):
         s = l.strip()
+        # 09/11 18:47 (i): gui_duong het vong khe => 'CHO_NGUOI: ...' (dung yen, tien trinh song, cho nguoi bam 정지 / tu thu lai)
+        if s.startswith('CHO_NGUOI:') and not s.startswith('CHO_NGUOI: het '):
+            return 'CHO_NGUOI', s
         # 09/11 buoc 3 #6: gui_duong kieu mat 'LUI_RA: bt|gui <m>' (Nav2 BackUp) = 탈출; '   LUI_XONG: ...' = xong lui
         if 'lop 2: sep bao RA_' in s or s.startswith('LUI_RA:'):
             return 'THOAT', s
@@ -119,7 +122,7 @@ def chuyen_cuoi_ct(dong):
 
 
 def dong_chuyen_cuoi(dong):
-    """-> 'THOAT' | 'CHO' | 'DI' | None (chuyen_cuoi_ct)."""
+    """-> 'THOAT' | 'CHO' | 'DI' | 'CHO_NGUOI' | None (chuyen_cuoi_ct)."""
     return chuyen_cuoi_ct(dong)[0]
 
 
@@ -171,7 +174,7 @@ def thoat_moi(dong, t_boot):
 DONG_DA_HUY = re.compile(r'^LOI_GUI_DUONG .*; HUY_DICH ok\s*$')
 
 
-def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch, phu_lai_lai=True, chuyen_dong=''):
+def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch, phu_lai_lai=True, chuyen_dong='', den_noi_sau=False):
     """Ma trang thai /v10 tu du lieu that. link: trang_thai() cua cau noi; nut: trang_thai_nut(); sep: sep_cuoi();
     phu_lai: phu_lai_cuoi(); chuyen_log: dong_chuyen_cuoi(); thoat: thoat_moi(). Tra (ma, ly_do).
     08/11 bo 1e: phu_lai_lai False (lai_xe_lidar chay voi phat_lenh false, kieu mat) => KHONG dung trang thai phu lai de hien
@@ -190,6 +193,8 @@ def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch, phu_lai_
     if c['chay']:
         if sep['dung_va_bao']:
             return 'TT_CAN_GIUP', 'sep DUNG_VA_BAO'
+        if chuyen_log == 'CHO_NGUOI':                # 09/11 18:47 (i): chuyen con song, xe dung yen cho nguoi (nut 정지)
+            return 'TT_CAN_GIUP', 'CHO_NGUOI'
         pl = phu_lai if phu_lai and phu_lai_lai and t_epoch - phu_lai[2] <= T_PHU_LAI_MOI else None
         if (pl and pl[0] in PHU_LAI_THOAT) or thoat in ('THOAT', 'RA_LUI', 'RA_TIEN') or chuyen_log == 'THOAT':
             return 'TT_DANG_THOAT', pl[0] if pl and pl[0] in PHU_LAI_THOAT else (
@@ -214,6 +219,8 @@ def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch, phu_lai_
     if c['ket_qua'] == 'DEN_NOI':
         return 'TT_DA_DEN', c['dong']
     if c['ket_qua'] in ('HET_DUONG', 'DUNG_SEP'):
+        if den_noi_sau:                          # 09/11 18:44 ③: co chuyen DEN_NOI (ca terminal) sau chuyen web nay => khong khoa B
+            return 'TT_DA_DEN', 'DEN_NOI sau %s' % c['ket_qua']
         return 'TT_CAN_GIUP', c['ket_qua']
     return 'TT_SAN_SANG', ''
 
@@ -224,6 +231,18 @@ def boot_giay():
             return float(f.read().split()[0])
     except (OSError, ValueError, IndexError):
         return 0.0
+
+
+def den_noi_cuoi(dong):
+    """09/11 18:44 ③: epoch dong ket_qua DEN_NOI cuoi cua ~/ket_qua_chuyen.csv (cot gio, ..., ket_qua thu 6; gio may) hoac None."""
+    for l in reversed(dong):
+        c = l.split(',')
+        if len(c) >= 6 and c[5] == 'DEN_NOI':
+            try:
+                return time.mktime(time.strptime(c[0], '%Y-%m-%d %H:%M:%S'))
+            except ValueError:
+                continue
+    return None
 
 
 def doc_dong_dau(path):
@@ -252,7 +271,10 @@ def trang_thai(C):
     now = time.time()
     # 08/11 bo 1e: phu lai chi nhin (phat_lenh false doc tu /proc) => khong lay trang thai phu lai; khong thay tien trinh => nhu cu
     pl_lai = tien_trinh_lai().get('lai_xe_lidar.py', {}).get('phat_lenh') != 'false'
-    ma, ly = suy_trang_thai(link, nut, sep, pl, cl, th, now, pl_lai, cl_dong)
+    with C.LOCK:
+        t_ket = C.CHUYEN.get('t_ket')                 # 09/11 18:44 ③: luc chuyen web cuoi ket thuc (bat moi => None)
+    dn = den_noi_cuoi(doc_duoi(tep(C, 'ket_qua_chuyen.csv'), 65536)) if t_ket is not None else None
+    ma, ly = suy_trang_thai(link, nut, sep, pl, cl, th, now, pl_lai, cl_dong, den_noi_sau=dn is not None and dn > t_ket)
     m5 = bang_m5(C, ma, sep, nut, ly)
     # 09/11 buoc 3 #3: ~/vi_tri_xe moi (gui_duong kieu mat, 1 s) thi lay vi tri + duong /plan cua no; khong thi vi tri cua sep nhu cu
     try:
@@ -389,7 +411,7 @@ def bang_m5(C, ma, sep, nut, ly=''):
                       if bd['vung'][j * bd['w'] + i] == '0'
                       and abs(ban.ox + (i + .5) * ban.res - x) < 0.6 and abs(ban.oy + (j + .5) * ban.res - y) < 0.6), default=9.9)
             xoay = {'duoc': kc > L.R_XOAY, 'kc_m': round(kc, 3), 'r_xoay_m': round(L.R_XOAY, 4),
-                    'trong_do': bool(ban.do(ban.o(x, y)))}
+                    'trong_do': bool(ban.vat(ban.o(x, y)))}       # 09/11 19:05: chi o >= 98
     pl_lenh = tt.get('lai_xe_lidar.py', {}).get('phat_lenh')
     if ma == 'TT_DANG_THOAT' and (ly or '').startswith('LUI_RA:'):          # 09/11 #6: Nav2 BackUp ra /cmd_vel_avoid (buoc 2g)
         ai = ('Nav2 BackUp (behavior_server)', 'avoid')
@@ -639,7 +661,7 @@ def ban_do(C):
         data = luoi_chi_phi(w, h, res, occ, n2['inflation_radius'], n2['cost_scaling_factor'], r_noi)
         ban = TT.Ban.tu_luoi(w, h, res, ox, oy, data)
         vung = ''.join('0' if occ[j * w + i] != 0 and (occ[j * w + i] == 100 or data[j * w + i] == -1) else
-                       ('1' if ban.do((i, j)) else ('3' if data[j * w + i] == 0 else '2'))
+                       ('1' if ban.vat((i, j)) else ('3' if data[j * w + i] == 0 else '2'))     # 09/11 19:05: 1 = chi o >= 98 (차량 중심 금지); 72-97 => 2 (주의 구역)
                        for j in range(h) for i in range(w))
         kq = {'loi': None, 'w': w, 'h': h, 'res': res, 'ox': ox, 'oy': oy, 'vung': vung,
               'footprint': n2['footprint'], 'inflation_radius': n2['inflation_radius'],
@@ -695,7 +717,7 @@ def tuyen(C, dich, pose):
         dai = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(duong, duong[1:]))
         o = ban.o(*dau)
         return {'loi': None, 'dich': dich, 'huong': huong, 'tuyen': r, 'diem': [[round(x, 3), round(y, 3)] for x, y, _ in duong],
-                'dai_m': round(dai, 2), 'kc_do_m': round(kc, 3), 'dau_trong_do': bool(ban.do(o)),
+                'dai_m': round(dai, 2), 'kc_do_m': round(kc, 3), 'dau_trong_do': bool(ban.vat(o)),
                 'canh_bao': [[round(x, 2), round(y, 2), round(c, 3)] for x, y, c in cb], 'tu': [round(dau[0], 3), round(dau[1], 3)],
                 'tuyen_loi': loi}
     return {'loi': '; '.join(loi) or 'khong tim duoc duong'}

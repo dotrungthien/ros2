@@ -2,6 +2,8 @@
 # Ba tang nao: (1) ban_nang = an_toan (luat cam) + than_the (gioi han linh kien, co nguon / ngay_do): NGUOI doi khi co yeu cau
 #   moi hoac thay linh kien + do lai. (2) thoi_quen: NGUOI duyet, tu de xuat cua xe (~/de_xuat_hanh_vi.txt). (3) kinh nghiem:
 #   ~/kinh_nghiem.csv, xe tu ghi. XE KHONG BAO GIO TU SUA TEP NAY.
+# 09/11 18:36 (Thien chot): thoi_quen va ~/kinh_nghiem.csv CHI LA HUONG DAN (xe tham khao, co loi ra, khong bi khoa);
+#   luat cam chi o ban_nang (an_toan + than_the: ong >= 6 cm, collision_monitor, BackUp kiem sau, toc do, ban nang).
 # Moi so thoi_quen = DUNG gia tri trong ma o 2607fee (mat-lai); dung_o = tep doc no. hanh_vi.py doc tep nay (khong co / hong
 # => mac dinh trong ma, cung so). So trong nav2_params_mat*.yaml / bt_mat.xml KHONG doc tu day: kiem_hanh_vi.py so cho khop.
 ban_nang:
@@ -50,7 +52,7 @@ thoi_quen:
   kinh_nghiem_ban_kinh_m: {gia_tri: 0.2, dung_o: "lop_huong_dan.py", cho: "R_CUM"}
   vung_ton_diem_m: {gia_tri: 0.15, dung_o: "lop_huong_dan.py", cho: "R_VUNG"}
   vung_ton_diem_gia_tri: {gia_tri: 0, dung_o: "lop_huong_dan.py", cho: "GIA_TON; 09/11 gia X: 50 -> 0 (thoi to vung ton diem, giu ma)"}
-  o_cam_gia_tri: {gia_tri: 100, dung_o: "lop_huong_dan.py", cho: "GIA_CAM"}
+  o_cam_gia_tri: {gia_tri: 99, dung_o: "lop_huong_dan.py", cho: "GIA_CAM; 09/11 18:44: 100 -> 99 (chi phi 251, khong inflation: huong dan rat ton, co loi ra)"}
   t_cho_s: {gia_tri: 30.0, dung_o: "sep.py", cho: "T_CHO"}
   t_cho_them_s: {gia_tri: 10.0, dung_o: "sep.py", cho: "T_CHO_THEM"}
   t_cho_b_s: {gia_tri: 60.0, dung_o: "sep.py", cho: "T_CHO_B"}
@@ -103,6 +105,8 @@ thoi_quen:
   gac_so_diem: {gia_tri: 3, dung_o: "gac_vat_la.py", cho: "MOI 09/11 dung im ban 2 (A1): so diem vat la toi thieu trong mot vung"}
   gac_sach_s: {gia_tri: 2.0, dung_o: "gac_vat_la.py, gui_duong.py", cho: "MOI 09/11 dung im ban 2 (A1): vung RA sach lien tuc bay lau => het chan"}
   gac_scan_cu_s: {gia_tri: 0.5, dung_o: "gui_duong.py", cho: "MOI 09/11 dung im ban 2 (A1): /scan cu hon so nay => gac mu (K13)"}
+  so_vong_khe: {gia_tri: 3, dung_o: "gui_duong.py", cho: "MOI 09/11 18:44 ②a: kieu mat luan phien khe 1-2-1-2... bay nhieu vong (moi lan doi van LUI_RA); het vong => HET_DUONG nhu cu (truoc: moi khe 1 lan = 1 vong)"}
+  cho_lai_s: {gia_tri: 60.0, dung_o: "gui_duong.py", cho: "MOI 09/11 18:47 (i): het so_vong_khe vong => CHO_NGUOI (dung yen, bao nguoi, KHONG thoat), sau bay nhieu giay tu thu lai 1 vong khe; <= 0 => HET_DUONG nhu 92ff3dc"}
   gia_x_bat: {gia_tri: true, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: X = cho KET_CO_DUONG chua DA_GIAI (~/kinh_nghiem.csv) = cho can tim cach giai, KHONG phai vung ne; false = thu tu tuyen va khong ghi DA_GIAI nhu 8601d4c"}
   gia_x_giay_mac_dinh: {gia_tri: 10.0, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: giay cua X khi cac dong khong co cho=N (cot cach)"}
   gia_x_r_m: {gia_tri: 0.2, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: gop dong thanh X; X cach duong tuyen / vet xe <= so nay"}

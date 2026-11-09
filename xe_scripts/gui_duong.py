@@ -547,7 +547,8 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
         i += 1
         r = hang[i]
         if not cfg.get('gac') and hoi_sep_mat(io, cfg, gui_lai) == 'DUNG':     # gac bat: hoi sep SAU gac cong (duoi)
-            return dung_sep(io, nhan, r, 1)
+            if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                return dung_sep(io, nhan, r, 1)
         if gui_lai:                                      # 08/11 buoc 2c: lui ra khoi khe vua bo truoc khi /chon_tuyen tuyen kia
             io.bao('LUI_RA: gui %.2f (truoc tuyen %d, /backup %.2f m/s)' % (cfg['lui_m'], r, cfg['lui_v']))     # 09/11 #6
             cach_vat = HV.an_toan('cach_vat_toi_thieu_m')
@@ -556,7 +557,8 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
                 io.bao('GAC: huy lui, hong < %.2f' % cach_vat)
             io.bao('   LUI_XONG: gui => %s%s.' % (kq_lui, '' if quang is None else ' (xe lui %.2f m)' % quang))
             if kq_lui == 'DUNG':
-                return dung_sep(io, nhan, r, 1)
+                if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                    return dung_sep(io, nhan, r, 1)
             p1 = io.pose()                               # nao xe viec 4: GUI_LUI (cho ket qua) | DONG_BANG (xe dich < o_luoi_m)
             su_co, cach, ly_lui = kn.thay_lui[:3] if kn.thay_lui else ('GUI_LUI', 'lui=%g' % cfg['lui_m'], '-')
             kn.thay_lui = None                           # 09/11 dung im: su co gac het 30 s => 1 dong CHO_VAT_LA (khong GUI_LUI)
@@ -568,7 +570,8 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
             t_c = io.now()
             c = cho_cong(io, cfg, kn, True)
             if c == 'DUNG':
-                return dung_sep(io, nhan, r, 1)
+                if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                    return dung_sep(io, nhan, r, 1)
             if c == 'HET_GIO':                           # nhu tuyen hong (bo khe): con tuyen kia thi lui + cong; het => HET_DUONG
                 if kn.gac is not None:
                     kn.gac_sang_lui('CHO_CONG')
@@ -580,7 +583,8 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
                 gui_lai = True
                 continue
             if hoi_sep_mat(io, cfg, gui_lai) == 'DUNG':
-                return dung_sep(io, nhan, r, 1)
+                if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                    return dung_sep(io, nhan, r, 1)
         gui_lai = True
         p = io.pose()
         if p is None:
@@ -597,7 +601,8 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
         kq = theo_doi_mat(io, (dx, dy), yaw_cuoi, cfg, kn=kn)
         giay = int(round(io.now() - t0))
         if kq == 'DUNG':
-            return dung_sep(io, nhan, r, 1)
+            if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                return dung_sep(io, nhan, r, 1)
         p = io.pose()
         lech = None if p is None else math.hypot(p[0] - dx, p[1] - dy)
         if kq == 'SUCCEEDED' and lech is not None and lech <= cfg['toi_sai_so']:
@@ -627,6 +632,21 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
     io.bao('HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.')
     io.ghi(nhan, '-', 'het', 0, 'HET_DUONG', 0)
     return 1
+
+
+def cho_sep_di(io, cfg, nhan):
+    """09/11 (Thien: sep DUNG KHONG la loi ra): sep bao DUNG => huy dich dang chay, CHO_NGUOI (dung yen cho_lai s, tien trinh song),
+    roi hoi lai sep bang ham hoi sep chung (hoi_sep_mat, gui_lai=True); con DUNG => CHO_NGUOI lai; het => 'DI' (nguoi goi di tiep
+    vong khe). cho_lai <= 0 => 'DUNG' (loi ra cu DUNG_SEP ma 4, chi cho ca thu cu). Nguoi bam 정지 => KeyboardInterrupt (NGAT 130)."""
+    if cfg.get('cho_lai', 0) <= 0:
+        return 'DUNG'
+    io.huy()
+    while True:
+        l = io.lenh_sep()
+        cho_nguoi(io, cfg, nhan, 'sep DUNG (%s)' % (l[1] if l and l[0] == 'DUNG' else '-'))
+        if hoi_sep_mat(io, cfg, True) != 'DUNG':
+            io.bao('CHO_NGUOI: sep het DUNG, di tiep vong khe.')
+            return 'DI'
 
 
 def cho_nguoi(io, cfg, nhan, ly):
@@ -660,14 +680,16 @@ def gan_dich(io, cfg, nhan, huong, r, dich, yaw_cuoi, lech, t_chuyen, kn=None):
             cach_vat = HV.an_toan('cach_vat_toi_thieu_m')
             kq_lui, _ = io.lui(cfg['lui_m'], cfg['lui_v'], (lambda: gac_hong_lui(io, cach_vat)) if cfg.get('gac') else None)
             if kq_lui == 'DUNG':
-                return dung_sep(io, nhan, r, 2)
+                if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                    return dung_sep(io, nhan, r, 2)
     lan_gan = 0                                          # 09/11 19:05: GAN_DICH hong => CHO_NGUOI roi gui lai (khong cho_dich lan nua)
     while True:
         t0, lan_in = io.now(), 0
         while lan_gan == 0 and io.now() - t0 < cfg['cho_dich']:
             lenh = io.lenh_sep()
             if lenh and lenh[0] == 'DUNG':
-                return dung_sep(io, nhan, r, 2)
+                if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                    return dung_sep(io, nhan, r, 2)
             da = io.now() - t0
             if da >= cfg['nhip_cho'] * (lan_in + 1):
                 lan_in = int(da // cfg['nhip_cho'])
@@ -680,7 +702,8 @@ def gan_dich(io, cfg, nhan, huong, r, dich, yaw_cuoi, lech, t_chuyen, kn=None):
         if cfg.get('gac'):                                   # 09/11 gac cong truoc khi gui lai (chay TRUOC hoi sep)
             c = cho_cong(io, cfg, kn, False)
             if c == 'DUNG':
-                return dung_sep(io, nhan, r, 2)
+                if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                    return dung_sep(io, nhan, r, 2)
             if c == 'HET_GIO':
                 kn.ngay('CHO_DICH', 'cho=%g' % cfg['cho_dich'], 'HONG', 'CHO_CONG', io.pose())
                 p = io.pose()
@@ -694,7 +717,8 @@ def gan_dich(io, cfg, nhan, huong, r, dich, yaw_cuoi, lech, t_chuyen, kn=None):
                 cho_nguoi(io, cfg, nhan, 'GAN_DICH tuyen %d khong toi' % r)        # 09/11 19:05: khong thoat
                 continue
         if hoi_sep_mat(io, cfg, True) == 'DUNG':             # Thien chot 09/11: chung ham hoi sep voi gui lai sau doi khe
-            return dung_sep(io, nhan, r, 2)
+            if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                return dung_sep(io, nhan, r, 2)
         kn.doi('CHO_DICH', 'cho=%g' % cfg['cho_dich'], io.pose())        # nao xe viec 4: ket qua theo lan gui lai
         p = io.pose()
         t1 = io.now()
@@ -703,7 +727,8 @@ def gan_dich(io, cfg, nhan, huong, r, dich, yaw_cuoi, lech, t_chuyen, kn=None):
         kq = theo_doi_mat(io, dich, yaw_cuoi, cfg, gui_lai_gan=True, kn=kn)
         giay = int(round(io.now() - t1))
         if kq == 'DUNG':
-            return dung_sep(io, nhan, r, 2)
+            if cho_sep_di(io, cfg, nhan) == 'DUNG':          # 19:xx: sep DUNG => CHO_NGUOI, hoi lai sep (khong thoat)
+                return dung_sep(io, nhan, r, 2)
         p = io.pose()
         lech = None if p is None else math.hypot(p[0] - dich[0], p[1] - dich[1])
         if kq == 'SUCCEEDED' and lech is not None and lech <= cfg['toi_sai_so']:

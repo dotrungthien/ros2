@@ -106,7 +106,7 @@ def chuyen_cuoi_ct(dong):
     for l in reversed(dong):
         s = l.strip()
         # 09/11 18:47 (i): gui_duong het vong khe => 'CHO_NGUOI: ...' (dung yen, tien trinh song, cho nguoi bam 정지 / tu thu lai)
-        if s.startswith('CHO_NGUOI:') and not s.startswith('CHO_NGUOI: het '):
+        if s.startswith('CHO_NGUOI:') and not s.startswith(('CHO_NGUOI: het ', 'CHO_NGUOI: sep het ')):     # 2 dong nay = di tiep
             return 'CHO_NGUOI', s
         # 09/11 buoc 3 #6: gui_duong kieu mat 'LUI_RA: bt|gui <m>' (Nav2 BackUp) = 탈출; '   LUI_XONG: ...' = xong lui
         if 'lop 2: sep bao RA_' in s or s.startswith('LUI_RA:'):

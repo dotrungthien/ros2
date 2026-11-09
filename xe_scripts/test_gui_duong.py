@@ -1766,6 +1766,29 @@ def test_83_GAN_DICH_lan_2_hong_thanh_CHO_NGUOI_roi_gui_lai():
     assert sum(c.startswith('   GAN_DICH: cach dich') for c in io.cau) == 1
 
 
+def test_84_sep_DUNG_roi_DI_sau_1_luot_cho_thi_toi_dich():
+    """09/11: sep DUNG KHONG la loi ra: dang chay sep bao DUNG => huy dich, CHO_NGUOI 60 s, hoi lai sep (het DUNG) => di tiep vong khe."""
+    chay_mai = dict(ket=None, fb=lambda dt: (1.20, 0), pose=lambda dt: KET_KHE)
+    toi = dict(ket=('SUCCEEDED', 25.0), fb=lambda dt: (max(0.05, 1.5 - 0.06 * dt), 0), pose=lambda dt: TOI_B(dt) if dt >= 25 else KET_KHE)
+    io = IOMat([chay_mai, toi], lenh=lambda t: ('DUNG', 'HET_3_LUOT_THOAT') if 6 < t < 50 else None)
+    ma = G.chay_mat(io, 'di_B', 1, CFG3)
+    assert ma == 0 and 'DUNG_SEP' not in CUA(io.rows) and CUA(io.rows).count('CHO_NGUOI') == 1, (CUA(io.rows), io.cau)
+    assert any(c.startswith('CHO_NGUOI: sep DUNG (HET_3_LUOT_THOAT)') for c in io.cau) and 'CHO_NGUOI: sep het DUNG, di tiep vong khe.' in io.cau
+    assert io.da_huy >= 1 and CUA(io.rows)[-2:] == ['SUCCEEDED', 'DEN_NOI'] and [s.split()[0] for _, s in io.chon] == ['0', '1', '2']
+
+
+def test_85_sep_DUNG_mai_thi_CHO_NGUOI_lap_khong_thoat():
+    class DemCho(IOMat):
+        def ngu(self, s):
+            super().ngu(s)
+            if CUA(self.rows).count('CHO_NGUOI') >= 3:
+                raise KeyboardInterrupt                       # nguoi bam 정지 sau 3 lan cho
+    io = DemCho([dict(ket=None, fb=lambda dt: (1.20, 0), pose=lambda dt: KET_KHE)], lenh=lambda t: ('DUNG', 'KHONG_TIN_QUA_15s') if t > 6 else None)
+    ma = G.chay_co_ngat(io, 'di_B', 1, CFG3, da_ngat=lambda: False, chay_fn=G.chay_mat)
+    assert ma == 130 and 'DUNG_SEP' not in CUA(io.rows) and CUA(io.rows).count('CHO_NGUOI') == 3 and CUA(io.rows)[-1] == 'NGAT', CUA(io.rows)
+    assert io.t > 120 and io.kich == []                                    # da cho >= 2 lan 60 s, khong gui them dich nao
+
+
 if __name__ == '__main__':
     import sys
     import traceback

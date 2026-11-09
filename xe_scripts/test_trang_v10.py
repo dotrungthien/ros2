@@ -186,6 +186,7 @@ class M1HamThuan(unittest.TestCase):
         self.assertEqual(f(link('on'), n, SEP0, None, 'CHO_NGUOI', None, now), ('TT_CAN_GIUP', 'CHO_NGUOI'))
         self.assertEqual(V.chuyen_cuoi_ct(['-- tuyen 2, lan 1/1: x', 'CHO_NGUOI: da thu 6 lan khe, ...', 'CHO_NGUOI: 5/60 s'])[0], 'CHO_NGUOI')
         self.assertEqual(V.chuyen_cuoi_ct(['CHO_NGUOI: 55/60 s', 'CHO_NGUOI: het 60 s, thu lai 1 vong khe.', 'LUI_RA: gui 0.35'])[0], 'THOAT')
+        self.assertEqual(V.chuyen_cuoi_ct(['CHO_NGUOI: sep DUNG (x), xe dung yen', 'CHO_NGUOI: sep het DUNG, di tiep vong khe.', '-- tuyen 2, lan 1/1: y'])[0], 'DI')
         self.assertEqual(f(link('on'), n, dict(SEP0, tu_the=('CHO', 'KHONG_CO_DICH', '')), None, None, None, now)[0], 'TT_DANG_DI')   # sep chi nhin
         self.assertEqual(f(link('on'), n, dict(SEP0, tu_the=('CHO', 'VAT_LA 3s', '')), None, None, None, now)[0], 'TT_DANG_DI')
         self.assertEqual(f(link('on'), n, dict(SEP0, dung_va_bao=True), ('RA_LUI', '', now), None, None, now)[0], 'TT_CAN_GIUP')

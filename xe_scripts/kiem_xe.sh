@@ -179,6 +179,11 @@ fi
 if [ "$(head -1 ~/goc_dang_chay 2>/dev/null)" = "mat" ]; then
   python3 ~/kiem_hanh_vi.py || KQ=1                          # in bang DAT / KHONG DAT tung dong + "KIEM HANH VI: ..."
   python3 ~/gac_vat_la.py --kiem-map 10 || KQ=1               # 09/11 (K13); 20:33: /map_tinh chi de ban do NHAC tuong (LECH); LiDAR van lai
+  # 09/11 23:08 sep LiDAR: dong tac thoat cua gui_duong can 3 action cua behavior_server (drive_on_heading moi them)
+  AL=$(timeout 10 ros2 action list 2>/dev/null)
+  for A in /backup /drive_on_heading /spin; do
+    if echo "$AL" | grep -qx "$A"; then echo "DAT        action $A co"; else echo "KHONG DAT  action $A khong co (behavior_plugins?)"; KQ=1; fi
+  done
 else
   echo "BO_QUA     buoc 8e (kiem_hanh_vi): ~/goc_dang_chay khong phai mat"
 fi

@@ -185,13 +185,14 @@ CHUYEN = {"chay": False, "huong": "", "t_start": 0.0, "ma": None, "ket_qua": "",
 DUNG = {"ket_qua": "", "ms": None, "gio": ""}
 TAT = {"chay": False, "t_start": 0.0, "ma": None, "dong": ""}
 MA_CHUYEN = {0: "DEN_NOI", 1: "HET_DUONG", 3: "SAI_VI_TRI", 4: "DUNG_SEP", 130: "NGAT"}   # "Ma thoat" dau chuyen.sh
-DONG_CHUYEN = re.compile(r"^(DEN_NOI|HET_DUONG|CHO_NGUOI|DUNG_SEP|DUNG: SAI_VI_TRI|HUY_DICH_KHI_NGAT|LOI|SAI )")   # 09/11 18:47: + CHO_NGUOI
+DONG_CHUYEN = re.compile(r"^(DEN_NOI|HET_DUONG|CHO_NGUOI|CHO_VI_TRI|DUNG_SEP|DUNG: SAI_VI_TRI|HUY_DICH_KHI_NGAT|LOI|SAI )")   # 18:47: + CHO_NGUOI; 23:08: + CHO_VI_TRI
 DONG_BAT = re.compile(r"^(SAN SANG|CHUA SAN SANG|QUA 8 PHUT|DA BAT|LOI)")
 DONG_TAT = re.compile(r"^(DA_DON|CON_ROS_SONG|CON_CHAY)")   # bat_xe.sh tat: 0 = DA_DON n tep; 1 = CON_CHAY / CON_ROS_SONG
 ENV_MUC_B = {"SEP_RA_LENH": "true", "SEP_RA_THOAT": "true", "PHU_LAI_PHAT_LENH": "true"}
-# 08/11 bo 1e "mat lai": MAT_LAI=true trong moi truong cau noi (~/cau_noi/cau_noi.env) => sep ra lenh nhung KHONG giao thoat,
-# phu lai chi nhin (collision_monitor + DWB lai), bat_xe.sh MAT_LAI=true. Khong co => nhu cu (ENV_MUC_B).
-ENV_MUC_B_MAT = {"SEP_RA_LENH": "true", "SEP_RA_THOAT": "false", "PHU_LAI_PHAT_LENH": "false", "MAT_LAI": "true"}
+# 08/11 bo 1e "mat lai": MAT_LAI=true trong moi truong cau noi (~/cau_noi/cau_noi.env) => phu lai chi nhin, bat_xe.sh MAT_LAI=true.
+# Khong co => nhu cu (ENV_MUC_B). 09/11 23:08 sep LiDAR (Thien muc 6 / Q1): sep.py = NGUOI QUAN SAT (ra_lenh=false: khong ghi
+# ~/sep_lenh); gui_duong doc /sep/trang_thai chi nhu tin, khong xin phep.
+ENV_MUC_B_MAT = {"SEP_RA_LENH": "false", "SEP_RA_THOAT": "false", "PHU_LAI_PHAT_LENH": "false", "MAT_LAI": "true"}
 
 
 def env_muc_b(env=None):

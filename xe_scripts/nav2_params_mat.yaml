@@ -261,9 +261,13 @@ behavior_server:
     costmap_topic: local_costmap/costmap_raw
     footprint_topic: local_costmap/published_footprint
     cycle_frequency: 10.0
-    behavior_plugins: ["spin", "backup", "wait"]
+    # 09/11 23:08 sep LiDAR (Thien chot 21:54-23:08): them drive_on_heading (dong tac TIEN thang cua gui_duong khi thoat). Ca ba
+    # dong tac ra /cmd_vel_avoid (launch, mat_lai:=true), KHONG qua collision_monitor: gui_duong kiem khe theo footprint moi lan quet.
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "wait"]
     spin:
       plugin: "nav2_behaviors/Spin"
+    drive_on_heading:
+      plugin: "nav2_behaviors/DriveOnHeading"
     backup:
       # 주의: 오도메트리가 오픈 루프라서 후진 거리/충돌 판단이 부정확하다 (사실상 눈을 감고 후진).
       # 후진 속도는 이 yaml 이 아니라 BT XML 의 backup_speed 포트에서 정해진다.

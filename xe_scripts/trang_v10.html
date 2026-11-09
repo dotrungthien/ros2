@@ -55,6 +55,7 @@ body.bao{background:var(--bgdg)}
 <div id="fotochu" style="font-size:11px;color:var(--txdg);margin-top:4px">-</div>
 </div>
 <div id="brain" style="font-size:12px;color:var(--tx2);margin-top:6px;padding:6px 8px;border:0.5px solid var(--bd);border-radius:var(--r)">두뇌: -</div>
+<div id="quansat" style="font-size:11px;color:var(--tx2);margin-top:2px;padding:2px 8px">관찰 (sep.py): -</div>
 <div id="ctl"></div>
 <div id="kmsg" style="font-size:13px;margin-top:8px;min-height:20px;color:var(--txwn);white-space:pre-wrap"></div>
 </div>
@@ -98,11 +99,13 @@ function phu(m){
       +'\n정적 지도 기준 미리보기 · 출발하면 차량이 현재 costmap으로 다시 계산해요':'';
   case 'TT_DANG_DI':return chuan_bi()?'출발 전: 위치 확인 후 경로를 계산하고 있어요':'경로를 따라가고 있어요';
   case 'TT_DANG_CHO':return S.cho_vat?'앞이 막혔어요. 기다리는 중 '+S.cho_vat[0]+'/'+S.cho_vat[1]+'초':'앞이 막혔어요. 기다리는 중 ('+han(S.ly_do)+')';
-  case 'TT_DANG_THOAT':return (S.ly_do||'').indexOf('LUI_RA:')===0?'Nav2가 뒤로 빼내고 있어요 ('+S.ly_do.split(' ').slice(1,3).join(' ')+' m)':'보조 운전이 차량을 빼내고 있어요 ('+han(S.ly_do)+')';
+  case 'TT_DANG_THOAT':return (S.ly_do||'').indexOf('SEP_LIDAR: THOAT')===0||(S.ly_do||'').indexOf('THOAT_XONG:')===0?'두뇌(LiDAR)가 차량을 빼내고 있어요: '+S.ly_do.replace('SEP_LIDAR: ','')
+      :(S.ly_do||'').indexOf('LUI_RA:')===0?'Nav2가 뒤로 빼내고 있어요 ('+S.ly_do.split(' ').slice(1,3).join(' ')+' m)':'보조 운전이 차량을 빼내고 있어요 ('+han(S.ly_do)+')';
   case 'TT_DANG_XOAY':return '제자리에서 회전해요 ('+han(S.ly_do)+')';
   case 'TT_DA_DEN':return '새 목적지를 고르세요\n'+(han(c.dong)||'');
   case 'TT_CAN_GIUP':return (S.ly_do||'').indexOf('LOI_DA_HUY')===0?'오류로 주행을 멈췄어요. 목표는 취소됐어요\n'+S.ly_do
       :(S.ly_do||'').indexOf('LOI_THOAT')===0?'주행 프로그램이 오류로 끝났어요. Nav2 목표가 아직 살아 있을 수 있어요: 모터 스위치를 끄세요\n'+S.ly_do
+      :S.ly_do==='CHO_VI_TRI'?'위치를 믿을 수 없어요 (60초 넘음). 차량은 멈춰 기다려요. 위치가 돌아오면 스스로 다시 가요 (정지: 중단)'
       :'통로가 막혔어요. 확인 후 수동 조종하거나 다시 시도하세요 ('+han(S.ly_do)+')';
   case 'TT_LAI_TAY':return '누르고 있는 동안만 움직여요';
   case 'TT_DANG_NGAT':return '모든 프로세스 종료 중';
@@ -260,11 +263,14 @@ function bang(){
   var cd=b.code||{},ds=Object.keys(cd).map(function(k){var q=Object.keys(cd[k]).map(function(x){return x+'='+cd[k][x];}).join(', ');return k+(q?' ('+q+')':'');});
   set('p5',ds.length?ds.join(' · '):'실행 중인 코드 없음');
   // 111-Q3: luc CHUAN_BI dong TU_THE cua sep la dong cu cua chuyen truoc (CHO / KHONG_CO_DICH = 목표 없음) => khong in
-  var nt=chuan_bi()?'두뇌: 출발 준비 대기':'두뇌: '+(n.tu_the?han(n.tu_the[0])+(n.tu_the[1]?' ('+han(n.tu_the[1])+')':''):'-')+(n.lenh?' · 명령 '+han(n.lenh[0]):'');
-  // 09/11 buoc 3 #4: luon in tuoi dong 두뇌; cu hon 5 s thi lam mo
+  // 09/11 23:08 (muc 7): 두뇌 = quyet dinh cua sep LiDAR (gui_duong); sep.py chi la 관찰 (dong thu hai, mo)
+  var QL={DI:'이동',DOI_VAT:'물체 대기',THOAT:'탈출',KEP:'막힘 (사람 필요)',CHO_VI_TRI:'위치 대기'},sl=n.sep_lidar;
+  var nt=chuan_bi()?'두뇌: 출발 준비 대기':'두뇌: '+(sl?(QL[sl[0]]||sl[0])+(sl[1]?' · '+sl[1]:''):'-');
+  var qs='관찰 (sep.py): '+(n.tu_the?han(n.tu_the[0])+(n.tu_the[1]?' ('+han(n.tu_the[1])+')':''):'-')+(n.lenh?' · '+han(n.lenh[0]):'');
+  // 09/11 buoc 3 #4: luon in tuoi dong sep.py; cu hon 5 s thi lam mo
   var cu=n.tuoi_s!==null&&n.tuoi_s!==undefined;
-  if(cu)nt+=' · '+n.tuoi_s+'초 전'+(n.tuoi_s>15&&S.link==='on'?' (sep.py 확인)':'');
-  set('brain',nt);$('brain').style.opacity=cu&&n.tuoi_s>5?'0.45':'1';
+  if(cu)qs+=' · '+n.tuoi_s+'초 전'+(n.tuoi_s>15&&S.link==='on'?' (sep.py 확인)':'');
+  set('brain',nt);set('quansat',qs);$('quansat').style.opacity=cu&&n.tuoi_s>5?'0.45':'1';
 }
 function ve_nho(){(S.nho||[]).forEach(function(n){var q=tp(n[0],n[1]);c.strokeStyle='#A32D2D';c.lineWidth=2;c.beginPath();
   c.moveTo(q[0]-5,q[1]-5);c.lineTo(q[0]+5,q[1]+5);c.moveTo(q[0]+5,q[1]-5);c.lineTo(q[0]-5,q[1]+5);c.stroke();});}

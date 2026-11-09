@@ -32,14 +32,8 @@ MAC_DINH = {
     'progress_s': 10.0,    # progress_checker movement_time_allowance
     'vung_phanh_m': 0.07,    # collision_monitor ThanTruoc mui 0,215 - footprint 0,145
     'nhin_truoc_phanh_s': 1.5,     # collision_monitor ThanTruoc time_before_collision
-    'lui_thoat_goc_m': 0.25,    # bt_mat BackUp backup_dist; gui_duong LUI_BT_M
-    'toc_do_lui_mps': 0.1,     # bt_mat BackUp backup_speed; gui_duong cau_hinh lui_v
-    'lui_ra_khe_m': 0.35,    # cau_hinh lui_m
-    'cho_khe_s': 30.0,    # cau_hinh cho_khe (bien CHO_KHE)
     'tien_toi_thieu_m': 0.1,     # cau_hinh tien_min (bien TIEN_MIN)
     'gan_dich_m': 0.6,     # cau_hinh gan_dich_m (bien GAN_DICH_M)
-    'gan_dich_s': 10.0,    # cau_hinh gan_dich_s (bien GAN_DICH_S)
-    'cho_dich_s': 60.0,    # cau_hinh cho_dich (bien CHO_DICH)
     'cho_sep_s': 10.0,    # cau_hinh cho_sep (bien SEP_CHO_S)
     'sep_lenh_tuoi_max_s': 3.0,     # cau_hinh sep_tuoi (bien SEP_TUOI_MAX); doc_sep_lenh tuoi_max
     'toi_sai_so_m': 0.2,     # cau_hinh toi_sai_so (bien TOI_SAI_SO)
@@ -128,6 +122,23 @@ MAC_DINH = {
     'inflation_radius_m': 0.20,  # nav2_params_mat*.yaml inflation_layer (2 costmap; kiem_hanh_vi so)
     'cost_scaling_factor': 10.0,     # nav2_params_mat*.yaml inflation_layer (2 costmap) + RPP inflation_cost_scaling_factor (kiem_hanh_vi so)
     'backup_nhin_truoc_s': 0.7,  # nav2_params_mat*.yaml behavior_server simulate_ahead_time (kiem_hanh_vi so)
+    # MOI 09/11 23:08 sep LiDAR mot nguoi lai (Thien chot 21:54-23:08): gui_duong + sep_lidar
+    'khong_tien_s': 10.0,        # giao dich ma khong tien >= tien_toi_thieu_m bay lau => bi chan (kich thoat)
+    'cho_vat_s': 30.0,           # nhac doi / vung do: dung yen toi da bay lau roi thoat
+    'nhac_doi_m': 0.14,          # nhac doi: VAT CHAC trong hanh lang truoc mui <= so nay
+    'cho_chat_m': 0.12,          # cho chat: co diem cach than < so nay => dong tac nho; moi diem >= => cho thoang (sector)
+    'thoat_sector_deg': 10.0,    # sector cho thoang
+    'thoat_trong_m': 0.40,       # sector trong (truoc mui neu quay ve sector) >= so nay
+    'thoat_diem_min_m': 0.30,    # diem thoat cach xe toi thieu
+    'thoat_diem_max_m': 0.40,    # diem thoat cach xe toi da
+    'thoat_han_s': 15.0,         # navigate_to_pose toi diem thoat: han
+    'thoat_buoc_max': 6,         # so dong tac nho toi da moi lan thoat
+    'thoat_hong_max': 3,         # thoat hong lien tiep => CHO_NGUOI
+    'so_luot_gan_dich': 2,       # gan dich (<= gan_dich_m): so luot bi chan truoc CHO_NGUOI
+    'han_gan_dich_s': 100.0,     # gan dich: han tinh tu lan bi chan dau tien gan dich => CHO_NGUOI
+    'cho_vi_tri_s': 60.0,        # vi tri chua tin bay lau => CHO_VI_TRI (bao nguoi, van cho)
+    'toc_do_thoat_mps': 0.1,     # drive_on_heading / backup cua dong tac thoat
+    'xoay_thoat_rad_s': 0.6,     # Spin: = behavior_server min_rotational_vel (kiem_hanh_vi so); tinh han spin
 }
 
 COT_KINH_NGHIEM = 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do'     # ~/kinh_nghiem.csv tu 09/11 (nao xe viec 4)

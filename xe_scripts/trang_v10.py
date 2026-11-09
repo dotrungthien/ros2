@@ -103,9 +103,21 @@ def sep_cuoi(dong, tu_gio=''):
 
 
 def chuyen_cuoi_ct(dong):
-    """Dong co nghia cuoi cua ~/log_nut_chuyen.txt (stdout gui_duong.py) -> ('THOAT' | 'CHO' | 'DI' | 'CHO_NGUOI' | None, dong da strip)."""
+    """Dong co nghia cuoi cua ~/log_nut_chuyen.txt (stdout gui_duong.py) -> ('THOAT' | 'CHO' | 'DI' | 'CHO_NGUOI' | 'CHO_VI_TRI' |
+    None, dong da strip). 09/11 23:08 sep LiDAR: 'SEP_LIDAR: THOAT ...' / '   THOAT_XONG: ...' = 탈출; 'SEP_LIDAR: DOI_VAT | CHO_VI_TRI'
+    = 대기; 'SEP_LIDAR: DI' = 이동; 'CHO_VI_TRI: ... bao nguoi' = 도움이 필요해요; 'sep: ... (ghi, khong chan)' chi la tin (bo qua)."""
     for l in reversed(dong):
         s = l.strip()
+        if s.startswith('sep: ') and s.endswith('(ghi, khong chan)'):
+            continue
+        if s.startswith('CHO_VI_TRI:') and 'bao nguoi' in s:
+            return 'CHO_VI_TRI', s
+        if s.startswith(('SEP_LIDAR: THOAT', 'THOAT_XONG:')):
+            return 'THOAT', s
+        if s.startswith(('SEP_LIDAR: DOI_VAT', 'SEP_LIDAR: CHO_VI_TRI')):
+            return 'CHO', s
+        if s.startswith(('SEP_LIDAR: DI ', 'CHO_VI_TRI: vi tri tin lai')):
+            return 'DI', s
         # 09/11 18:47 (i): gui_duong het vong khe => 'CHO_NGUOI: ...' (dung yen, tien trinh song, cho nguoi bam 정지 / tu thu lai)
         if s.startswith('CHO_NGUOI:') and not s.startswith(('CHO_NGUOI: het ', 'CHO_NGUOI: sep het ')):     # 2 dong nay = di tiep
             return 'CHO_NGUOI', s
@@ -175,11 +187,13 @@ def thoat_moi(dong, t_boot):
 DONG_DA_HUY = re.compile(r'^LOI_GUI_DUONG .*; HUY_DICH ok\s*$')
 
 
-def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch, phu_lai_lai=True, chuyen_dong='', den_noi_sau=False):
+def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch, phu_lai_lai=True, chuyen_dong='', den_noi_sau=False, sep_quan_sat=False):
     """Ma trang thai /v10 tu du lieu that. link: trang_thai() cua cau noi; nut: trang_thai_nut(); sep: sep_cuoi();
     phu_lai: phu_lai_cuoi(); chuyen_log: dong_chuyen_cuoi(); thoat: thoat_moi(). Tra (ma, ly_do).
     08/11 bo 1e: phu_lai_lai False (lai_xe_lidar chay voi phat_lenh false, kieu mat) => KHONG dung trang thai phu lai de hien
-    탈출 / 회전 / 대기 (no khong lai). 09/11 #6: chuyen_dong = dong co nghia cuoi (chuyen_cuoi_ct); 'LUI_RA: ...' => ly do 탈출."""
+    탈출 / 회전 / 대기 (no khong lai). 09/11 #6: chuyen_dong = dong co nghia cuoi (chuyen_cuoi_ct); 'LUI_RA: ...' => ly do 탈출.
+    09/11 23:08: sep_quan_sat (sep.py ra_lenh=false, kieu mat): DUNG_VA_BAO cua sep chi la 관찰, khong thanh 도움이 필요해요;
+    CHO_VI_TRI (gui_duong cho vi tri qua 60 s) => 도움이 필요해요."""
     if nut['tat']['chay']:
         return 'TT_DANG_NGAT', 'bat_xe.sh tat'
     if nut['bat']['chay'] or link['link'] == 'connecting':
@@ -192,14 +206,14 @@ def suy_trang_thai(link, nut, sep, phu_lai, chuyen_log, thoat, t_epoch, phu_lai_
         return 'TT_KHONG_KET_NOI', link.get('chi_tiet') or 'fail'
     c = nut['chuyen']
     if c['chay']:
-        if sep['dung_va_bao']:
+        if sep['dung_va_bao'] and not sep_quan_sat:
             return 'TT_CAN_GIUP', 'sep DUNG_VA_BAO'
-        if chuyen_log == 'CHO_NGUOI':                # 09/11 18:47 (i): chuyen con song, xe dung yen cho nguoi (nut 정지)
-            return 'TT_CAN_GIUP', 'CHO_NGUOI'
+        if chuyen_log in ('CHO_NGUOI', 'CHO_VI_TRI'):  # 09/11 18:47 (i): chuyen con song, xe dung yen cho nguoi (nut 정지); 23:08 CHO_VI_TRI
+            return 'TT_CAN_GIUP', chuyen_log
         pl = phu_lai if phu_lai and phu_lai_lai and t_epoch - phu_lai[2] <= T_PHU_LAI_MOI else None
         if (pl and pl[0] in PHU_LAI_THOAT) or thoat in ('THOAT', 'RA_LUI', 'RA_TIEN') or chuyen_log == 'THOAT':
             return 'TT_DANG_THOAT', pl[0] if pl and pl[0] in PHU_LAI_THOAT else (
-                thoat or (chuyen_dong if chuyen_dong.startswith('LUI_RA:') else 'gui_duong lop 2'))
+                thoat or (chuyen_dong if chuyen_dong.startswith(('LUI_RA:', 'SEP_LIDAR: THOAT', 'THOAT_XONG:')) else 'gui_duong lop 2'))
         if pl and pl[0] in PHU_LAI_XOAY:
             return 'TT_DANG_XOAY', pl[0]
         if (pl and (pl[0] in PHU_LAI_CHO or pl[0].startswith('CHO_'))) or chuyen_log == 'CHO':
@@ -271,11 +285,13 @@ def trang_thai(C):
     th = thoat_moi(doc_dong_dau(tep(C, 'sep_thoat')), boot_giay())
     now = time.time()
     # 08/11 bo 1e: phu lai chi nhin (phat_lenh false doc tu /proc) => khong lay trang thai phu lai; khong thay tien trinh => nhu cu
-    pl_lai = tien_trinh_lai().get('lai_xe_lidar.py', {}).get('phat_lenh') != 'false'
+    ttl = tien_trinh_lai()
+    pl_lai = ttl.get('lai_xe_lidar.py', {}).get('phat_lenh') != 'false'
+    sep_qs = ttl.get('sep.py', {}).get('ra_lenh') == 'false'        # 23:08: sep.py chi quan sat (kieu mat)
     with C.LOCK:
         t_ket = C.CHUYEN.get('t_ket')                 # 09/11 18:44 ③: luc chuyen web cuoi ket thuc (bat moi => None)
     dn = den_noi_cuoi(doc_duoi(tep(C, 'ket_qua_chuyen.csv'), 65536)) if t_ket is not None else None
-    ma, ly = suy_trang_thai(link, nut, sep, pl, cl, th, now, pl_lai, cl_dong, den_noi_sau=dn is not None and dn > t_ket)
+    ma, ly = suy_trang_thai(link, nut, sep, pl, cl, th, now, pl_lai, cl_dong, den_noi_sau=dn is not None and dn > t_ket, sep_quan_sat=sep_qs)
     m5 = bang_m5(C, ma, sep, nut, ly)
     # 09/11 buoc 3 #3: ~/vi_tri_xe moi (gui_duong kieu mat, 1 s) thi lay vi tri + duong /plan cua no; khong thi vi tri cua sep nhu cu
     try:
@@ -413,8 +429,10 @@ def bang_m5(C, ma, sep, nut, ly=''):
                       and abs(ban.ox + (i + .5) * ban.res - x) < 0.6 and abs(ban.oy + (j + .5) * ban.res - y) < 0.6), default=9.9)
             xoay = {'duoc': kc > L.R_XOAY, 'kc_m': round(kc, 3), 'r_xoay_m': round(L.R_XOAY, 4)}     # 20:33: bo trong_do (금지 theo ban do)
     pl_lenh = tt.get('lai_xe_lidar.py', {}).get('phat_lenh')
-    if ma == 'TT_DANG_THOAT' and (ly or '').startswith('LUI_RA:'):          # 09/11 #6: Nav2 BackUp ra /cmd_vel_avoid (buoc 2g)
-        ai = ('Nav2 BackUp (behavior_server)', 'avoid')
+    if ma == 'TT_DANG_THOAT' and (ly or '').startswith('SEP_LIDAR: THOAT diem'):    # 23:08: diem thoat = navigate_to_pose
+        ai = ('Nav2 (RPP) toi diem thoat', 'nav')
+    elif ma == 'TT_DANG_THOAT' and (ly or '').startswith(('LUI_RA:', 'SEP_LIDAR: THOAT', 'THOAT_XONG:')):   # Nav2 behavior ra /cmd_vel_avoid
+        ai = ('Nav2 behavior_server (drive_on_heading / backup / spin)', 'avoid')
     elif ma in ('TT_DANG_THOAT', 'TT_DANG_XOAY'):
         ai = ('lai_xe_lidar', 'avoid') if pl_lenh == 'true' else ('lai_xe_lidar (chi nhin, phat_lenh=%s)' % pl_lenh, None)
     elif ma in ('TT_DANG_DI', 'TT_DANG_CHO'):
@@ -433,8 +451,22 @@ def bang_m5(C, ma, sep, nut, ly=''):
         'mem': mem_vung(dong_ch) if nut['chuyen']['chay'] else None,      # 09/11 20:33: MEM / LECH cua gui_duong (앞/옆/뒤 물체)
     }
     nao = {'tu_the': list(sep['tu_the']) if sep['tu_the'] else None, 'lenh': list(sep['lenh']) if sep['lenh'] else None,
-           'tuoi_s': gio_tuoi(sep['gio'], now) if sep['gio'] else None}
+           'tuoi_s': gio_tuoi(sep['gio'], now) if sep['gio'] else None,
+           # 09/11 23:08 (muc 7): dong 두뇌 = quyet dinh cua sep LiDAR (dong 'SEP_LIDAR:' cuoi cua gui_duong); sep.py o tren => 관찰
+           'sep_lidar': sep_lidar_cuoi(dong_ch) if nut['chuyen']['chay'] else None}
     return {'bang': bang, 'nao': nao, 'nho': nho, 'uu_tien': ut}
+
+
+_RE_SEP_LIDAR = re.compile(r'^SEP_LIDAR: (DI|DOI_VAT|THOAT|KEP|CHO_VI_TRI)\b ?(.*)$')
+
+
+def sep_lidar_cuoi(dong):
+    """09/11 23:08: dong 'SEP_LIDAR: <QUYET> <chi tiet>' cuoi cua gui_duong (log chuyen) -> [quyet, chi tiet] | None."""
+    for l in reversed(dong):
+        m = _RE_SEP_LIDAR.match(l.strip())
+        if m:
+            return [m.group(1), m.group(2)[:160]]
+    return None
 
 
 _RE_MEM = re.compile(r'^MEM: (truoc|hong|sau) (\d+) diem cach ([0-9.]+) m \((tuong|vat)\)(?: LECH ban do=(tuong|vat))?$')

@@ -167,6 +167,8 @@ bool_ok SEP_RA_LENH "$SEP_RA_LENH"; bool_ok SEP_RA_THOAT "$SEP_RA_THOAT"; bool_o
 # 08/11 bo 1e buoc 2g: MAT_LAI=true => /cmd_vel_avoid (twist_mux 60) danh cho behavior_server (BackUp); phu lai phai chi nhin
 # 09/11 buoc 3 #8: thay vi dung (LOI) thi EP PHU_LAI_PHAT_LENH=false va in canh bao
 if [ "${MAT_LAI:-false}" = "true" ] && [ "$PHU_LAI_PHAT_LENH" = "true" ]; then echo "CANH BAO: MAT_LAI=true => ep PHU_LAI_PHAT_LENH=false (/cmd_vel_avoid chi cho behavior_server)"; PHU_LAI_PHAT_LENH=false; fi
+# 09/11 23:08 sep LiDAR (Thien muc 6): kieu mat sep.py chi QUAN SAT (gui_duong doc /sep/trang_thai) => ep SEP_RA_LENH=false
+if [ "${MAT_LAI:-false}" = "true" ] && [ "$SEP_RA_LENH" = "true" ]; then echo "CANH BAO: MAT_LAI=true => ep SEP_RA_LENH=false (sep.py quan sat, sep LiDAR trong gui_duong quyet)"; SEP_RA_LENH=false; fi
 
 # ---------- chinh gio ----------
 if [ -n "$1" ]; then

@@ -26,16 +26,10 @@ thoi_quen:
   progress_s: {gia_tri: 10.0, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "progress_checker movement_time_allowance"}
   vung_phanh_m: {gia_tri: 0.07, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "collision_monitor ThanTruoc mui 0,215 - footprint 0,145"}
   nhin_truoc_phanh_s: {gia_tri: 1.5, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "collision_monitor ThanTruoc time_before_collision"}
-  lui_thoat_goc_m: {gia_tri: 0.25, dung_o: "bt_mat.xml (kiem_hanh_vi.py so); gui_duong.py", cho: "bt_mat BackUp backup_dist; gui_duong LUI_BT_M"}
-  toc_do_lui_mps: {gia_tri: 0.1, dung_o: "bt_mat.xml (kiem_hanh_vi.py so); gui_duong.py", cho: "bt_mat BackUp backup_speed; gui_duong cau_hinh lui_v"}
-  lui_ra_khe_m: {gia_tri: 0.35, dung_o: "gui_duong.py", cho: "cau_hinh lui_m"}
-  cho_khe_s: {gia_tri: 30.0, dung_o: "gui_duong.py", cho: "cau_hinh cho_khe (bien CHO_KHE)"}
   tien_toi_thieu_m: {gia_tri: 0.1, dung_o: "gui_duong.py", cho: "cau_hinh tien_min (bien TIEN_MIN)"}
   gan_dich_m: {gia_tri: 0.6, dung_o: "gui_duong.py", cho: "cau_hinh gan_dich_m (bien GAN_DICH_M)"}
-  gan_dich_s: {gia_tri: 10.0, dung_o: "gui_duong.py", cho: "cau_hinh gan_dich_s (bien GAN_DICH_S)"}
-  cho_dich_s: {gia_tri: 60.0, dung_o: "gui_duong.py", cho: "cau_hinh cho_dich (bien CHO_DICH)"}
   cho_sep_s: {gia_tri: 10.0, dung_o: "gui_duong.py", cho: "cau_hinh cho_sep (bien SEP_CHO_S)"}
-  sep_lenh_tuoi_max_s: {gia_tri: 3.0, dung_o: "gui_duong.py", cho: "cau_hinh sep_tuoi (bien SEP_TUOI_MAX); doc_sep_lenh tuoi_max"}
+  sep_lenh_tuoi_max_s: {gia_tri: 3.0, dung_o: "gui_duong.py", cho: "cau_hinh sep_tuoi (bien SEP_TUOI_MAX); doc_sep_lenh tuoi_max; 23:08: tin /sep/trang_thai cu hon => bo"}
   toi_sai_so_m: {gia_tri: 0.2, dung_o: "gui_duong.py", cho: "cau_hinh toi_sai_so (bien TOI_SAI_SO)"}
   tf_tuoi_max_s: {gia_tri: 1.0, dung_o: "gui_duong.py", cho: "cau_hinh tf_tuoi"}
   cho_chon_tuyen_s: {gia_tri: 2.0, dung_o: "gui_duong.py", cho: "cau_hinh cho_chon"}
@@ -100,7 +94,7 @@ thoi_quen:
   sat_vat_m: {gia_tri: 0.1, dung_o: "sep.py", cho: "P_MAC_DINH['sat_vat'] (tham so ROS)"}
   sat_vat_tat_m: {gia_tri: 0.12, dung_o: "sep.py", cho: "P_MAC_DINH['sat_vat_tat'] (tham so ROS)"}
   kinh_nghiem_quan_sat_s: {gia_tri: 15.0, dung_o: "gui_duong.py", cho: "MOI 09/11 nao xe viec 4 (khong co o 2607fee): BT_LUI / GUI_LUI / CHO_DICH DUOC neu tien trong bay nhieu giay sau do"}
-  so_luot_chan: {gia_tri: 3, dung_o: "gui_duong.py", cho: "MOI 09/11 20:33 (thay so_vong_khe): so luot bi chan truoc CHO_NGUOI; luot 1 = tuyen goi y (gia X), luot 2.. = Nav2 tu vach (/chon_tuyen 0)"}
+  so_luot_chan: {gia_tri: 3, dung_o: "gui_duong.py", cho: "MOI 09/11 20:33; 23:07: xa dich, so luot bi chan (giao dich khong toi, ke ca sau thoat) truoc CHO_NGUOI"}
   cho_lai_s: {gia_tri: 60.0, dung_o: "gui_duong.py", cho: "MOI 09/11 18:47 (i); 20:33: het so_luot_chan luot bi chan => CHO_NGUOI khong tim thay duong (dung yen, bao nguoi, KHONG thoat), sau bay nhieu giay tu thu lai 1 luot; <= 0 => HET_DUONG nhu 92ff3dc"}
   gia_x_bat: {gia_tri: true, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: X = cho KET_CO_DUONG chua DA_GIAI (~/kinh_nghiem.csv) = cho can tim cach giai, KHONG phai vung ne; false = thu tu tuyen va khong ghi DA_GIAI nhu 8601d4c"}
   gia_x_giay_mac_dinh: {gia_tri: 10.0, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: giay cua X khi cac dong khong co cho=N (cot cach)"}
@@ -122,3 +116,21 @@ thoi_quen:
   inflation_radius_m: {gia_tri: 0.2, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "inflation_layer local + global"}
   cost_scaling_factor: {gia_tri: 10.0, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "inflation_layer local + global; RPP inflation_cost_scaling_factor (rpp)"}
   backup_nhin_truoc_s: {gia_tri: 0.7, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "behavior_server simulate_ahead_time: BackUp nhin 0,06 m o 0,10 m/s => dung khi vat cach duoi 0,05-0,11"}
+  # 09/11 23:08 SEP LiDAR mot nguoi lai (Thien chot 21:54-23:08): thoi_quen = co van; sep LiDAR (gui_duong + sep_lidar) lay lam mac dinh,
+  #   quyet theo LiDAR; KHONG so nao duoc giu xe dung (chan duy nhat = ban_nang). CHUA THU TREN XE.
+  khong_tien_s: {gia_tri: 10.0, dung_o: "gui_duong.py", cho: "giao dich ma khong tien >= tien_toi_thieu_m bay lau => bi chan, kich thoat"}
+  cho_vat_s: {gia_tri: 30.0, dung_o: "gui_duong.py", cho: "nhac doi / vung do: dung yen toi da bay lau roi thoat"}
+  nhac_doi_m: {gia_tri: 0.14, dung_o: "sep_lidar.py", cho: "nhac doi: VAT CHAC (LiDAR VAT, khong LECH) trong hanh lang truoc mui <= so nay"}
+  cho_chat_m: {gia_tri: 0.12, dung_o: "sep_lidar.py", cho: "co diem cach than < so nay => dong tac nho; moi diem >= => sector"}
+  thoat_sector_deg: {gia_tri: 10.0, dung_o: "sep_lidar.py", cho: "sector cho thoang"}
+  thoat_trong_m: {gia_tri: 0.4, dung_o: "sep_lidar.py", cho: "sector trong truoc mui >= so nay"}
+  thoat_diem_min_m: {gia_tri: 0.3, dung_o: "sep_lidar.py", cho: "diem thoat cach xe toi thieu"}
+  thoat_diem_max_m: {gia_tri: 0.4, dung_o: "sep_lidar.py", cho: "diem thoat cach xe toi da"}
+  thoat_han_s: {gia_tri: 15.0, dung_o: "gui_duong.py", cho: "navigate_to_pose toi diem thoat: han"}
+  thoat_buoc_max: {gia_tri: 6, dung_o: "gui_duong.py", cho: "so dong tac nho toi da moi lan thoat"}
+  thoat_hong_max: {gia_tri: 3, dung_o: "gui_duong.py", cho: "thoat hong lien tiep => CHO_NGUOI"}
+  so_luot_gan_dich: {gia_tri: 2, dung_o: "gui_duong.py", cho: "Thien 23:07: gan dich (<= gan_dich_m) so luot bi chan truoc CHO_NGUOI"}
+  han_gan_dich_s: {gia_tri: 100.0, dung_o: "gui_duong.py", cho: "Thien 23:07: gan dich, han tinh tu lan bi chan dau tien gan dich => CHO_NGUOI"}
+  cho_vi_tri_s: {gia_tri: 60.0, dung_o: "gui_duong.py", cho: "Thien Q2: vi tri chua tin bay lau => CHO_VI_TRI (bao nguoi, van cho)"}
+  toc_do_thoat_mps: {gia_tri: 0.1, dung_o: "gui_duong.py", cho: "Thien Q3: drive_on_heading / backup cua dong tac thoat"}
+  xoay_thoat_rad_s: {gia_tri: 0.6, dung_o: "gui_duong.py (kiem_hanh_vi.py so)", cho: "= behavior_server min_rotational_vel; han Spin"}

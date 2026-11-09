@@ -7,6 +7,8 @@
   08/11 buoc 2d (Thien duyet 21:08): nhanh phuc hoi CUA RIENG FollowPath = Sequence [xoa costmap cuc bo, BackUp 0,25 m o
   0,10 m/s] (controller khong tien => lui ra roi thu lai). KHONG them vao nhanh ComputePathToPose / RecoveryFallback: planner
   khong ra duong (ong chan kin) thi khong lui lap lai.
+  09/11 23:08 sep LiDAR mot nguoi lai (Thien chot 21:54-23:08, muc 5): BO BackUp 0,25 tu dong cua nhanh FollowPath (hai chu thoat,
+  bai 542). Phuc hoi cua cay CHI xoa costmap / Wait; moi dong tac thoat la cua gui_duong (sep LiDAR).
 -->
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
@@ -20,10 +22,7 @@
         </RateController>
         <RecoveryNode number_of_retries="1" name="FollowPath">
           <FollowPath path="{path}" controller_id="FollowPath"/>
-          <Sequence name="LuiKhiKhongTien">
-            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
-            <BackUp backup_dist="0.25" backup_speed="0.10"/>
-          </Sequence>
+          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
         </RecoveryNode>
       </PipelineSequence>
       <ReactiveFallback name="RecoveryFallback">

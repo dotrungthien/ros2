@@ -1108,16 +1108,32 @@ class MatLai(Nen):
             self.assertEqual(V.chuyen_cuoi_ct(['-- tuyen 1, lan 1/1: x', c]), ('CHO', c))
             self.assertEqual(V.cho_vat_so(c), so)
         self.assertIsNone(V.cho_vat_so('   GAN_DICH: cach dich 0.30 m'))
-        # #6: LUI_RA => 탈출 중, ly do = dong LUI_RA; LUI_XONG => di tiep
-        for c in ('LUI_RA: bt %.2f' % G.LUI_BT_M, 'LUI_RA: gui 0.35 (truoc tuyen 2, /backup 0.10 m/s)'):
-            cl, cd = V.chuyen_cuoi_ct(['-- tuyen 1, lan 1/1: x', c])
+        # 23:08 sep LiDAR: 'SEP_LIDAR: THOAT ...' / '   THOAT_XONG: ...' => 탈출 (ly do = dong do); DOI_VAT / CHO_VI_TRI => 대기;
+        # DI => 이동; 'CHO_VI_TRI: ... bao nguoi' => 도움이 필요해요; 'sep: ... (ghi, khong chan)' chi la tin (bo qua)
+        for c in ('SEP_LIDAR: THOAT tien=0.15 (KEP; cho chat: truoc -, hong 0.03, sau 0.01 => cuoi 0.09).',
+                  'THOAT_XONG: tien=0.15 => SUCCEEDED (xe dich 0.15 m).', 'SEP_LIDAR: THOAT diem (0.34; 0.44): sector +100 do, 0.40 m (CHO_VAT_30s).'):
+            cl, cd = V.chuyen_cuoi_ct(['-- tuyen 1, lan 1/1: x', '   ' + c if c.startswith('THOAT_XONG') else c, 'sep: KHONG_TIN (ghi, khong chan)'])
             ma, ly = V.suy_trang_thai(link('on'), nut(chuyen_chay=True), SEP0, None, cl, None, 1.0, False, cd)
             self.assertEqual((ma, ly), ('TT_DANG_THOAT', c))
-        self.assertEqual(V.dong_chuyen_cuoi(['LUI_RA: bt 0.25', '   LUI_XONG: bt => SUCCEEDED.']), 'DI')
+        for c, mong in (('SEP_LIDAR: DOI_VAT truoc vat chac cach 0.13 m (nhac doi), dung yen toi da 30 s.', 'CHO'),
+                        ('SEP_LIDAR: CHO_VI_TRI (sep bao vi tri khong tin): dung yen, chi giao dich khi vi tri tin lai.', 'CHO'),
+                        ('SEP_LIDAR: DI dich (1.60; 0.82), Nav2 tu vach', 'DI'), ('CHO_VI_TRI: vi tri tin lai sau 75 s, di tiep.', 'DI'),
+                        ('CHO_VI_TRI: sep bao vi tri khong tin qua 60 s, bao nguoi; van cho, vi tri tin lai thi tu di tiep (bam 정지 de dung).', 'CHO_VI_TRI')):
+            self.assertEqual(V.chuyen_cuoi_ct(['-- tuyen 1, lan 1/1: x', c]), (mong, c))
+        cl, cd = V.chuyen_cuoi_ct(['CHO_VI_TRI: x qua 60 s, bao nguoi; van cho'])
+        self.assertEqual(V.suy_trang_thai(link('on'), nut(chuyen_chay=True), SEP0, None, cl, None, 1.0, False, cd), ('TT_CAN_GIUP', 'CHO_VI_TRI'))
+        sep_bao = dict(SEP0, dung_va_bao=True)                                           # sep.py DUNG_VA_BAO: quan sat => khong thanh 도움
+        self.assertEqual(V.suy_trang_thai(link('on'), nut(chuyen_chay=True), sep_bao, None, 'DI', None, 1.0, False, '', sep_quan_sat=True)[0], 'TT_DANG_DI')
+        self.assertEqual(V.suy_trang_thai(link('on'), nut(chuyen_chay=True), sep_bao, None, 'DI', None, 1.0, False, '')[0], 'TT_CAN_GIUP')
+        self.assertEqual(V.sep_lidar_cuoi(['SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1', 'MEM: sach', 'SEP_LIDAR: THOAT xoay=-30 (KEP).']),
+                         ['THOAT', 'xoay=-30 (KEP).'])
+        self.assertIsNone(V.sep_lidar_cuoi(['-- tuyen 1, lan 1/1: x']))
         h = doc('trang_v10.html')
         self.assertIn("S.cho_vat?'앞이 막혔어요. 기다리는 중 '+S.cho_vat[0]+'/'+S.cho_vat[1]+'초'", h)
-        self.assertIn("(S.ly_do||'').indexOf('LUI_RA:')===0?'Nav2가 뒤로 빼내고 있어요 ", h)
-        self.assertIn("$('brain').style.opacity=cu&&n.tuoi_s>5?'0.45':'1';", h)
+        self.assertIn("(S.ly_do||'').indexOf('SEP_LIDAR: THOAT')===0||(S.ly_do||'').indexOf('THOAT_XONG:')===0?'두뇌(LiDAR)가 차량을 빼내고 있어요: '", h)
+        self.assertIn("var nt=chuan_bi()?'두뇌: 출발 준비 대기':'두뇌: '+(sl?(QL[sl[0]]||sl[0])", h)
+        self.assertIn("$('quansat').style.opacity=cu&&n.tuoi_s>5?'0.45':'1';", h)
+        self.assertIn("S.ly_do==='CHO_VI_TRI'?'위치를 믿을 수 없어요", h)
         self.assertIn('S.duong.forEach(function(p,k)', h)
 
     def test_d1_tep_xe_kieu_mat(self):
@@ -1136,17 +1152,9 @@ class MatLai(Nen):
         # bt_mat.xml = bt_cho.xml, chi doi retries 15 -> 1000; nav2_params_mat tro toi bt_mat (kiem_xe so qua MONG_BT)
         bo_dau = lambda t: t[t.index('-->') + 3:]
         self.assertEqual(bo_dau(doc('bt_mat.xml')), bo_dau(doc('bt_cho.xml')).replace(
-            'number_of_retries="15" name="NavigateRecovery"', 'number_of_retries="1000" name="NavigateRecovery"').replace(
-            '''          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
-        </RecoveryNode>''', '''          <Sequence name="LuiKhiKhongTien">
-            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
-            <BackUp backup_dist="0.25" backup_speed="0.10"/>
-          </Sequence>
-        </RecoveryNode>''', 1))                                           # 2d: chi nhanh phuc hoi cua FollowPath them BackUp
+            'number_of_retries="15" name="NavigateRecovery"', 'number_of_retries="1000" name="NavigateRecovery"'))
         bt = bo_dau(doc('bt_mat.xml'))
-        self.assertEqual(bt.count('<BackUp '), 1)
-        self.assertLess(bt.index('name="FollowPath"'), bt.index('<BackUp '))
-        self.assertLess(bt.index('<BackUp '), bt.index('name="RecoveryFallback"'))     # khong nam o nhanh ComputePathToPose / RecoveryFallback
+        self.assertEqual(bt.count('<BackUp '), 0)                  # 23:08 sep LiDAR muc 5: bo BackUp 0,25 tu dong (mot chu thoat)
         self.assertIn('nav2_back_up_action_bt_node', doc('nav2_params_mat.yaml'))
         self.assertIn('movement_time_allowance: 10.0', doc('nav2_params_mat.yaml'))
         # 2e: nav2_params_mat_rpp.yaml = nav2_params_mat.yaml, chi FollowPath = RPP y het nav2_params_cho.yaml
@@ -1196,7 +1204,8 @@ class MatLai(Nen):
         self.assertIn("remappings=remappings + [('cmd_vel', ra_behavior)]", bs)
         self.assertIn('''ra_behavior = PythonExpression(["'cmd_vel_avoid' if '", mat_lai, "'.lower() in ('true', '1') else 'cmd_vel_nav_raw'"])''', launch)
         self.assertIn('''ra_smoother = PythonExpression(["'cmd_vel_nav_tho' if '", mat_lai, "'.lower() in ('true', '1') else 'cmd_vel_nav'"])''', launch)
-        self.assertIn('behavior_plugins: ["spin", "backup", "wait"]', pm)
+        self.assertIn('behavior_plugins: ["spin", "backup", "drive_on_heading", "wait"]', pm)          # 23:08 sep LiDAR
+        self.assertIn('behavior_plugins: ["spin", "backup", "drive_on_heading", "wait"]', doc('nav2_params_mat_rpp.yaml'))
         tm = doc('..', 'dev_ws', 'src', 'my_bot', 'config', 'twist_mux.yaml')
         self.assertTrue(_re.search(r'avoid:\n +topic: /cmd_vel_avoid\n +timeout: 0\.2\n +priority: 60\n', tm), 'twist_mux avoid 60')
         self.assertIn('min_vel_x: 0.0 ', pm)                                               # DWB kieu mat khong lui
@@ -1207,15 +1216,17 @@ class MatLai(Nen):
         self.assertIn('if [ "$MAT_LAI" = "true" ] && [ "$PHU_LAI_PHAT_LENH" = "true" ]; ' + loi, doc('gia_lap', 'bat_gia.sh'))
         self.assertEqual(C.env_muc_b({'MAT_LAI': 'true'})['PHU_LAI_PHAT_LENH'], 'false')
         G = V.nap(C, 'gui_duong')
-        self.assertIn("ActionClient(self, BackUp, 'backup')", doc('gui_duong.py'))
-        self.assertEqual((G.cau_hinh({})['lui_m'], G.cau_hinh({})['lui_v']), (0.35, 0.10))
+        for ac in ("ActionClient(self, BackUp, 'backup')", "ActionClient(self, DriveOnHeading, 'drive_on_heading')", "ActionClient(self, Spin, 'spin')"):
+            self.assertIn(ac, doc('gui_duong.py'))
+        self.assertEqual(G.cau_hinh({})['v_thoat'], 0.10)
+        self.assertIn('if [ "${MAT_LAI:-false}" = "true" ] && [ "$SEP_RA_LENH" = "true" ]; then echo "CANH BAO: MAT_LAI=true => ep SEP_RA_LENH=false', bx)
 
     def test_cau_noi_env_muc_b(self):
         self.assertIs(C.env_muc_b({}), C.ENV_MUC_B)                                      # khong MAT_LAI: nhu cu
         self.assertIs(C.env_muc_b({'MAT_LAI': 'false'}), C.ENV_MUC_B)
         self.assertEqual(C.ENV_MUC_B, {'SEP_RA_LENH': 'true', 'SEP_RA_THOAT': 'true', 'PHU_LAI_PHAT_LENH': 'true'})
-        self.assertEqual(C.env_muc_b({'MAT_LAI': 'true'}),
-                         {'SEP_RA_LENH': 'true', 'SEP_RA_THOAT': 'false', 'PHU_LAI_PHAT_LENH': 'false', 'MAT_LAI': 'true'})
+        self.assertEqual(C.env_muc_b({'MAT_LAI': 'true'}),                               # 23:08 muc 6: sep.py chi quan sat
+                         {'SEP_RA_LENH': 'false', 'SEP_RA_THOAT': 'false', 'PHU_LAI_PHAT_LENH': 'false', 'MAT_LAI': 'true'})
         self.assertIn('dict(os.environ, **env_muc_b())', doc('cau_noi_xe.py'))
         bx = doc('bat_xe.sh')                                                            # ben doc: bat_xe.sh doc dung 4 ten bien
         for k in C.ENV_MUC_B_MAT:

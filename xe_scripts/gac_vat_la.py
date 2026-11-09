@@ -131,19 +131,22 @@ def vung_diem(p, t):
 
 
 def danh_gia(pts_xe, pts_map, ban, t):
-    """-> [dict(vung, loai 'VAT'|'TUONG', lidar, bd 'VAT'|'TUONG'|None, lech, n, kc, do, xy)] moi (cum, vung) co diem trong VANG,
-    gan truoc. do = co diem trong DO cua vung do (chi co nghia dung xe khi loai VAT, vung truoc / hong). xy = diem ban do gan nhat."""
+    """-> [dict(vung, loai 'VAT'|'TUONG', lidar, bd 'VAT'|'TUONG'|None, lech, n, kc, do, xy, hl)] moi (cum, vung) co diem trong VANG,
+    gan truoc. do = co diem trong DO cua vung do (chi co nghia dung xe khi loai VAT, vung truoc / hong). xy = diem ban do gan nhat.
+    hl (vung truoc): kc diem gan nhat trong hanh lang than |y| <= 0,08 (None neu khong co; sep_lidar nhac doi)."""
     out = []
     for a, b in cum(pts_xe, t):
         ks = [(a + i) % len(pts_xe) for i in range((b - a) % len(pts_xe) + 1)]
         if len(ks) < t['so_diem']:
             continue
-        theo_vung = {}
+        theo_vung, hl = {}, None
         for k in ks:
             v, kc, vang, do = vung_diem(pts_xe[k], t)
             if vang:
                 n, kc0, do0, k0 = theo_vung.get(v, (0, None, False, None))
                 theo_vung[v] = (n + 1, kc if kc0 is None or kc < kc0 else kc0, do0 or do, k if kc0 is None or kc < kc0 else k0)
+                if v == 'truoc' and abs(pts_xe[k][1]) <= Y_HONG and (hl is None or kc < hl):
+                    hl = kc                                      # 09/11 23:08 nhac doi: diem gan nhat trong hanh lang than truoc mui
         if not theo_vung:
             continue
         lidar = lidar_noi(pts_xe, a, b, t)
@@ -155,7 +158,7 @@ def danh_gia(pts_xe, pts_map, ban, t):
                 bd = 'TUONG' if 2 * sum(ban.gan_tuong(x, y, t['gan_tuong']) for x, y in pm) >= len(pm) else 'VAT'
         for v, (n, kc, do, k0) in theo_vung.items():
             out.append(dict(vung=v, loai=loai, lidar=lidar, bd=bd, lech=bd is not None and bd != loai, n=n, kc=kc, do=do,
-                            xy=None if pts_map is None else pts_map[k0]))
+                            xy=None if pts_map is None else pts_map[k0], hl=hl if v == 'truoc' else None))
     return sorted(out, key=lambda d: d['kc'])
 
 

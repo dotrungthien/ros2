@@ -7,7 +7,8 @@ Khong can ROS. Chi DOC tep cua xe (khong sua tep lai): ~/sep_nhat_ky.csv, ~/log_
 dung_chuyen, bat_dau_tat). Ma trang thai goc ASCII/tieng Viet; trang dich sang tieng Han luc in (han()).
 Manh: M1 khung + trang thai; M4 di / dung / bat / tat (goi lai H._nut cua /nut: cung PIN, cung 409);
   M2 ban do + vung (luat 8: ban do tu tep slam_dinh_vi_xuong.yaml tro toi, footprint / inflation tu tep tham so Nav2
-  NAV_PARAMS; thieu tep => loi tren trang, khong so du phong; vung do = o tinh_tuyen cam, tinh bang chinh tinh_tuyen.Ban);
+  NAV_PARAMS; thieu tep => loi tren trang, khong so du phong; 09/11 20:33: ban do chi to tuong (xam) / san (xanh), vung do / vang
+  VE QUANH XE theo tam xe (vung_xe, so tu hanh_vi_xe.yaml); MEM / LECH cua gui_duong (mem_vung));
   M3 경로 확인: tinh_tuyen.tinh_duong (import, khong sua) tu vi tri xe toi dich cua gui_duong.DICH, cung thu tu tuyen voi
   /nut (chuyen.sh khong doi so thu 2 => tuyen 1 truoc, hong thi tuyen 2). Chi B chuan va A (CHON_B_TU_DO tat: gui_duong chi nhan di_B / ve_A);
   M5 dong 두뇌 + bang 7 dong: chi doc ~/sep_nhat_ky.csv, ~/log_phu_lai.txt, ~/log_nut_chuyen.txt, /proc (ten + tham so true/false
@@ -410,8 +411,7 @@ def bang_m5(C, ma, sep, nut, ly=''):
             kc = min((kc_toi_o(x, y, ban, i, j) for j in range(bd['h']) for i in range(bd['w'])
                       if bd['vung'][j * bd['w'] + i] == '0'
                       and abs(ban.ox + (i + .5) * ban.res - x) < 0.6 and abs(ban.oy + (j + .5) * ban.res - y) < 0.6), default=9.9)
-            xoay = {'duoc': kc > L.R_XOAY, 'kc_m': round(kc, 3), 'r_xoay_m': round(L.R_XOAY, 4),
-                    'trong_do': bool(ban.vat(ban.o(x, y)))}       # 09/11 19:05: chi o >= 98
+            xoay = {'duoc': kc > L.R_XOAY, 'kc_m': round(kc, 3), 'r_xoay_m': round(L.R_XOAY, 4)}     # 20:33: bo trong_do (금지 theo ban do)
     pl_lenh = tt.get('lai_xe_lidar.py', {}).get('phat_lenh')
     if ma == 'TT_DANG_THOAT' and (ly or '').startswith('LUI_RA:'):          # 09/11 #6: Nav2 BackUp ra /cmd_vel_avoid (buoc 2g)
         ai = ('Nav2 BackUp (behavior_server)', 'avoid')
@@ -430,17 +430,48 @@ def bang_m5(C, ma, sep, nut, ly=''):
         'nho': len(nho),
         'code': tt,
         'phu_lai': pl[0] if pl else None,
+        'mem': mem_vung(dong_ch) if nut['chuyen']['chay'] else None,      # 09/11 20:33: MEM / LECH cua gui_duong (앞/옆/뒤 물체)
     }
     nao = {'tu_the': list(sep['tu_the']) if sep['tu_the'] else None, 'lenh': list(sep['lenh']) if sep['lenh'] else None,
            'tuoi_s': gio_tuoi(sep['gio'], now) if sep['gio'] else None}
     return {'bang': bang, 'nao': nao, 'nho': nho, 'uu_tien': ut}
 
 
+_RE_MEM = re.compile(r'^MEM: (truoc|hong|sau) (\d+) diem cach ([0-9.]+) m \((tuong|vat)\)(?: LECH ban do=(tuong|vat))?$')
+
+
+def mem_vung(dong):
+    """09/11 20:33: dong MEM cua gui_duong (log chuyen ghi moi moi chuyen) tu 'MEM: sach' cuoi -> {vung: {kc, loai, lech, bd}} (dong
+    moi nhat moi vung) hoac None neu chua co dong MEM nao. gui_duong chi in MEM khi doi (mot bo nho moi chuyen, qua cac luot)."""
+    out, co = {}, False
+    for l in dong:
+        s = l.strip()
+        if s == 'MEM: sach':
+            out, co = {}, True
+            continue
+        m = _RE_MEM.match(s)
+        if m:
+            co = True
+            out[m.group(1)] = {'kc': float(m.group(3)), 'loai': m.group(4), 'lech': m.group(5) is not None, 'bd': m.group(5)}
+    return out if co else None
+
+
+def vung_xe(C):
+    """09/11 20:33: so vung DO / VANG quanh xe (theo tam xe) tu ~/hanh_vi_xe.yaml cua xe (hanh_vi.py), mui = vung_phanh_m."""
+    try:
+        HV = nap(C, 'hanh_vi')
+        return {'do': {'truoc': HV.an_toan('truoc_vat_do_m'), 'hong': HV.an_toan('cach_vat_toi_thieu_m'), 'sau': HV.an_toan('duoi_do_m'),
+                       'mui': HV.so('vung_phanh_m')},
+                'vang': {'truoc': HV.so('vang_truoc_m'), 'hong': HV.so('vang_hong_m'), 'sau': HV.so('vang_sau_m')}}
+    except Exception as e:                       # noqa: BLE001 (thieu tep / khoa: trang khong ve vung, khong vo)
+        return {'loi': str(e)[:120]}
+
+
 def dong_chuyen_co_nghia(dong):
-    """Dong cuoi khong rong cua log chuyen (stdout gui_duong), bo dong dau '== cau_noi_xe ...'."""
+    """Dong cuoi khong rong cua log chuyen (stdout gui_duong), bo dong dau '== cau_noi_xe ...' va dong MEM: (20:33, chi la mat)."""
     for l in reversed(dong):
         s = l.strip()
-        if s and not s.startswith('== cau_noi_xe'):
+        if s and not s.startswith(('== cau_noi_xe', 'MEM:')):
             return s[:160]
     return ''
 
@@ -654,14 +685,15 @@ def ban_do(C):
         for f in (slam, my, nv, TT.__file__):
             khoa.append((f, os.stat(f).st_mtime_ns))
         if _CACHE_BAN['khoa'] == khoa:
-            return _CACHE_BAN['kq']
+            return dict(_CACHE_BAN['kq'], vung_xe=vung_xe(C))
         w, h, res, ox, oy, occ, anh_p = doc_ban_do(my)
         n2 = doc_nav2(nv)
         r_noi = ban_kinh_noi(n2['footprint'], n2['footprint_padding'])
         data = luoi_chi_phi(w, h, res, occ, n2['inflation_radius'], n2['cost_scaling_factor'], r_noi)
         ban = TT.Ban.tu_luoi(w, h, res, ox, oy, data)
-        vung = ''.join('0' if occ[j * w + i] != 0 and (occ[j * w + i] == 100 or data[j * w + i] == -1) else
-                       ('1' if ban.vat((i, j)) else ('3' if data[j * w + i] == 0 else '2'))     # 09/11 19:05: 1 = chi o >= 98 (차량 중심 금지); 72-97 => 2 (주의 구역)
+        # 09/11 20:33 vung quanh xe: ban do chi nhac => chi to tuong / chua biet (0, xam) va san (3, xanh); bo 차량 중심 금지 (1) va
+        # 주의 구역 (2) theo ban do. Vung do / vang VE QUANH XE (vung_xe, theo tam xe) tren trang.
+        vung = ''.join('0' if occ[j * w + i] != 0 and (occ[j * w + i] == 100 or data[j * w + i] == -1) else '3'
                        for j in range(h) for i in range(w))
         kq = {'loi': None, 'w': w, 'h': h, 'res': res, 'ox': ox, 'oy': oy, 'vung': vung,
               'footprint': n2['footprint'], 'inflation_radius': n2['inflation_radius'],
@@ -670,7 +702,7 @@ def ban_do(C):
               'A': list(TT.A), 'B': list(TT.B),
               'nguon': {'slam': slam, 'ban_do': my, 'anh': anh_p, 'nav2': nv, 'tinh_tuyen': TT.__file__}}
         _CACHE_BAN.update(khoa=khoa, kq=kq, ban=ban, data=data)
-        return kq
+        return dict(kq, vung_xe=vung_xe(C))
     except (LoiBanDo, OSError, ValueError, KeyError, IndexError, zlib.error) as e:
         return {'loi': str(e)}
 
@@ -711,13 +743,12 @@ def tuyen(C, dich, pose):
         except TT.KhongCoDuong as e:
             loi.append('tuyen %d: %s' % (r, e))
             continue
-        do = [(i, j) for j in range(bd['h']) for i in range(bd['w']) if bd['vung'][j * bd['w'] + i] in '01']
+        do = [(i, j) for j in range(bd['h']) for i in range(bd['w']) if bd['vung'][j * bd['w'] + i] == '0']     # 20:33: chi tuong ban do
         kc = min(min((kc_toi_o(x, y, ban, i, j) for i, j in do if abs(ban.ox + (i + .5) * ban.res - x) < 0.6
                       and abs(ban.oy + (j + .5) * ban.res - y) < 0.6), default=9.9) for x, y, _ in duong)
         dai = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(duong, duong[1:]))
-        o = ban.o(*dau)
         return {'loi': None, 'dich': dich, 'huong': huong, 'tuyen': r, 'diem': [[round(x, 3), round(y, 3)] for x, y, _ in duong],
-                'dai_m': round(dai, 2), 'kc_do_m': round(kc, 3), 'dau_trong_do': bool(ban.vat(o)),
+                'dai_m': round(dai, 2), 'kc_do_m': round(kc, 3),                     # 20:33: bo dau_trong_do (bo 금지 theo ban do)
                 'canh_bao': [[round(x, 2), round(y, 2), round(c, 3)] for x, y, c in cb], 'tu': [round(dau[0], 3), round(dau[1], 3)],
                 'tuyen_loi': loi}
     return {'loi': '; '.join(loi) or 'khong tim duoc duong'}

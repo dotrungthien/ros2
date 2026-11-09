@@ -178,7 +178,7 @@ fi
 # 8e. 09/11 nao xe: ~/hanh_vi_xe.yaml khop so trong nav2_params_mat*.yaml + bt_mat.xml, khong vuot than_the, khong trai an_toan
 if [ "$(head -1 ~/goc_dang_chay 2>/dev/null)" = "mat" ]; then
   python3 ~/kiem_hanh_vi.py || KQ=1                          # in bang DAT / KHONG DAT tung dong + "KIEM HANH VI: ..."
-  python3 ~/gac_vat_la.py --kiem-map 10 || KQ=1               # 09/11 dung im (K13): gac co /map_tinh (khong co => gac mu)
+  python3 ~/gac_vat_la.py --kiem-map 10 || KQ=1               # 09/11 (K13); 20:33: /map_tinh chi de ban do NHAC tuong (LECH); LiDAR van lai
 else
   echo "BO_QUA     buoc 8e (kiem_hanh_vi): ~/goc_dang_chay khong phai mat"
 fi

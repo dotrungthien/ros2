@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""gac_vat_la.py (thiet ke "dung im khi bi chan" ban 2, phan A1, 09/11, CHUA THU TREN XE).
+"""gac_vat_la.py — "vung quanh xe" (Thien chot 09/11 19:57-20:33, CHUA THU TREN XE). Thay gac ban do 09/11 (dung im ban 2).
 
-Phan thuan (khong ROS), gui_duong.py goi o vong theo doi 10 Hz:
-  - Vat la = diem LiDAR roi vao o TRONG cua /map_tinh (ban do goc, KHONG phai costmap co lop huong dan: K10) VA cach o
-    tuong gan nhat > gac_le_tuong_m (lech dinh vi 7-8 cm). Can >= gac_so_diem diem trong MOT vung moi tinh (loc nhieu).
-  - Vung gac (khung xe, footprint x -0,105..0,145, y +-0,08):
-      truoc: tu mui toi gac_truoc_m, nua rong = 0,08 + cach_vat_toi_thieu_m (rong 0,28);
-      trai / phai: doc than (x -0,105..0,145), ra ngoai gac_hong_m; sau: khong (BackUp tu nhin 0,19 m).
-  - Tre hai nguong (K2): VAO khi vung (gac_truoc_m, gac_hong_m) co vat la; RA khi vung rong hon (gac_ra_truoc_m,
-    gac_ra_hong_m; nua rong truoc them gac_ra_hong_m - gac_hong_m) sach LIEN TUC gac_sach_s giay.
-  - Tu the: diem doi sang khung ban do bang TF TAI THOI DIEM QUET (K7; gui_duong lay), khong dung ~/vi_tri_xe.
-Chay rieng (kiem_xe.sh): python3 ~/gac_vat_la.py --kiem-map 10  => "DAT gac: /map_tinh ..." | "KHONG DAT gac: ..." (ma 0 / 1).
+Phan thuan (khong ROS), gui_duong.py goi moi lan quet /scan moi (10 Hz). LiDAR LAI, ban do chi NHAC.
+  1. Cum: tia LiDAR theo thu tu goc (vong 360), hai diem ke nhau cach <= cum_cach_m thi chung cum; tia khong ve (None) cat cum.
+     Cum < so_diem_toi_thieu diem = nhieu, bo.
+  2. LiDAR quyet: dai (dau-cuoi) <= vat_dai_max_m va HO HAI BEN (tia ke ngoai cum khong ve, hoac xa hon dau cum >= ho_hai_ben_m)
+     => VAT; dai >= tuong_dai_min_m => TUONG; con lai (giua hai so, hoac mot ben bi che) => KHONG CHAC => VAT.
+     ponytail: chua dung do cong cua cum; them neu VAT/TUONG nham tren xe.
+  3. Ban do (/map_tinh, tuong >= 65; ban v3 tuong 99): >= nua so diem cua cum cach o tuong <= gan_tuong_ban_do_m => nhac TUONG,
+     khac => nhac VAT. Lech voi ket qua => LECH (chi ghi log / trang, KHONG doi ket qua). Khong co ban do => khong nhac.
+  4. Vung theo TAM XE (khung base_footprint; than x -0,105..0,145, y +-0,08):
+       truoc (x > mui): kc = toi mui (cheo: toi goc); vang: kc <= vang_truoc_m va |y| <= 0,08 + vang_hong_m; DO: kc <= truoc_vat_do_m
+         va |y| <= 0,08 (hanh lang than)
+       sau (x < duoi): kc = toi duoi (cheo: toi goc); vang: kc <= vang_sau_m va |y| <= 0,08 + vang_hong_m; DO: kc <= duoi_do_m, |y| <= 0,08
+       hong (doc than): kc = |y| - 0,08; vang: kc <= vang_hong_m;                              DO: kc <= cach_vat_toi_thieu_m
+     DO lam xe dung CHI KHI la VAT (truoc, hong); duoi do moi vat la viec cua BackUp (gui_duong chi rut quang lui: khoang_sau).
+Chay rieng (kiem_xe.sh 8e): python3 ~/gac_vat_la.py --kiem-map 10  => "DAT gac: /map_tinh ..." | "KHONG DAT gac: ..." (ma 0 / 1).
 """
 import math
 import sys
@@ -18,15 +23,17 @@ import sys
 import hanh_vi as HV
 
 X_MUI, X_DUOI, Y_HONG = 0.145, -0.105, 0.08       # footprint (nav2_params_mat*.yaml), nhu lai_xe_lidar.py
-O_TRONG_MAX, O_TUONG_MIN = 49, 65                  # /map_tinh (trinary): 0 trong, 100 tuong, -1 chua biet
+X_LIDAR = 0.025                                    # LiDAR trong khung base_footprint (y 0)
+O_TUONG_MIN = 65                                   # /map_tinh: o >= so nay la tuong (v3 tinh: 99)
 
 
 def tham_so():
-    """So cua gac lay tu hanh_vi (~/hanh_vi_xe.yaml)."""
+    """So lay tu hanh_vi (~/hanh_vi_xe.yaml): do = ban_nang.an_toan, vang + phan biet = thoi_quen."""
     h = HV.so
-    return dict(bat=h('gac_vat_la'), truoc=h('gac_truoc_m'), hong=h('gac_hong_m'), ra_truoc=h('gac_ra_truoc_m'),
-                ra_hong=h('gac_ra_hong_m'), le_tuong=h('gac_le_tuong_m'), so_diem=h('gac_so_diem'), sach_s=h('gac_sach_s'),
-                scan_cu_s=h('gac_scan_cu_s'), le_rong=HV.an_toan('cach_vat_toi_thieu_m'))
+    return dict(truoc_do=HV.an_toan('truoc_vat_do_m'), hong_do=HV.an_toan('cach_vat_toi_thieu_m'), duoi_do=HV.an_toan('duoi_do_m'),
+                vang_truoc=h('vang_truoc_m'), vang_hong=h('vang_hong_m'), vang_sau=h('vang_sau_m'),
+                vat_dai=h('vat_dai_max_m'), tuong_dai=h('tuong_dai_min_m'), cum_cach=h('cum_cach_m'), ho=h('ho_hai_ben_m'),
+                gan_tuong=h('gan_tuong_ban_do_m'), so_diem=h('so_diem_toi_thieu'), sach_s=h('sach_s'), cu_s=h('lidar_cu_s'))
 
 
 class BanDo:
@@ -38,31 +45,27 @@ class BanDo:
     def gia(self, i, j):
         return self.data[j * self.w + i] if 0 <= i < self.w and 0 <= j < self.h else None
 
-    def la_vat_la(self, x, y, le):
-        """O chua (x, y) la o TRONG va moi o tuong trong ban kinh le deu cach diem > le."""
+    def gan_tuong(self, x, y, r):
+        """Co o tuong (>= O_TUONG_MIN) cach diem (x, y) <= r (khoang toi canh o)."""
         i, j = int(math.floor((x - self.ox) / self.res)), int(math.floor((y - self.oy) / self.res))
-        v = self.gia(i, j)
-        if v is None or v < 0 or v > O_TRONG_MAX:
-            return False
-        k = int(math.ceil(le / self.res)) + 1
+        k = int(math.ceil(r / self.res)) + 1
         for jj in range(j - k, j + k + 1):
             for ii in range(i - k, i + k + 1):
                 g = self.gia(ii, jj)
                 if g is None or g < O_TUONG_MIN:
                     continue
                 x0, y0 = self.ox + ii * self.res, self.oy + jj * self.res
-                dx = max(x0 - x, 0.0, x - (x0 + self.res))
-                dy = max(y0 - y, 0.0, y - (y0 + self.res))
-                if math.hypot(dx, dy) <= le:
-                    return False
-        return True
+                if math.hypot(max(x0 - x, 0.0, x - (x0 + self.res)), max(y0 - y, 0.0, y - (y0 + self.res))) <= r:
+                    return True
+        return False
 
 
 def diem_quet(ranges, a_min, a_inc, r_min, r_max):
-    """LaserScan -> [(x, y)] khung LiDAR (bo tia ngoai [r_min, r_max] hoac khong huu han)."""
+    """LaserScan -> [(x, y) | None] khung LiDAR, GIU thu tu tia (None = tia ngoai [r_min, r_max] / khong huu han)."""
     out = []
     for k, r in enumerate(ranges):
         if r is None or not math.isfinite(r) or r < r_min or r > r_max:
+            out.append(None)
             continue
         a = a_min + k * a_inc
         out.append((r * math.cos(a), r * math.sin(a)))
@@ -70,73 +73,135 @@ def diem_quet(ranges, a_min, a_inc, r_min, r_max):
 
 
 def bien_doi(pts, tu_the):
-    """Diem trong khung A, tu_the (x, y, yaw) cua A trong khung B -> diem trong khung B."""
+    """Diem trong khung A (None giu nguyen), tu_the (x, y, yaw) cua A trong khung B -> diem trong khung B."""
     x0, y0, th = tu_the
     c, s = math.cos(th), math.sin(th)
-    return [(x0 + x * c - y * s, y0 + x * s + y * c) for x, y in pts]
+    return [None if p is None else (x0 + p[0] * c - p[1] * s, y0 + p[0] * s + p[1] * c) for p in pts]
 
 
-def vung_cua(px, py, t, ra=False):
-    """Diem (khung xe) -> 'truoc' | 'trai' | 'phai' | None. ra=True: vung RA (rong hon) cua tre hai nguong."""
-    truoc = t['ra_truoc'] if ra else t['truoc']
-    hong = t['ra_hong'] if ra else t['hong']
-    nua = Y_HONG + t['le_rong'] + ((t['ra_hong'] - t['hong']) if ra else 0.0)
-    if X_MUI < px <= X_MUI + truoc and abs(py) <= nua:
-        return 'truoc'
-    if X_DUOI <= px <= X_MUI and Y_HONG < abs(py) <= Y_HONG + hong:
-        return 'trai' if py > 0 else 'phai'
-    return None
+def _r(p):
+    return math.hypot(p[0] - X_LIDAR, p[1])
 
 
-def danh_gia(pts_xe, pts_map, ban, t, ra=False):
-    """-> None | (vung, so diem, (x, y) ban do cua diem vat la gan xe nhat trong vung do). Vung co >= so_diem diem vat la;
-    nhieu vung thi lay vung co diem gan xe nhat."""
-    dem = {}
-    for (px, py), (mx, my) in zip(pts_xe, pts_map):
-        v = vung_cua(px, py, t, ra)
-        if v is None or not ban.la_vat_la(mx, my, t['le_tuong']):
+def cum(pts, t):
+    """[(x, y) | None] khung xe, theo thu tu tia (vong) -> [(chi so dau, chi so cuoi)] (cuoi co the < dau khi vat qua tia 0)."""
+    n = len(pts)
+    noi = [pts[k] is not None and pts[(k + 1) % n] is not None and math.dist(pts[k], pts[(k + 1) % n]) <= t['cum_cach']
+           for k in range(n)]                                 # noi[k]: tia k va k+1 chung cum
+    if n and all(noi):
+        return [(0, n - 1)]
+    dau = [k for k in range(n) if pts[k] is not None and not noi[(k - 1) % n]]
+    out = []
+    for a in dau:
+        b = a
+        while noi[b]:
+            b = (b + 1) % n
+        out.append((a, b))
+    return out
+
+
+def lidar_noi(pts, a, b, t):
+    """-> 'VAT' | 'TUONG' | 'KHONG_CHAC' cho cum tia a..b (vong)."""
+    n = len(pts)
+    dai = math.dist(pts[a], pts[b])
+    if dai >= t['tuong_dai']:
+        return 'TUONG'
+
+    def ho(k, dau):
+        q = pts[k % n]
+        return q is None or _r(q) >= _r(dau) + t['ho']
+    if dai <= t['vat_dai'] and (b - a) % n + 1 < n and ho(a - 1, pts[a]) and ho(b + 1, pts[b]):
+        return 'VAT'
+    return 'KHONG_CHAC'
+
+
+def vung_diem(p, t):
+    """Diem khung xe -> (vung 'truoc'|'hong'|'sau', kc m, trong vang?, trong do?)."""
+    x, y = p
+    e = 1e-9                                             # so m chinh xac (vd 0,445 - 0,145) khong roi ra ngoai vi lam tron
+    ngang = max(0.0, abs(y) - Y_HONG)                    # cheo goc: kc = toi goc than
+    if x > X_MUI:
+        kc = math.hypot(x - X_MUI, ngang)
+        return 'truoc', kc, kc <= t['vang_truoc'] + e and ngang <= t['vang_hong'] + e, kc <= t['truoc_do'] + e and ngang == 0.0
+    if x < X_DUOI:
+        kc = math.hypot(X_DUOI - x, ngang)
+        return 'sau', kc, kc <= t['vang_sau'] + e and ngang <= t['vang_hong'] + e, kc <= t['duoi_do'] + e and ngang == 0.0
+    kc = abs(y) - Y_HONG
+    return 'hong', kc, kc <= t['vang_hong'] + e, kc <= t['hong_do'] + e
+
+
+def danh_gia(pts_xe, pts_map, ban, t):
+    """-> [dict(vung, loai 'VAT'|'TUONG', lidar, bd 'VAT'|'TUONG'|None, lech, n, kc, do, xy)] moi (cum, vung) co diem trong VANG,
+    gan truoc. do = co diem trong DO cua vung do (chi co nghia dung xe khi loai VAT, vung truoc / hong). xy = diem ban do gan nhat."""
+    out = []
+    for a, b in cum(pts_xe, t):
+        ks = [(a + i) % len(pts_xe) for i in range((b - a) % len(pts_xe) + 1)]
+        if len(ks) < t['so_diem']:
             continue
-        d = math.hypot(px, py)
-        n, gan = dem.get(v, (0, None))
-        dem[v] = (n + 1, gan if gan is not None and gan[0] <= d else (d, (mx, my)))
-    du = [(gan[0], v, n, gan[1]) for v, (n, gan) in dem.items() if n >= t['so_diem']]
-    if not du:
-        return None
-    _, v, n, xy = min(du)
-    return v, n, xy
+        theo_vung = {}
+        for k in ks:
+            v, kc, vang, do = vung_diem(pts_xe[k], t)
+            if vang:
+                n, kc0, do0, k0 = theo_vung.get(v, (0, None, False, None))
+                theo_vung[v] = (n + 1, kc if kc0 is None or kc < kc0 else kc0, do0 or do, k if kc0 is None or kc < kc0 else k0)
+        if not theo_vung:
+            continue
+        lidar = lidar_noi(pts_xe, a, b, t)
+        loai = 'TUONG' if lidar == 'TUONG' else 'VAT'           # khong chac => VAT
+        bd = None
+        if ban is not None and pts_map is not None:
+            pm = [pts_map[k] for k in ks if pts_map[k] is not None]
+            if pm:
+                bd = 'TUONG' if 2 * sum(ban.gan_tuong(x, y, t['gan_tuong']) for x, y in pm) >= len(pm) else 'VAT'
+        for v, (n, kc, do, k0) in theo_vung.items():
+            out.append(dict(vung=v, loai=loai, lidar=lidar, bd=bd, lech=bd is not None and bd != loai, n=n, kc=kc, do=do,
+                            xy=None if pts_map is None else pts_map[k0]))
+    return sorted(out, key=lambda d: d['kc'])
 
 
-def hong_gan_nhat(pts_xe, pts_map, ban, t):
-    """Khoang ho (m) tu canh than xe toi vat la O HAI HONG (x trong than, |y| > 0,08), lay diem thu gac_so_diem gan nhat
-    (loc nhieu nhu danh_gia); khong du diem => None. Dung khi BackUp lui thang (ngoai le hong < cach_vat_toi_thieu_m)."""
-    ho = sorted(abs(py) - Y_HONG for (px, py), (mx, my) in zip(pts_xe, pts_map)
-                if X_DUOI <= px <= X_MUI and abs(py) > Y_HONG and ban.la_vat_la(mx, my, t['le_tuong']))
-    return ho[t['so_diem'] - 1] if len(ho) >= t['so_diem'] else None
+def do_vat(ds, vung=('truoc', 'hong')):
+    """VAT dau tien (gan nhat) dang trong DO cua mot vung trong `vung` (luat cung: dung xe); khong co => None."""
+    return next((d for d in ds if d['loai'] == 'VAT' and d['do'] and d['vung'] in vung), None)
 
 
-class Gac:
-    """Trang thai gac (tre hai nguong, K2). cap_nhat(t, pts_xe, pts_map, ban) -> dict(chan, moi, het, vung, n, xy, sach_s)."""
+def vang_vat(ds, vung=('truoc', 'hong')):
+    """VAT gan nhat trong VANG truoc / hong (cong sach / het chan: tuong bo qua; VAT sau duoi khong giu xe tien); khong co => None."""
+    return next((d for d in ds if d['loai'] == 'VAT' and d['vung'] in vung), None)
 
-    def __init__(self, t):
-        self.t, self.chan, self.t_sach, self.cuoi = t, False, None, None
 
-    def cap_nhat(self, now, pts_xe, pts_map, ban):
-        moi = het = False
-        if not self.chan:
-            d = danh_gia(pts_xe, pts_map, ban, self.t)
-            if d is not None:
-                self.chan, moi, self.t_sach, self.cuoi = True, True, None, d
-        else:
-            d = danh_gia(pts_xe, pts_map, ban, self.t, ra=True)
-            if d is not None:
-                self.t_sach, self.cuoi = None, d
+def khoang_sau(pts_xe, t):
+    """Khoang (m) tu duoi toi MOI VAT (ca tuong) sau duoi trong hanh lang than (|y| <= 0,08 + 0,02), diem thu so_diem gan nhat
+    (loc nhieu); khong co => None. Dung rut quang lui (luat do duoi)."""
+    kc = sorted(X_DUOI - x for x, y in (p for p in pts_xe if p is not None) if x < X_DUOI and abs(y) <= Y_HONG + 0.02)
+    return kc[t['so_diem'] - 1] if len(kc) >= t['so_diem'] else None
+
+
+def dong_mem(d):
+    """'MEM: truoc|hong|sau n diem cach x m (tuong|vat)' (+ ' LECH ban do=...')."""
+    return 'MEM: %s %d diem cach %.2f m (%s)%s' % (d['vung'], d['n'], d['kc'], d['loai'].lower(),
+                                                   ' LECH ban do=%s' % d['bd'].lower() if d['lech'] else '')
+
+
+class Mem:
+    """Nho vung dang co gi de chi in MEM khi doi: vung moi, doi loai / LECH, kc doi >= 0,03 m; het moi thu => 'MEM: sach' 1 lan."""
+
+    def __init__(self):
+        self.cu = {}
+
+    def cap_nhat(self, ds):
+        moi, out = {}, []
+        for d in ds:
+            moi.setdefault(d['vung'], d)                     # ds sap gan truoc: lay gan nhat moi vung
+        for v, d in sorted(moi.items()):
+            c = self.cu.get(v)
+            if c is None or c['loai'] != d['loai'] or c['lech'] != d['lech'] or abs(c['kc'] - d['kc']) >= 0.03 - 1e-9:
+                out.append(dong_mem(d))
             else:
-                self.t_sach = now if self.t_sach is None else self.t_sach
-                if now - self.t_sach >= self.t['sach_s']:
-                    self.chan, het = False, True
-        v, n, xy = self.cuoi if self.cuoi else (None, 0, None)
-        return dict(chan=self.chan, moi=moi, het=het, vung=v, n=n, xy=xy,
-                    sach_s=0.0 if self.t_sach is None or not self.chan else now - self.t_sach)
+                moi[v] = c                                   # giu moc da in (troi cham khong in lai)
+        if self.cu and not moi:
+            out.append('MEM: sach')
+        self.cu = moi
+        return out
 
 
 def kiem_map(giay):
@@ -156,7 +221,7 @@ def kiem_map(giay):
     n.destroy_node()
     rclpy.shutdown()
     if not nhan:
-        print('KHONG DAT  gac: khong nhan /map_tinh trong %d s (gac se mu: map_server / mat_lai?)' % giay)
+        print('KHONG DAT  gac: khong nhan /map_tinh trong %d s (ban do khong nhac duoc tuong: map_server / mat_lai?)' % giay)
         return 1
     m = nhan[-1]
     tuong = sum(1 for v in m.data if v >= O_TUONG_MIN)

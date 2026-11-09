@@ -47,7 +47,7 @@ body.bao{background:var(--bgdg)}
 <div id="sub" style="font-size:13px;color:var(--tx2);min-height:36px;white-space:pre-wrap">-</div>
 <canvas id="cv" width="312" height="192" style="width:100%;border-radius:8px;margin-top:6px;cursor:pointer;touch-action:manipulation"></canvas>
 <div id="bdloi" class="loi"></div>
-<div class="lg"><span><i style="background:#5F5E5A"></i>벽</span><span><i style="background:#F09595"></i>차량 중심 금지</span><span><i style="background:#FAC775"></i>주의 구역</span><span><i style="background:#C0DD97"></i>목적지 선택 가능</span></div>
+<div class="lg"><span><i style="background:#5F5E5A"></i>벽</span><span><i style="background:#C0DD97"></i>바닥</span><span><i style="background:#F09595"></i>차 주변 정지 구역</span><span><i style="background:#FAC775"></i>차 주변 주의 구역</span></div>
 <div id="vitri" style="font-size:11px;color:var(--tx3);margin-top:2px"></div>
 <div id="help" style="display:none;margin-top:8px;padding:8px;border:1px solid var(--bddg);border-radius:var(--r);background:var(--bgdg)">
 <div style="font-size:13px;font-weight:500;color:var(--txdg)">도움 요청 · 차량 주변 라이다 평면도 (위에서 본 모습)</div>
@@ -65,6 +65,7 @@ body.bao{background:var(--bgdg)}
 <div class="row"><span>운전 담당</span><span id="p4" style="text-align:right">없음</span></div>
 <div class="row"><span>통로 시도</span><span id="pl" style="text-align:right">-</span></div>
 <div class="row"><span>앞코 → 장애물</span><span id="pa" style="text-align:right">-</span></div>
+<div class="row"><span>차 주변 (LiDAR)</span><span id="pmem" style="text-align:right">-</span></div>
 <div class="row"><span>제자리 회전</span><span id="p9" style="text-align:right">-</span></div>
 <div class="row"><span>두뇌 기억</span><span id="pm" style="text-align:right">-</span></div>
 <div class="row"><span>실제 코드</span><span id="p5" style="text-align:right">-</span></div>
@@ -93,7 +94,7 @@ function phu(m){
   case 'TT_SAN_SANG':return '지도에서 B 또는 A를 누르세요'+(S.han_het?' (시간 초과)':S.han_s!==null&&S.han_s!==undefined?' (남은 시간 '+S.han_s+'초)':'')
       +(c.ket_qua&&c.ket_qua!=='NGAT'&&c.ket_qua!=='DEN_NOI'?'\n지난 주행: '+han(c.ket_qua)+' · '+(han(c.dong)||''):'');
   case 'TT_XEM_TUYEN':return CHON?(CHON.dich==='B'?'B로 출발':'A로 복귀')+' · 경로 '+CHON.tuyen+' · 길이 '+CHON.dai_m.toFixed(2)+' m · 빨간 구역까지 최소 '+Math.round(CHON.kc_do_m*100)+' cm'
-      +(CHON.dau_trong_do?'\n출발점이 빨간 구역(차량 중심 금지) 안이에요':'')+(CHON.canh_bao.length?'\n회전 공간 부족 꼭짓점 '+CHON.canh_bao.length+'곳':'')
+      +(CHON.canh_bao.length?'\n회전 공간 부족 꼭짓점 '+CHON.canh_bao.length+'곳':'')
       +'\n정적 지도 기준 미리보기 · 출발하면 차량이 현재 costmap으로 다시 계산해요':'';
   case 'TT_DANG_DI':return chuan_bi()?'출발 전: 위치 확인 후 경로를 계산하고 있어요':'경로를 따라가고 있어요';
   case 'TT_DANG_CHO':return S.cho_vat?'앞이 막혔어요. 기다리는 중 '+S.cho_vat[0]+'/'+S.cho_vat[1]+'초':'앞이 막혔어요. 기다리는 중 ('+han(S.ly_do)+')';
@@ -204,13 +205,21 @@ function ve(){
   if(co_xe()&&S.duong&&S.duong.length>1){c.strokeStyle='#185FA5';c.lineWidth=3;c.lineJoin='round';c.beginPath();
     S.duong.forEach(function(p,k){var q=tp(p[0],p[1]);k?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});c.stroke();}
   if(co_xe()){var x=S.pose.x,y=S.pose.y,th=S.pose.goc_do*Math.PI/180,cs=Math.cos(th),sn=Math.sin(th);
-    c.fillStyle=vung_tai(x,y)===1?'#A32D2D':'#534AB7';c.beginPath();
+    ve_vung_xe(x,y,cs,sn);
+    c.fillStyle='#534AB7';c.beginPath();
     BD.footprint.forEach(function(f,k){var q=tp(x+f[0]*cs-f[1]*sn,y+f[0]*sn+f[1]*cs);k?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});c.closePath();c.fill();
     var m=tp(x,y),mx=Math.max.apply(null,BD.footprint.map(function(f){return f[0];})),n=tp(x+mx*cs,y+mx*sn);
     c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(m[0],m[1]);c.lineTo(n[0],n[1]);c.stroke();}
   set('vitri',S.pose?'위치 ('+(S.pose.nguon==='gui_duong'?'주행 기록 ':'두뇌 기록 ')+S.pose.gio.slice(11)+'): x '+S.pose.x.toFixed(2)+' m, y '+S.pose.y.toFixed(2)+' m, '+Math.round(S.pose.goc_do)+'°'
-      +(vung_tai(S.pose.x,S.pose.y)===1?' · 차량 중심이 금지 구역 안':''):'위치 없음 (두뇌 기록 없음)');
+      :'위치 없음 (두뇌 기록 없음)');
 }
+// 09/11 20:33 vung quanh xe: VANG roi DO theo tam xe (khung xe: than x -0,105..0,145, y +-0,08), so tu /v10/ban_do vung_xe (hanh_vi_xe.yaml)
+function ve_vung_xe(x,y,cs,sn){var v=BD.vung_xe;if(!v||!v.do)return;
+  var X1=0.145,X0=-0.105,Y=0.08,o=v.vang,d=v.do;
+  function hcn(a0,a1,b0,b1,mau){c.fillStyle=mau;c.beginPath();[[a0,b0],[a1,b0],[a1,b1],[a0,b1]].forEach(function(f,k){
+    var q=tp(x+f[0]*cs-f[1]*sn,y+f[0]*sn+f[1]*cs);k?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});c.closePath();c.fill();}
+  hcn(X0-o.sau,X1+o.truoc,-Y-o.hong,Y+o.hong,'rgba(250,199,117,0.75)');
+  hcn(X1,X1+d.truoc,-Y,Y,'#F09595');hcn(X0-d.sau,X0,-Y,Y,'#F09595');hcn(X0,X1,-Y-d.hong,Y+d.hong,'#F09595');}
 // ---- M3: 경로 확인. Chi B chuan va A (CHON_B_TU_DO tat). R_CHAM: ban kinh cham quanh B / A tren man hinh (giao dien, khong phai so cua xe) ----
 var R_CHAM=0.25;
 function ve_them(){
@@ -237,11 +246,15 @@ function bang(){
   set('p0',chuan_bi()?'경로 계산 중':b.buoc?han(b.buoc):ten(m));
   set('p4',m==='TT_LAI_TAY'?'사람 (teleop_web), 우선순위 '+(u.teleop===undefined||u.teleop===null?'?':u.teleop)
       :b.ai_lai?b.ai_lai+(b.ai_uu_tien!==null&&b.ai_uu_tien!==undefined?', 우선순위 '+b.ai_uu_tien:''):m==='TT_CAN_GIUP'?'없음 (차량 정지)':'없음');
-  set('pl',b.lan?'경로 '+b.lan[0]+' · 시도 '+b.lan[1]+'/'+b.lan[2]:'-');
+  set('pl',b.lan?(b.lan[0]?'경로 '+b.lan[0]:'자동 경로')+' · 시도 '+b.lan[1]+'/'+b.lan[2]:'-');     // 20:33: tuyen 0 = Nav2 tu vach
   if(b.vung){var ks=Object.keys(b.vung).sort(function(a,c){return b.vung[a]-b.vung[c];});
     set('pa',(b.vung.TRUOC!==undefined?'앞 '+cm(b.vung.TRUOC)+(b.vung.TRUOC<0.06?' (6 cm 미만!)':''):'앞: 목록 밖')+' · 가장 가까움 '+(VUNG_HAN[ks[0]]||ks[0])+' '+cm(b.vung[ks[0]])
       +(b.vung_tuoi_s>3?' ('+Math.round(b.vung_tuoi_s)+'초 전)':''));}
   else set('pa','-');
+  // 09/11 20:33: MEM cua gui_duong (LiDAR quyet 벽 / 물체; LECH = ban do noi khac)
+  var VT={truoc:'앞',hong:'옆',sau:'뒤'},mm=b.mem;
+  set('pmem',!mm?'-':Object.keys(mm).length?Object.keys(mm).map(function(k){var e=mm[k];return VT[k]+' '+(e.loai==='vat'?'물체':'벽')+' '+cm(e.kc)
+      +(e.lech?' (지도와 다름)':'');}).join(' · '):'주변 깨끗');
   set('p9',b.xoay?(b.xoay.duoc?'가능':'불가')+' (중심~벽 '+cm(b.xoay.kc_m)+', 필요 > '+(b.xoay.r_xoay_m*100).toFixed(1)+' cm, 지도 기준)':'-');
   set('pm',b.nho?b.nho+'곳 막힘 (지도의 빨간 X)':'-');
   var cd=b.code||{},ds=Object.keys(cd).map(function(k){var q=Object.keys(cd[k]).map(function(x){return x+'='+cd[k][x];}).join(', ');return k+(q?' ('+q+')':'');});
@@ -251,7 +264,6 @@ function bang(){
   // 09/11 buoc 3 #4: luon in tuoi dong 두뇌; cu hon 5 s thi lam mo
   var cu=n.tuoi_s!==null&&n.tuoi_s!==undefined;
   if(cu)nt+=' · '+n.tuoi_s+'초 전'+(n.tuoi_s>15&&S.link==='on'?' (sep.py 확인)':'');
-  if(b.xoay&&b.xoay.trong_do)nt+=' · 차량 중심이 금지 구역 안 (벽에 가까움)';
   set('brain',nt);$('brain').style.opacity=cu&&n.tuoi_s>5?'0.45':'1';
 }
 function ve_nho(){(S.nho||[]).forEach(function(n){var q=tp(n[0],n[1]);c.strokeStyle='#A32D2D';c.lineWidth=2;c.beginPath();

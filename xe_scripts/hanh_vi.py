@@ -13,8 +13,10 @@ import sys
 TEP = os.path.expanduser('~/hanh_vi_xe.yaml')
 
 MAC_DINH_AN_TOAN = {
-    'cach_vat_toi_thieu_m': 0.06,
+    'cach_vat_toi_thieu_m': 0.06,    # 09/11 20:33 vung quanh xe: do HONG, chi VAT (gui_duong dung)
     'sep_phat_toc_do': False,
+    'truoc_vat_do_m': 0.10,          # MOI 09/11 20:33 vung quanh xe: do TRUOC MUI, chi VAT (gui_duong huy dich, dung im)
+    'duoi_do_m': 0.06,               # MOI 09/11 20:33 vung quanh xe: do DUOI, moi vat (BackUp khong lui them; gui_duong rut quang lui)
 }
 MAC_DINH_THAN_THE = {
     'v_min_mps': 0.092,
@@ -104,22 +106,28 @@ MAC_DINH = {
     'sat_vat_m': 0.1,     # P_MAC_DINH['sat_vat'] (tham so ROS)
     'sat_vat_tat_m': 0.12,    # P_MAC_DINH['sat_vat_tat'] (tham so ROS)
     'kinh_nghiem_quan_sat_s': 15.0,  # MOI (nao xe viec 4, khong co o 2607fee): ket qua su co = co tien trong bay nhieu giay sau do
-    'gac_vat_la': True,    # MOI (dung im ban 2, A1): bat gac vat la (false = hanh vi 48995c2)
-    'gac_truoc_m': 0.3,     # MOI (dung im ban 2, A1): vung gac truoc: tu mui toi (vao)
-    'gac_hong_m': 0.1,     # MOI (dung im ban 2, A1): vung gac hong: ra ngoai than (vao)
-    'gac_ra_truoc_m': 0.4,     # MOI (dung im ban 2, A1): vung RA truoc (tre hai nguong K2)
-    'gac_ra_hong_m': 0.15,    # MOI (dung im ban 2, A1): vung RA hong (tre hai nguong K2)
-    'gac_le_tuong_m': 0.1,     # MOI (dung im ban 2, A1): diem cach o tuong /map_tinh hon so nay moi la vat la
-    'gac_so_diem': 3,       # MOI (dung im ban 2, A1): so diem vat la toi thieu trong mot vung
-    'gac_sach_s': 2.0,     # MOI (dung im ban 2, A1): vung RA sach lien tuc bay lau => het chan
-    'gac_scan_cu_s': 0.5,     # MOI (dung im ban 2, A1): /scan cu hon so nay => gac mu (K13)
-    'so_vong_khe': 3,       # MOI (09/11 18:44 ②a): luan phien khe bay nhieu vong (truoc: 1)
+    'so_luot_chan': 3,       # MOI 09/11 20:33 (thay so_vong_khe): so luot bi chan (luot 1 tuyen goi y, luot 2.. tu vach) truoc CHO_NGUOI
     'cho_lai_s': 60.0,      # MOI (09/11 18:47 (i)): CHO_NGUOI roi tu thu lai 1 vong khe sau bay nhieu giay (<= 0: HET_DUONG)
     'gia_x_bat': True,     # MOI (gia X 09/11): xep tuyen theo gia X + ghi DA_GIAI (false = y het 8601d4c)
     'gia_x_giay_mac_dinh': 10.0,    # MOI (gia X): giay cua X khi khong co cho=N
     'gia_x_r_m': 0.2,     # MOI (gia X): ban kinh gop X / X gan tuyen / vet qua X
     'gia_x_v_ms': 0.11,    # MOI (gia X): gia tuyen = dai + v x tong giay X
-    'footprint_padding_m': 0.03,     # MOI (dung im ban 2, A3): footprint_padding ca hai costmap (nav2_params_mat*.yaml); 09/11 17:07 0.06 -> 0.03
+    'footprint_padding_m': 0.0,      # MOI (dung im ban 2, A3): footprint_padding ca hai costmap (nav2_params_mat*.yaml); 17:07 0.06 -> 0.03; 20:33 -> 0.0
+    # MOI 09/11 20:33 vung quanh xe (Thien chot 19:57-20:33): vang = huong dan (log MEM, chi phi costmap, cong sach), khong dung xe
+    'vang_truoc_m': 0.30,    # vang truoc mui
+    'vang_hong_m': 0.12,     # vang hong (= inflation_radius 0,20 - nua than 0,08)
+    'vang_sau_m': 0.10,      # vang sau duoi
+    'vat_dai_max_m': 0.25,   # cum LiDAR dai <= so nay va ho hai ben => VAT
+    'tuong_dai_min_m': 0.40,     # cum LiDAR dai >= so nay => TUONG; giua => khong chac => VAT
+    'cum_cach_m': 0.05,      # hai diem LiDAR ke nhau xa hon => tach cum
+    'ho_hai_ben_m': 0.10,    # tia ke dau cum xa hon dau cum bay nhieu (hoac khong co) => ho
+    'gan_tuong_ban_do_m': 0.18,  # ban do: cum cach o tuong /map_tinh <= so nay => nhac TUONG (chi ghi LECH)
+    'so_diem_toi_thieu': 3,      # cum it diem hon => nhieu, bo
+    'sach_s': 2.0,           # khong VAT trong vang lien tuc bay lau => gui (lai) dich (truoc: gac_sach_s)
+    'lidar_cu_s': 0.5,       # /scan cu hon => mu (truoc: gac_scan_cu_s; scan_cu_s da la cua sep.py)
+    'inflation_radius_m': 0.20,  # nav2_params_mat*.yaml inflation_layer (2 costmap; kiem_hanh_vi so)
+    'cost_scaling_factor': 10.0,     # nav2_params_mat*.yaml inflation_layer (2 costmap) + RPP inflation_cost_scaling_factor (kiem_hanh_vi so)
+    'backup_nhin_truoc_s': 0.7,  # nav2_params_mat*.yaml behavior_server simulate_ahead_time (kiem_hanh_vi so)
 }
 
 COT_KINH_NGHIEM = 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do'     # ~/kinh_nghiem.csv tu 09/11 (nao xe viec 4)

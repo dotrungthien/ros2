@@ -387,15 +387,12 @@ class M2BanDo(Nen):
         self.assertEqual((j['inflation_radius'], j['cost_scaling_factor'], j['r_noi_tiep']), (0.2, 3.0, 0.09))
         self.assertTrue(j['nguon']['ban_do'].endswith('du_lieu_0111/map_xuong_v3.yaml'))   # map_xuong_v3_pg -> map_xuong_v3.yaml
         self.assertEqual((j['A'], j['B']), ([0.0, 0.0], [1.6, 0.82]))
-        # 09/11 19:05: vung 1 (차량 중심 금지) = chi o >= 98 (Ban.vat); dai 72-97 = vung 2 (주의 구역); o vat ban do = vung 0
+        # 09/11 20:33 vung quanh xe: ban do chi tuong / chua biet (0) va san (3); khong con 1 (차량 중심 금지) / 2 (주의 구역) theo ban do
         TT = V.nap(C, 'tinh_tuyen')
         ban = V._CACHE_BAN['ban']
-        for k in range(52 * 32):
-            i, jj = k % 52, k // 52
-            z = j['vung'][jj * 52 + i]
-            if z in '12' or z == '3':
-                self.assertEqual(z == '1', ban.vat((i, jj)))
-                self.assertTrue(z == '2' or not ban.ton((i, jj)))
+        self.assertEqual(set(j['vung']), {'0', '3'})
+        self.assertEqual(j['vung_xe'], {'do': {'truoc': 0.10, 'hong': 0.06, 'sau': 0.06, 'mui': 0.07},
+                                        'vang': {'truoc': 0.30, 'hong': 0.12, 'sau': 0.10}})
         w_, h_, _, _, _, occ, _ = V.doc_ban_do(j['nguon']['ban_do'])
         self.assertEqual(j['vung'].count('0'), sum(1 for v in occ if v != 0))     # vat + chua biet
         za = j['vung'][ban.o(*TT.A)[1] * 52 + ban.o(*TT.A)[0]]
@@ -419,8 +416,7 @@ class M2BanDo(Nen):
             os.environ['NAV_PARAMS'] = cu
         self.assertEqual(j2['inflation_radius'], 0.3)
         self.assertAlmostEqual(j2['r_noi_tiep'], 0.11)
-        self.assertGreater(j2['vung'].count('1'), j1['vung'].count('1'))
-        self.assertEqual(j2['vung'].count('0'), j1['vung'].count('0'))
+        self.assertEqual(j2['vung'], j1['vung'])          # 09/11 20:33: vung chi theo ban do (tuong / san), tham so Nav2 khong doi vung
 
     def test_thieu_tep_bao_loi_khong_so_du_phong(self):
         cu = os.environ.pop('NAV_PARAMS')
@@ -1158,7 +1154,9 @@ class MatLai(Nen):
         ym = lambda t: yaml.safe_load(doc(t))
         r, m, c = ym('nav2_params_mat_rpp.yaml'), ym('nav2_params_mat.yaml'), ym('nav2_params_cho.yaml')
         fp = lambda d: d['controller_server']['ros__parameters']['FollowPath']
-        self.assertEqual(fp(r), fp(c))
+        bo_ics = lambda d: {k: v for k, v in d.items() if k != 'inflation_cost_scaling_factor'}
+        self.assertEqual(bo_ics(fp(r)), fp(c))              # 09/11 20:33: RPP kieu mat them inflation_cost_scaling_factor 10 (= inflation)
+        self.assertEqual(fp(r)['inflation_cost_scaling_factor'], 10.0)
         bo = lambda d: dict(d, controller_server={k: v for k, v in d['controller_server']['ros__parameters'].items() if k != 'FollowPath'})
         self.assertEqual(bo(r), bo(m))
         self.assertTrue('\nnav2_params_mat_rpp.yaml|~/nav2_params_mat_rpp.yaml\n' in doc('so_voi_pi.sh'), 'so_voi_pi.sh thieu mat_rpp')
@@ -1271,6 +1269,35 @@ class MatLai(Nen):
             p.wait()
             C.dung_chuyen()
             cho(lambda: not C.trang_thai_nut()['chuyen']['chay'])
+
+class VungQuanhXe(unittest.TestCase):
+    """09/11 20:33 vung quanh xe: MEM / LECH cua gui_duong len trang (앞/옆/뒤 물체), vung do / vang ve quanh xe, bo 금지 theo ban do."""
+
+    def test_mem_vung(self):
+        d = ['-- tuyen 1, lan 1/3: x', 'MEM: truoc 33 diem cach 0.12 m (vat)', 'MEM: hong 120 diem cach 0.05 m (tuong) LECH ban do=vat',
+             'CHO_VAT: 5/30 s', 'MEM: truoc 30 diem cach 0.09 m (vat)']
+        self.assertEqual(V.mem_vung(d), {'truoc': {'kc': 0.09, 'loai': 'vat', 'lech': False, 'bd': None},
+                                         'hong': {'kc': 0.05, 'loai': 'tuong', 'lech': True, 'bd': 'vat'}})
+        self.assertEqual(V.mem_vung(d + ['MEM: sach']), {})
+        self.assertEqual(V.mem_vung(d + ['-- tuyen 0, lan 2/3: y']), V.mem_vung(d))     # luot moi: gui_duong giu bo nho MEM ca chuyen
+        self.assertIsNone(V.mem_vung(['-- tuyen 1, lan 1/3: x']))
+        self.assertEqual(V.dong_chuyen_co_nghia(d), 'CHO_VAT: 5/30 s')                    # MEM khong la buoc
+
+    def test_html_ve_vung_quanh_xe_khong_con_cam_theo_ban_do(self):
+        h = open(os.path.join(HERE, 'trang_v10.html'), encoding='utf-8').read()
+        self.assertNotIn('금지', h)
+        self.assertIn('function ve_vung_xe(', h)
+        self.assertIn('ve_vung_xe(x,y,cs,sn);', h)
+        self.assertIn("id=\"pmem\"", h)
+        self.assertIn('지도와 다름', h)
+        # tuyen 0 (Nav2 tu vach, cot tuyen CSV / '-- tuyen 0, lan i/N') => '자동 경로', khong phai '경로 0'
+        self.assertIn("set('pl',b.lan?(b.lan[0]?'경로 '+b.lan[0]:'자동 경로')+' · 시도 '+b.lan[1]+'/'+b.lan[2]:'-');", h)
+        self.assertEqual(V.lan_thu(['-- tuyen 0, lan 2/3: navigate_to_pose tu (0.00; 0.00) toi (1.60; 0.82) (Nav2 tu vach)']), (0, 2, 3))
+        c = open(os.path.join(HERE, 'cau_noi_xe.py'), encoding='utf-8').read() + open(os.path.join(HERE, 'chon_b_v4.html'), encoding='utf-8').read()
+        self.assertNotRegex(c, r"'경로 '\s*\+")            # cau_noi / trang /nut khong ghep so tuyen ('경로 없음' = HET_DUONG thi duoc)
+        for k in ('물체', '벽', "VT={truoc:'앞',hong:'옆',sau:'뒤'}"):
+            self.assertIn(k, h)
+
 
 if __name__ == '__main__':
     unittest.main()

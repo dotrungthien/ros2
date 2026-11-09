@@ -94,13 +94,15 @@ CU_2607FEE = {
 }
 CU_THAN_THE = {'v_min_mps': 0.092, 'lidar_range_min_m': 0.10, 'ban_kinh_xoay_m': 0.186, 'o_luoi_m': 0.05, 'rong_xe_m': 0.16, 'dai_xe_m': 0.25}
 MOI_NAO_XE = {'kinh_nghiem_quan_sat_s': 15.0,           # so MOI cua nao xe (khong co o 2607fee)
-              'gac_vat_la': True, 'gac_truoc_m': 0.30, 'gac_hong_m': 0.10, 'gac_ra_truoc_m': 0.40, 'gac_ra_hong_m': 0.15,
-              'gac_le_tuong_m': 0.10, 'gac_so_diem': 3, 'gac_sach_s': 2.0, 'gac_scan_cu_s': 0.5,   # dung im ban 2 (A1)
-              'footprint_padding_m': 0.03,                                                        # A3
-              'so_vong_khe': 3,                                                                    # 09/11 18:44 ②a
+              'footprint_padding_m': 0.0,                                                         # A3; 20:33 0.03 -> 0.0
+              'so_luot_chan': 3,                                                                   # 09/11 20:33 (thay so_vong_khe 18:44 ②a)
+              # 09/11 20:33 vung quanh xe (thay 9 khoa gac_* cua dung im ban 2)
+              'vang_truoc_m': 0.30, 'vang_hong_m': 0.12, 'vang_sau_m': 0.10, 'vat_dai_max_m': 0.25, 'tuong_dai_min_m': 0.40,
+              'cum_cach_m': 0.05, 'ho_hai_ben_m': 0.10, 'gan_tuong_ban_do_m': 0.18, 'so_diem_toi_thieu': 3, 'sach_s': 2.0,
+              'lidar_cu_s': 0.5, 'inflation_radius_m': 0.20, 'cost_scaling_factor': 10.0, 'backup_nhin_truoc_s': 0.7,
               'cho_lai_s': 60.0,                                                                   # 09/11 18:47 (i)
               'gia_x_bat': True, 'gia_x_giay_mac_dinh': 10.0, 'gia_x_r_m': 0.2, 'gia_x_v_ms': 0.11}           # gia X 09/11
-CU_AN_TOAN = {'cach_vat_toi_thieu_m': 0.06, 'sep_phat_toc_do': False}
+CU_AN_TOAN = {'cach_vat_toi_thieu_m': 0.06, 'sep_phat_toc_do': False, 'truoc_vat_do_m': 0.10, 'duoi_do_m': 0.06}   # 20:33: + 2 luat do
 
 
 def _tam(noi_dung):
@@ -134,8 +136,7 @@ def test_03_cac_tep_lay_so_tu_hanh_vi_bang_so_cu():
                cho_sep='cho_sep_s', sep_tuoi='sep_lenh_tuoi_max_s', toi_sai_so='toi_sai_so_m', tf_tuoi='tf_tuoi_max_s',
                cho_chon='cho_chon_tuyen_s', nhip_cho='nhip_in_cho_s', lui_m='lui_ra_khe_m', lui_v='toc_do_lui_mps', luot='luot_lan_gui',
                cho_hong='cho_hong_s', to='qua_gio_lan_gui_s', lop2_cho='lop2_cho_s', lop2_tra='lop2_tra_s')
-    assert c.pop('gac') is True                                                        # dung im ban 2: so MOI
-    assert c.pop('so_vong') == 3 and c.pop('cho_lai') == 60.0                         # 09/11 18:44 ②a, 18:47 (i): so MOI
+    assert c.pop('so_luot') == 3 and c.pop('cho_lai') == 60.0                         # 09/11 20:33 (thay gac, so_vong), 18:47 (i): so MOI
     assert set(c) == set(cap) and all(c[k] == CU_2607FEE[v] and type(c[k]) is type(CU_2607FEE[v]) for k, v in cap.items()), c
     assert G.LUI_BT_M == 0.25 and G.cho_tf_costmap.__defaults__[0] == 15.0 and G.doc_sep_lenh.__defaults__[0] == 3.0
     assert (LH.R_THA, LH.R_CUM, LH.N_CUM, LH.R_VUNG, LH.GIA_CAM, LH.GIA_TON) == (0.35, 0.20, 3, 0.15, 99, 0)
@@ -204,7 +205,7 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     import kiem_hanh_vi as K
     tq, at, tt = dict(HV.MAC_DINH), dict(HV.MAC_DINH_AN_TOAN), dict(HV.MAC_DINH_THAN_THE)
     kq = K.kiem(DAY, tq, at, tt)
-    assert all(d for _, _, d in kq) and len(kq) == 25 and {m for m, _, _ in kq} == {'a', 'b', 'c'}, kq
+    assert all(d for _, _, d in kq) and len(kq) == 36 and {m for m, _, _ in kq} == {'a', 'b', 'c'}, kq
     # (a) so trong tep chay that lech yaml: progress 10 -> 12 (tep rpp), backup_dist 0.25 -> 0.30
     d = _thu_muc_chep()
     _sua(d, 'nav2_params_mat_rpp.yaml', 'movement_time_allowance: 10.0', 'movement_time_allowance: 12.0')
@@ -215,7 +216,8 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     d = _thu_muc_chep()
     _sua(d, 'bt_mat.xml', 'backup_speed="0.10"', 'backup_speed="0.08"')
     lech = [(m, nd) for m, nd, ok in K.kiem(d, dict(tq, toc_do_lui_mps=0.08), at, tt) if not ok]
-    assert lech == [('b', 'toc_do_lui_mps 0.08 >= v_min_mps 0.092')], lech
+    assert lech == [('b', 'toc_do_lui_mps 0.08 >= v_min_mps 0.092'),
+                    ('c', 'BackUp nhin 0.05 m >= duoi_do_m 0.06 (dung khi vat cach duoi 0.04-0.10 m)')], lech   # 20:33: lui cham => nhin ngan
     # (c) trai an toan: vung phanh 0.05 < 6 cm; sep.py co publisher Twist
     d = _thu_muc_chep()
     _sua(d, 'nav2_params_mat.yaml', 'points: [0.215, 0.08, 0.215, -0.08,', 'points: [0.195, 0.08, 0.195, -0.08,')
@@ -228,12 +230,19 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     d2 = _thu_muc_chep()
     p2 = os.path.join(d2, 'nav2_params_mat.yaml')
     s2 = open(p2).read()
-    open(p2, 'w').write(s2.replace('footprint_padding: 0.03', 'footprint_padding: 0.02', 1))
+    open(p2, 'w').write(s2.replace('footprint_padding: 0.0 ', 'footprint_padding: 0.02', 1))
     lech = [nd for m, nd, ok in K.kiem(d2, tq, at, tt) if not ok]
-    assert lech == ['nav2_params_mat.yaml footprint_padding_m = nan, yaml 0.03'], lech
-    # 09/11 A4: vung gac nho hon luat => KHONG DAT
-    lech = [(m, nd) for m, nd, ok in K.kiem(DAY, dict(tq, gac_hong_m=0.05, gac_truoc_m=0.05), at, tt) if not ok]
-    assert lech == [('b', 'gac_hong_m 0.05 >= cach_vat_toi_thieu_m 0.06'), ('b', 'gac_truoc_m 0.05 >= vung_phanh_m 0.07')], lech
+    assert lech == ['nav2_params_mat.yaml footprint_padding_m = nan, yaml 0'], lech
+    # 09/11 20:33: vang nho hon do; RPP inflation_cost_scaling_factor lech; simulate_ahead_time ngan => KHONG DAT
+    assert [nd for m, nd, ok in K.kiem(DAY, dict(tq, vang_hong_m=0.05, vang_sau_m=0.05), at, tt) if not ok] == [
+        'vang_hong_m 0.05 >= cach_vat_toi_thieu_m 0.06', 'vang_sau_m 0.05 >= duoi_do_m 0.06']
+    d3 = _thu_muc_chep()
+    _sua(d3, 'nav2_params_mat_rpp.yaml', 'inflation_cost_scaling_factor: 10.0', 'inflation_cost_scaling_factor: 3.0')
+    _sua(d3, 'nav2_params_mat.yaml', 'simulate_ahead_time: 0.7', 'simulate_ahead_time: 0.5')
+    lech = [nd for m, nd, ok in K.kiem(d3, tq, at, tt) if not ok]
+    assert lech == ['nav2_params_mat.yaml backup_nhin_truoc_s = 0.5, yaml 0.7', 'nav2_params_mat_rpp.yaml cost_scaling_factor = nan, yaml 10'], lech
+    lech = [nd for m, nd, ok in K.kiem(DAY, dict(tq, backup_nhin_truoc_s=0.5), at, tt) if not ok]
+    assert 'BackUp nhin 0.04 m >= duoi_do_m 0.06 (dung khi vat cach duoi 0.03-0.09 m)' in lech, lech
     # thieu tep: KHONG DAT, khong vo
     os.remove(os.path.join(d, 'bt_mat.xml'))
     assert any(not ok and nd.startswith('bt_mat.xml: khong doc duoc (FileNotFoundError') for _, nd, ok in K.kiem(d, tq, at, tt))
@@ -241,6 +250,6 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     with contextlib.redirect_stdout(e):
         assert K.main(['--thu-muc', DAY, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 0
         assert K.main(['--thu-muc', d, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 1
-    assert e.getvalue().splitlines()[25] == 'KIEM HANH VI: DAT (25 dong, 0 lech)'
+    assert e.getvalue().splitlines()[36] == 'KIEM HANH VI: DAT (36 dong, 0 lech)'
     kx = open(os.path.join(DAY, 'kiem_xe.sh')).read()
     assert 'python3 ~/kiem_hanh_vi.py || KQ=1' in kx and kx.index('# 8e.') > kx.index('# 8d.')

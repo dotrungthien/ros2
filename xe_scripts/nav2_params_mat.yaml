@@ -173,7 +173,7 @@ local_costmap:
       # 직사각형 풋프린트 (베이스를 달면 다시 측정할 것)
       # 2026-10-06 실측 (LiDAR 중심 기준 앞 12cm, 뒤 13cm, 좌우 8cm; LiDAR는 base_link 기준 앞쪽 +2.5cm), 미검증.
       footprint: "[[0.145, 0.08], [0.145, -0.08], [-0.105, -0.08], [-0.105, 0.08]]"
-      footprint_padding: 0.03              # 09/11 17:07 0.06 -> 0.03 (ket cua K2: BackUp Collision Ahead, khe that 11/25 cm); A3 cu 0.06; mac dinh Nav2 0.01; so = hanh_vi_xe.yaml footprint_padding_m
+      footprint_padding: 0.0               # 09/11 20:33 0.03 -> 0.0 (vung quanh xe: tuong cach hong 0,05 khong bao va; r_inscribed 0,08 = nua than); 17:07 0.06 -> 0.03; so = hanh_vi_xe.yaml footprint_padding_m
       # 가볍게 하려고 voxel_layer 는 쓰지 않는다 (2D 라이다만 사용)
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
@@ -190,8 +190,8 @@ local_costmap:
           raytrace_max_range: 3.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.20     # 02/11: 0.25 -> 0.20 (khop hieu chuan 01/11 va gia_lap/bat_gia.sh INFLATION); duong lui: 0.25
+        cost_scaling_factor: 10.0  # 09/11 20:33 3.0 -> 10.0 (vang: ho hong 0,05 => 152, 0,12 => 76, luon < 253); so = hanh_vi_xe.yaml cost_scaling_factor
+        inflation_radius: 0.20     # 02/11: 0.25 -> 0.20; 09/11 20:33 giu = nua than 0,08 + vang hong 0,12; so = hanh_vi_xe.yaml inflation_radius_m
       always_send_full_costmap: true
 
 global_costmap:
@@ -212,7 +212,7 @@ global_costmap:
       # 로컬 코스트맵과 같은 풋프린트 (베이스를 달면 다시 측정할 것)
       # 2026-10-06 실측 (LiDAR 중심 기준 앞 12cm, 뒤 13cm, 좌우 8cm; LiDAR는 base_link 기준 앞쪽 +2.5cm), 미검증.
       footprint: "[[0.145, 0.08], [0.145, -0.08], [-0.105, -0.08], [-0.105, 0.08]]"
-      footprint_padding: 0.03              # 09/11 17:07 0.06 -> 0.03 (ket cua K2: BackUp Collision Ahead, khe that 11/25 cm); A3 cu 0.06; mac dinh Nav2 0.01; so = hanh_vi_xe.yaml footprint_padding_m
+      footprint_padding: 0.0               # 09/11 20:33 0.03 -> 0.0 (vung quanh xe: tuong cach hong 0,05 khong bao va; r_inscribed 0,08 = nua than); 17:07 0.06 -> 0.03; so = hanh_vi_xe.yaml footprint_padding_m
       plugins: ["static_layer", "lop_huong_dan", "obstacle_layer", "inflation_layer"]
       # 08/11 bo 1e: ban do GOC (map_server, /map_tinh tu map_xuong_v3_tinh.yaml: tuong 99 => 251, khong inflation; 09/11 18:44), khong phai /map cua SLAM
       static_layer:
@@ -239,8 +239,8 @@ global_costmap:
           raytrace_max_range: 3.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.20     # 02/11: 0.25 -> 0.20 (khop hieu chuan 01/11 va gia_lap/bat_gia.sh INFLATION); duong lui: 0.25
+        cost_scaling_factor: 10.0  # 09/11 20:33 3.0 -> 10.0 (vang: ho hong 0,05 => 152, 0,12 => 76, luon < 253); so = hanh_vi_xe.yaml cost_scaling_factor
+        inflation_radius: 0.20     # 02/11: 0.25 -> 0.20; 09/11 20:33 giu = nua than 0,08 + vang hong 0,12; so = hanh_vi_xe.yaml inflation_radius_m
       always_send_full_costmap: true
 
 planner_server:
@@ -273,7 +273,7 @@ behavior_server:
     global_frame: odom
     robot_base_frame: base_footprint
     transform_tolerance: 0.1
-    simulate_ahead_time: 2.0
+    simulate_ahead_time: 0.7    # 09/11 20:33 2.0 -> 0.7: BackUp 0,10 m/s nhin 0,06 m (7 chu ky) => dung khi vat cach duoi 0,05-0,11 (do duoi 0,06); so = hanh_vi_xe.yaml backup_nhin_truoc_s
     max_rotational_vel: 1.0
     min_rotational_vel: 0.6     # 모터 데드존을 피하기 위해 높게 둔다
     rotational_acc_lim: 3.2

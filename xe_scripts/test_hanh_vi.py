@@ -96,7 +96,7 @@ CU_THAN_THE = {'v_min_mps': 0.092, 'lidar_range_min_m': 0.10, 'ban_kinh_xoay_m':
 MOI_NAO_XE = {'kinh_nghiem_quan_sat_s': 15.0,           # so MOI cua nao xe (khong co o 2607fee)
               'gac_vat_la': True, 'gac_truoc_m': 0.30, 'gac_hong_m': 0.10, 'gac_ra_truoc_m': 0.40, 'gac_ra_hong_m': 0.15,
               'gac_le_tuong_m': 0.10, 'gac_so_diem': 3, 'gac_sach_s': 2.0, 'gac_scan_cu_s': 0.5,   # dung im ban 2 (A1)
-              'footprint_padding_m': 0.06}                                                        # A3
+              'footprint_padding_m': 0.03}                                                        # A3
 CU_AN_TOAN = {'cach_vat_toi_thieu_m': 0.06, 'sep_phat_toc_do': False}
 
 
@@ -220,13 +220,13 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
         f.write('\n# gia: self.create_publisher(Twist, "/cmd_vel_avoid", 10)\n')
     lech = [(m, nd) for m, nd, ok in K.kiem(d, dict(tq, vung_phanh_m=0.05), at, tt) if not ok]
     assert lech == [('c', 'vung_phanh_m 0.05 >= cach_vat_toi_thieu_m 0.06'), ('c', 'sep_phat_toc_do false: sep.py CO publisher Twist')], lech
-    # 09/11 A3: footprint_padding 2 costmap lech nhau (global con 0.06, local 0.05) => KHONG DAT
+    # 09/11 A3: footprint_padding 2 costmap lech nhau (global con 0.03, local 0.02) => KHONG DAT
     d2 = _thu_muc_chep()
     p2 = os.path.join(d2, 'nav2_params_mat.yaml')
     s2 = open(p2).read()
-    open(p2, 'w').write(s2.replace('footprint_padding: 0.06', 'footprint_padding: 0.05', 1))
+    open(p2, 'w').write(s2.replace('footprint_padding: 0.03', 'footprint_padding: 0.02', 1))
     lech = [nd for m, nd, ok in K.kiem(d2, tq, at, tt) if not ok]
-    assert lech == ['nav2_params_mat.yaml footprint_padding_m = nan, yaml 0.06'], lech
+    assert lech == ['nav2_params_mat.yaml footprint_padding_m = nan, yaml 0.03'], lech
     # 09/11 A4: vung gac nho hon luat => KHONG DAT
     lech = [(m, nd) for m, nd, ok in K.kiem(DAY, dict(tq, gac_hong_m=0.05, gac_truoc_m=0.05), at, tt) if not ok]
     assert lech == [('b', 'gac_hong_m 0.05 >= cach_vat_toi_thieu_m 0.06'), ('b', 'gac_truoc_m 0.05 >= vung_phanh_m 0.07')], lech

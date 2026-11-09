@@ -113,7 +113,7 @@ MAC_DINH = {
     'gac_so_diem': 3,       # MOI (dung im ban 2, A1): so diem vat la toi thieu trong mot vung
     'gac_sach_s': 2.0,     # MOI (dung im ban 2, A1): vung RA sach lien tuc bay lau => het chan
     'gac_scan_cu_s': 0.5,     # MOI (dung im ban 2, A1): /scan cu hon so nay => gac mu (K13)
-    'footprint_padding_m': 0.06,     # MOI (dung im ban 2, A3): footprint_padding ca hai costmap (nav2_params_mat*.yaml)
+    'footprint_padding_m': 0.03,     # MOI (dung im ban 2, A3): footprint_padding ca hai costmap (nav2_params_mat*.yaml); 09/11 17:07 0.06 -> 0.03
 }
 
 COT_KINH_NGHIEM = 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do'     # ~/kinh_nghiem.csv tu 09/11 (nao xe viec 4)

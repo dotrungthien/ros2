@@ -103,4 +103,4 @@ thoi_quen:
   gac_so_diem: {gia_tri: 3, dung_o: "gac_vat_la.py", cho: "MOI 09/11 dung im ban 2 (A1): so diem vat la toi thieu trong mot vung"}
   gac_sach_s: {gia_tri: 2.0, dung_o: "gac_vat_la.py, gui_duong.py", cho: "MOI 09/11 dung im ban 2 (A1): vung RA sach lien tuc bay lau => het chan"}
   gac_scan_cu_s: {gia_tri: 0.5, dung_o: "gui_duong.py", cho: "MOI 09/11 dung im ban 2 (A1): /scan cu hon so nay => gac mu (K13)"}
-  footprint_padding_m: {gia_tri: 0.06, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (local + global costmap; kiem_hanh_vi.py so)", cho: "MOI 09/11 dung im ban 2 (A3, de xuat 83.8): footprint_padding (mac dinh Nav2 0.01)"}
+  footprint_padding_m: {gia_tri: 0.03, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (local + global costmap; kiem_hanh_vi.py so)", cho: "MOI 09/11 dung im ban 2 (A3, de xuat 83.8): footprint_padding (mac dinh Nav2 0.01); 09/11 17:07 0.06 -> 0.03 (ket cua K2)"}

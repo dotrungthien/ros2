@@ -173,7 +173,7 @@ local_costmap:
       # 직사각형 풋프린트 (베이스를 달면 다시 측정할 것)
       # 2026-10-06 실측 (LiDAR 중심 기준 앞 12cm, 뒤 13cm, 좌우 8cm; LiDAR는 base_link 기준 앞쪽 +2.5cm), 미검증.
       footprint: "[[0.145, 0.08], [0.145, -0.08], [-0.105, -0.08], [-0.105, 0.08]]"
-      footprint_padding: 0.06              # 09/11 dung im ban 2 A3 (de xuat 83.8; mac dinh Nav2 0.01); so = hanh_vi_xe.yaml footprint_padding_m
+      footprint_padding: 0.03              # 09/11 17:07 0.06 -> 0.03 (ket cua K2: BackUp Collision Ahead, khe that 11/25 cm); A3 cu 0.06; mac dinh Nav2 0.01; so = hanh_vi_xe.yaml footprint_padding_m
       # 가볍게 하려고 voxel_layer 는 쓰지 않는다 (2D 라이다만 사용)
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
@@ -212,7 +212,7 @@ global_costmap:
       # 로컬 코스트맵과 같은 풋프린트 (베이스를 달면 다시 측정할 것)
       # 2026-10-06 실측 (LiDAR 중심 기준 앞 12cm, 뒤 13cm, 좌우 8cm; LiDAR는 base_link 기준 앞쪽 +2.5cm), 미검증.
       footprint: "[[0.145, 0.08], [0.145, -0.08], [-0.105, -0.08], [-0.105, 0.08]]"
-      footprint_padding: 0.06              # 09/11 dung im ban 2 A3 (de xuat 83.8; mac dinh Nav2 0.01); so = hanh_vi_xe.yaml footprint_padding_m
+      footprint_padding: 0.03              # 09/11 17:07 0.06 -> 0.03 (ket cua K2: BackUp Collision Ahead, khe that 11/25 cm); A3 cu 0.06; mac dinh Nav2 0.01; so = hanh_vi_xe.yaml footprint_padding_m
       plugins: ["static_layer", "lop_huong_dan", "obstacle_layer", "inflation_layer"]
       # 08/11 bo 1e: ban do GOC (map_server, /map_tinh tu map_xuong_v3.yaml), khong phai /map cua SLAM
       static_layer:

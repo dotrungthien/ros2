@@ -146,3 +146,13 @@ thoi_quen:
   thang_rms_m: {gia_tri: 0.01, dung_o: "gac_vat_la.py", cho: "doan thang / gay goc: dung sai Douglas-Peucker"}
   goc_gay_lech_deg: {gia_tri: 20.0, dung_o: "gac_vat_la.py", cho: "goc gay 90 (hoac thang 180) +- so nay"}
   khong_cham_m: {gia_tri: 0.02, dung_o: "gac_vat_la.py, sep_lidar.py, gui_duong.py", cho: "hong + TUONG: khong vung do, chi giu khong cham (kc <= so nay = do)"}
+  # 10/11 A++ (16:27-16:30: goc K4 hop xop khop nham cung => CHO_VAT). DUONG LUI: ba khoa bool = false => y het 50e4146
+  ong_kiem_tam: {gia_tri: true, dung_o: "gac_vat_la.py", cho: "tam cung (khung ban do) sau trong o tuong > ong_tam_sau_m => khong phai ong; khong co ban do: nhu cu"}
+  ong_on_dinh: {gia_tri: true, dung_o: "gac_vat_la.py, gui_duong.py (Mat giu TheoDoiOng)", cho: "ong chi khi >= ong_ti_le so lan quet trong ong_cua_so_s ra cung (>= ong_so_quet_min lan)"}
+  mui_tuong_khong_doi: {gia_tri: true, dung_o: "gac_vat_la.py", cho: "mui + tren ban do + khong phai ong => TUONG: khong DOI_VAT / CHO_VAT 30 s (mui 0,07 collision_monitor van giu)"}
+  ong_tam_sau_m: {gia_tri: 0.05, dung_o: "gac_vat_la.py", cho: "tam cung sau trong tuong hon so nay => khong phai ong (A1 10/11: ong that ap tuong 0,035-0,045; cung nham goc K4 0-0,049 => KHONG tach duoc, chan nham la nho goc cung + on dinh)"}
+  ong_cach_cum_m: {gia_tri: 0.05, dung_o: "gac_vat_la.py", cho: "tam cum hai lan quet cach <= so nay = cung cum"}
+  ong_cua_so_s: {gia_tri: 1.0, dung_o: "gac_vat_la.py", cho: "cua so xet on dinh cung"}
+  ong_ti_le: {gia_tri: 0.6, dung_o: "gac_vat_la.py", cho: "ti le lan quet ra cung toi thieu de goi ong"}
+  ong_so_quet_min: {gia_tri: 3, dung_o: "gac_vat_la.py", cho: "so lan quet toi thieu trong cua so (lan quet le khong du)"}
+  ong_goc_min_deg: {gia_tri: 100.0, dung_o: "gac_vat_la.py", cho: "(ong_kiem_tam) cung phai thay >= so do nay (ong O18: 140-170 do; nhieu tren tuong / goc: 30-60 do)"}

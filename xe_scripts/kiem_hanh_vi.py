@@ -123,6 +123,8 @@ def kiem(thu_muc, tq, at, tt):
     out.append(('b', 'phan_loai_cum %s thuoc {cu, ba_dau_hieu}' % tq['phan_loai_cum'], tq['phan_loai_cum'] in ('cu', 'ba_dau_hieu')))
     out.append(('b', 'cung_r_min_m %g < cung_r_max_m %g, cung_so_diem %d >= 3' % (tq['cung_r_min_m'], tq['cung_r_max_m'], tq['cung_so_diem']),
                 tq['cung_r_min_m'] < tq['cung_r_max_m'] and tq['cung_so_diem'] >= 3))
+    out.append(('b', 'ong: 0 < ong_ti_le %g <= 1, ong_so_quet_min %d >= 2, ong_cach_cum_m %g > 0' % (tq['ong_ti_le'], tq['ong_so_quet_min'], tq['ong_cach_cum_m']),
+                0 < tq['ong_ti_le'] <= 1 and tq['ong_so_quet_min'] >= 2 and tq['ong_cach_cum_m'] > 0))     # 10/11 A++
     out.append(('c', 'khong_cham_m %g > 0 va <= cach_vat_toi_thieu_m %g (tuong hong chi nhe hon vat)' % (tq['khong_cham_m'], at['cach_vat_toi_thieu_m']),
                 0 < tq['khong_cham_m'] <= at['cach_vat_toi_thieu_m'] + SAI_SO))
     import tinh_tuyen as TT

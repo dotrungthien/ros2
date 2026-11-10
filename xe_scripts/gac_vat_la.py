@@ -45,7 +45,10 @@ def tham_so():
                 gan_tuong=h('gan_tuong_ban_do_m'), so_diem=h('so_diem_toi_thieu'), sach_s=h('sach_s'), cu_s=h('lidar_cu_s'),
                 phan_loai=h('phan_loai_cum'), cung_r=(h('cung_r_min_m'), h('cung_r_max_m')), cung_rms=h('cung_rms_m'),
                 cung_n=h('cung_so_diem'), ngoai_m=h('ngoai_ban_do_m'), ngoai_n=h('ngoai_so_diem'), thang_rms=h('thang_rms_m'),
-                goc_lech=math.radians(h('goc_gay_lech_deg')), khong_cham=h('khong_cham_m'))
+                goc_lech=math.radians(h('goc_gay_lech_deg')), khong_cham=h('khong_cham_m'),
+                ong_kiem_tam=h('ong_kiem_tam'), ong_on_dinh=h('ong_on_dinh'), mui_tuong=h('mui_tuong_khong_doi'),
+                ong_tam_sau=h('ong_tam_sau_m'), ong_cach=h('ong_cach_cum_m'), ong_cua_so=h('ong_cua_so_s'),
+                ong_ti_le=h('ong_ti_le'), ong_n_min=h('ong_so_quet_min'), ong_goc_min=h('ong_goc_min_deg'))
 
 
 class BanDo:
@@ -56,6 +59,31 @@ class BanDo:
 
     def gia(self, i, j):
         return self.data[j * self.w + i] if 0 <= i < self.w and 0 <= j < self.h else None
+
+    def la_tuong(self, x, y):
+        """O chua (x, y) la o tuong (>= O_TUONG_MIN); ngoai ban do / chua biet => False."""
+        g = self.gia(int(math.floor((x - self.ox) / self.res)), int(math.floor((y - self.oy) / self.res)))
+        return g is not None and g >= O_TUONG_MIN
+
+    def do_sau(self, x, y, rmax=0.30):
+        """10/11 A1: do sau (m) cua (x, y) trong tuong = khoang toi o KHONG phai tuong gan nhat (canh o); khong o tuong => 0."""
+        if not self.la_tuong(x, y):
+            return 0.0
+        i, j = int(math.floor((x - self.ox) / self.res)), int(math.floor((y - self.oy) / self.res))
+        k, best = int(math.ceil(rmax / self.res)) + 1, rmax
+        for jj in range(j - k, j + k + 1):
+            for ii in range(i - k, i + k + 1):
+                g = self.gia(ii, jj)
+                if g is not None and g >= O_TUONG_MIN:
+                    continue
+                x0, y0 = self.ox + ii * self.res, self.oy + jj * self.res
+                best = min(best, math.hypot(max(x0 - x, 0.0, x - (x0 + self.res)), max(y0 - y, 0.0, y - (y0 + self.res))))
+        return best
+
+    def sau_trong_tuong(self, x, y, r):
+        """10/11 A++: (x, y) nam SAU trong tuong: o tai diem va 8 diem cach r deu la o tuong."""
+        return all(self.la_tuong(x + r * math.cos(k * math.pi / 4) * (k < 8), y + r * math.sin(k * math.pi / 4) * (k < 8))
+                   for k in range(9))
 
     def gan_tuong(self, x, y, r):
         """Co o tuong (>= O_TUONG_MIN) cach diem (x, y) <= r (khoang toi canh o)."""
@@ -184,9 +212,30 @@ def _goc(a, b, c):
     return math.degrees(math.acos(max(-1.0, min(1.0, (v1[0] * v2[0] + v1[1] * v2[1]) / n))))
 
 
-def ba_dau_hieu(P, M, ban, t):
+class TheoDoiOng:
+    """10/11 A++ (ong_on_dinh): nho cac cum qua cac lan quet trong ong_cua_so_s (vi tri: tam cum, khung ban do neu co). Cum chi la
+    "ong" khi trong cua so co >= ong_so_quet_min lan quet thay cum gan do (<= ong_cach_cum_m) va >= ong_ti_le so lan do ra cung."""
+
+    def __init__(self):
+        self.ds = []                                     # (t quet, (x, y), ra cung?)
+
+    def cap_nhat(self, tq, xy, cung, t):
+        """-> (on dinh?, so lan cung, so lan quet) sau khi ghi lan quet nay."""
+        self.ds = [e for e in self.ds if tq - e[0] <= t['ong_cua_so'] + 1e-9]
+        self.ds.append((tq, xy, cung))
+        gan = {}
+        for e in self.ds:
+            if math.dist(e[1], xy) <= t['ong_cach'] + 1e-9:
+                gan[e[0]] = gan.get(e[0], False) or e[2]
+        n, k = len(gan), sum(gan.values())
+        return n >= t['ong_n_min'] and k >= t['ong_ti_le'] * n - 1e-9, k, n
+
+
+def ba_dau_hieu(P, M, ban, t, theo=None, tq=None):
     """10/11 A+: P = diem cum khung xe theo tia, M = diem khung ban do (None tung diem / ca cum khi khong co TF ban do).
-    -> (nhan 'ong' | 'ngoai' | 'tuong' | 'khong_chac', ly do, tren_ban_do True | False | None (khong co ban do))."""
+    -> (nhan 'ong' | 'ngoai' | 'tuong' | 'khong_chac', ly do, tren_ban_do True | False | None (khong co ban do)).
+    10/11 A++: ong_kiem_tam: tam cung (khop lai tren diem ban do) nam SAU trong o tuong > ong_tam_sau_m => khong phai ong;
+    ong_on_dinh + theo (TheoDoiOng) + tq: chi "ong" khi cung on dinh qua cac lan quet; khong => xet tiep nhu tuong / khong chac."""
     # a. cung: chuoi doan NGAN (<= 0,06) lien tiep cua Douglas-Peucker 0,005
     dinh = _dp(P, 0.005)
     ung = []
@@ -202,6 +251,7 @@ def ba_dau_hieu(P, M, ban, t):
     if chay:
         ung.append((chay[0], chay[-1]))
     lid = (X_LIDAR, 0.0)
+    cung, ly_bo = None, ''
     for a, b in ung:
         Q = P[a:b + 1]
         if len(Q) < t['cung_n']:
@@ -212,7 +262,30 @@ def ba_dau_hieu(P, M, ban, t):
         cx, cy, r, rms = f
         loi = math.dist(lid, (cx, cy)) > sum(math.dist(lid, q) for q in Q) / len(Q)      # tam o sau mat cung (loi ve LiDAR)
         if t['cung_r'][0] <= r <= t['cung_r'][1] and rms <= t['cung_rms'] and loi:
-            return 'ong', 'cung r=%.2f rms=%.3f' % (r, rms), None
+            if t.get('ong_kiem_tam'):                            # A++: cung that cua ong thay >= ong_goc_min_deg (ong 0,09 o 1 m: ~170 do)
+                g = abs(math.atan2(Q[0][0] * Q[-1][1] - Q[0][1] * Q[-1][0] - cx * (Q[-1][1] - Q[0][1]) + cy * (Q[-1][0] - Q[0][0]),
+                                   (Q[0][0] - cx) * (Q[-1][0] - cx) + (Q[0][1] - cy) * (Q[-1][1] - cy)))
+                if math.degrees(g) < t['ong_goc_min']:
+                    ly_bo = 'cung r=%.2f chi %d do' % (r, round(math.degrees(g)))
+                    continue
+            if t.get('ong_kiem_tam') and ban is not None and M is not None and all(m is not None for m in M[a:b + 1]):
+                fm = khop_tron(M[a:b + 1])                       # cung tron, khung ban do (khop khong doi khi doi khung)
+                if fm is not None and ban.do_sau(fm[0], fm[1]) > t['ong_tam_sau']:
+                    ly_bo = 'cung r=%.2f tam sau %.2f trong tuong' % (r, ban.do_sau(fm[0], fm[1]))
+                    continue
+            cung = 'cung r=%.2f rms=%.3f' % (r, rms)
+            break
+    if theo is not None and t.get('ong_on_dinh') and tq is not None:
+        Mm = [m for m in (M or []) if m is not None]
+        ref = Mm if Mm else P
+        xy = (sum(p[0] for p in ref) / len(ref), sum(p[1] for p in ref) / len(ref))
+        od, k, n = theo.cap_nhat(tq, xy, cung is not None, t)
+        if cung is not None and not od:
+            ly_bo, cung = '%s chua on dinh %d/%d' % (cung, k, n), None
+        elif cung is not None:
+            cung = '%s, on dinh %d/%d' % (cung, k, n)
+    if cung is not None:
+        return 'ong', cung, None
     # b. ban do
     tren = None
     if ban is not None and M is not None:
@@ -227,12 +300,13 @@ def ba_dau_hieu(P, M, ban, t):
     goc = [_goc(P[i], P[j], P[k]) for i, j, k in zip(dinh, dinh[1:], dinh[2:])]
     thang_gay = all(abs(g - 90) <= math.degrees(t['goc_lech']) or abs(g - 180) <= math.degrees(t['goc_lech']) for g in goc)
     hinh = 'thang' if not goc else 'goc %d do' % round(next((g for g in goc if abs(g - 90) <= math.degrees(t['goc_lech'])), goc[0]))
+    bo = ', bo %s' % ly_bo if ly_bo else ''              # A++: cung bi loai (tam trong tuong / chua on dinh) ghi vao ly do
     if tren and thang_gay:
-        return 'tuong', 'tren ban do, %s' % hinh, True
-    return 'khong_chac', '%s, %s' % ('tren ban do' if tren else 'khong ban do' if tren is None else '-', hinh if thang_gay else 'khong thang'), tren
+        return 'tuong', 'tren ban do, %s%s' % (hinh, bo), True
+    return 'khong_chac', '%s, %s%s' % ('tren ban do' if tren else 'khong ban do' if tren is None else '-', hinh if thang_gay else 'khong thang', bo), tren
 
 
-def danh_gia(pts_xe, pts_map, ban, t):
+def danh_gia(pts_xe, pts_map, ban, t, theo=None, tq=None):
     """-> [dict(vung, loai 'VAT'|'TUONG', lidar, bd 'VAT'|'TUONG'|None, lech, n, kc, do, xy, hl)] moi (cum, vung) co diem trong VANG,
     gan truoc. do = co diem trong DO cua vung do (chi co nghia dung xe khi loai VAT, vung truoc / hong). xy = diem ban do gan nhat.
     hl (vung truoc): kc diem gan nhat trong hanh lang than |y| <= 0,08 (None neu khong co; sep_lidar nhac doi)."""
@@ -260,7 +334,7 @@ def danh_gia(pts_xe, pts_map, ban, t):
                 bd = 'TUONG' if 2 * sum(ban.gan_tuong(x, y, t['gan_tuong']) for x, y in pm) >= len(pm) else 'VAT'
         moi = t.get('phan_loai', 'cu') == 'ba_dau_hieu'
         if moi:                                                  # 10/11 A+: ba dau hieu (cu: y het 629a17b o tren)
-            nhan, ly, tren = ba_dau_hieu([pts_xe[k] for k in ks], None if pts_map is None else [pts_map[k] for k in ks], ban, t)
+            nhan, ly, tren = ba_dau_hieu([pts_xe[k] for k in ks], None if pts_map is None else [pts_map[k] for k in ks], ban, t, theo, tq)
         for v, (n, kc, do, k0) in theo_vung.items():
             d = dict(vung=v, loai=loai, lidar=lidar, bd=bd, lech=bd is not None and bd != loai, n=n, kc=kc, do=do,
                      xy=None if pts_map is None else pts_map[k0], hl=hl if v == 'truoc' else None)
@@ -269,6 +343,7 @@ def danh_gia(pts_xe, pts_map, ban, t):
                          tuong_k=loai == 'TUONG', cham=loai == 'TUONG' and v == 'hong' and kc <= t['khong_cham'] + 1e-9)
             elif moi:
                 lo = ('VAT' if nhan in ('ong', 'ngoai') else 'TUONG' if nhan == 'tuong'
+                      else 'TUONG' if v == 'truoc' and tren and t.get('mui_tuong')        # A++: mui + tren ban do + khong ong
                       else 'VAT' if v in ('truoc', 'sau') or not tren else 'TUONG')          # khong chac: mui / duoi VAT, hong theo ban do
                 d.update(loai=lo, nhan=nhan, ly=ly, chac=nhan in ('ong', 'ngoai'), lech=bd is not None and bd != lo, ks=ks,
                          tuong_k=nhan == 'tuong' or (nhan == 'khong_chac' and bool(tren)),

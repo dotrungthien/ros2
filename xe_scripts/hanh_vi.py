@@ -151,6 +151,16 @@ MAC_DINH = {
     'thang_rms_m': 0.01,         # doan thang / gay goc: sai so toi da (Douglas-Peucker)
     'goc_gay_lech_deg': 20.0,    # goc gay = 90 +- so nay (hoac thang 180 +- so nay)
     'khong_cham_m': 0.02,        # hong + TUONG: chi giu khong cham (khe <= so nay = do)
+    # MOI 10/11 A++ (16:27-16:30 goc K4 khop nham cung): DUONG LUI: ong_kiem_tam, ong_on_dinh, mui_tuong_khong_doi = false (= 50e4146)
+    'ong_kiem_tam': True,        # tam cung nam sau trong o tuong ban do => khong phai ong
+    'ong_on_dinh': True,         # ong chi khi cung on dinh qua cac lan quet
+    'mui_tuong_khong_doi': True,  # mui + tren ban do + khong phai ong => TUONG (khong DOI_VAT / CHO_VAT 30 s)
+    'ong_tam_sau_m': 0.05,       # tam sau trong tuong hon so nay => khong phai ong (A1: ong that do duoc toi 0,045)
+    'ong_cach_cum_m': 0.05,      # cum hai lan quet cach nhau <= so nay = cung cum
+    'ong_cua_so_s': 1.0,         # cua so on dinh
+    'ong_ti_le': 0.6,            # ti le lan quet ra cung toi thieu
+    'ong_so_quet_min': 3,        # so lan quet toi thieu trong cua so (lan quet le khong du)
+    'ong_goc_min_deg': 100.0,    # (ong_kiem_tam) cung that thay duoc toi thieu bay nhieu do (song nhieu tren tuong: 30-60 do)
 }
 
 COT_KINH_NGHIEM = 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do'     # ~/kinh_nghiem.csv tu 09/11 (nao xe viec 4)

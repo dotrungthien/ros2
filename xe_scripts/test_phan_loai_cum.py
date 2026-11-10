@@ -237,6 +237,215 @@ def test_08_duong_lui_cu_false_cung_quyet_dinh_629a17b():
     assert sum(1 for x in ja if x['do']) >= 1 and sum(1 for x in ja if x['chon']) >= 1        # canh co ca vung do lan dong tac
 
 
+# ==== 10/11 A++ (16:27-16:30: goc K4 hop xop khop nham cung "ong" le => CHO_VAT 30 s x 3 => CHO_NGUOI) ====
+import random  # noqa: E402
+
+A3 = ('ong_kiem_tam', 'ong_on_dinh', 'mui_tuong_khong_doi')
+
+
+def ghim3(gt):
+    HV._nap()['tq'].update({k: gt for k in A3})
+
+
+def nhieu(q, rd, a=0.005):
+    """Nhieu LiDAR +-a m tren tam do (theo tia)."""
+    out = []
+    for p in q:
+        if p is None:
+            out.append(None)
+            continue
+        r, g = math.hypot(p[0] - 0.025, p[1]), math.atan2(p[1], p[0] - 0.025)
+        r += rd.uniform(-a, a)
+        out.append((0.025 + r * math.cos(g), r * math.sin(g)))
+    return out
+
+
+def k4_tron(r=0.06, n=12, tuong=None):
+    """Goc K4 (0,734; -0,165) bo tron r (hop xop): canh tren + canh phai rut ngan r, them cung 90 do."""
+    W2 = []
+    for a, b in (tuong or X.TUONG):
+        A, B = tuple(round(v, 3) for v in a), tuple(round(v, 3) for v in b)
+        if (A, B) == ((0.384, -0.165), (0.734, -0.165)):
+            W2.append((a, (0.734 - r, -0.165)))
+        elif (A, B) == ((0.734, -0.265), (0.734, -0.165)):
+            W2.append((a, (0.734, -0.165 - r)))
+        else:
+            W2.append((a, b))
+    cx, cy = 0.734 - r, -0.165 - r
+    p = [(cx + r * math.cos(math.pi / 2 * k / n), cy + r * math.sin(math.pi / 2 * k / n)) for k in range(n + 1)]
+    return W2 + [(p[k], p[k + 1]) for k in range(n)]
+
+
+K4_TRON = k4_tron()
+TU_THE_K4 = ((0.85, -0.06, math.radians(-163)), (0.76, -0.07, math.radians(172)), (0.76, -0.07, math.radians(-172)),
+             (0.80, -0.03, math.radians(-150)))
+
+
+def lui_toi_mui(doan, pose, mui=0.095):
+    """Lui xe doc huong toi khi hanh lang truoc mui (moi diem) cach >= mui (dung so thuoc: mui-goc K4 0,09-0,10)."""
+    x, y, th = pose
+    for i in range(200):
+        k = SL.khe(SL.diem_loc(TG.quet(doan, (x, y, th)), GV.tham_so()), SL.tham_so())
+        tr = min(k['hl'], k['truoc'])                   # mui: hanh lang than hoac cheo truoc mui (goc K4 lech mot ben)
+        if tr >= mui - 1e-9 and k['nho'] > 0.0:
+            return (x, y, th), tr
+        x, y = x - 0.005 * math.cos(th), y - 0.005 * math.sin(th)
+    raise AssertionError('khong lui duoc toi mui %.2f' % mui)
+
+
+def nhan_qua_38_quet(doan, pose, seed=1627):
+    rd, th, dem = random.Random(seed), GV.TheoDoiOng(), {}
+    q0, T = TG.quet(doan, pose), GV.tham_so()
+    for i in range(38):
+        q = nhieu(q0, rd)
+        for d in GV.danh_gia(q, GV.bien_doi(q, pose), BAN, T, th, i * 0.1):
+            if d['vung'] == 'truoc':
+                dem[d['nhan']] = dem.get(d['nhan'], 0) + 1
+    return dem
+
+
+def test_10_goc_K4_hop_xop_38_quet_khong_bao_gio_ong():
+    """A++ 1a+1b: goc K4 bo tron (hop xop), mui cach 0,09-0,10, nhieu +-5 mm, 38 lan quet: KHONG BAO GIO "ong". Duong lui (ba khoa
+    false = 50e4146) tai hien loi: co lan "ong" (bao Thien)."""
+    try:
+        ghim3(False)
+        cu = {}
+        for p in TU_THE_K4:
+            pm, _ = lui_toi_mui(K4_TRON, p)
+            cu[p] = nhan_qua_38_quet(K4_TRON, pm).get('ong', 0)
+        ghim3(True)
+        for p in TU_THE_K4:
+            pm, hl = lui_toi_mui(K4_TRON, p)
+            dem = nhan_qua_38_quet(K4_TRON, pm)
+            assert 0.09 - 1e-6 <= hl <= 0.10 + 1e-6 and dem.get('ong', 0) == 0, (p, hl, dem)
+        print('   duong lui (50e4146) cung tu the: so lan "ong" / 38 = %s' % [cu[p] for p in TU_THE_K4])
+        assert sum(cu.values()) > 0                                              # tai hien duoc loi 16:27 o duong lui
+    finally:
+        ghim3(True)
+
+
+def test_11_ong_that_van_la_ong_voi_nhieu_5mm():
+    """A++ 1c: ong giua san / sat tuong / sat K4 0-1-3 cm / sat H0, nhieu +-5 mm, 10 lan quet co theo doi: lan cuoi la "ong" (on dinh)."""
+    ca = [('giua san', ong(1.00, 0.10), (0.72, 0.10, 0.0), (1.00, 0.10)),
+          ('sat tuong', ong(1.30, -0.365 + 0.09 + 0.005), (0.95, -0.12, -0.3), (1.30, -0.365 + 0.095))]
+    for g in (0.0, 0.01, 0.03):
+        ca.append(('sat K4 %.2f' % g, ong(0.60, -0.165 + 0.09 + g), (0.95, -0.02, math.pi), (0.60, -0.165 + 0.09 + g)))
+    ca.append(('sat H0', ong(0.42, 0.335 - 0.09 - 0.005), (0.20, 0.15, 0.4), (0.42, 0.335 - 0.095)))
+    for ten, o, pose, tam in ca:
+        rd, th, T = random.Random(11), GV.TheoDoiOng(), GV.tham_so()
+        q0 = TG.quet(X.TUONG + o, pose)
+        for i in range(10):
+            q = nhieu(q0, rd)
+            m = GV.bien_doi(q, pose)
+            ds = GV.danh_gia(q, m, BAN, T, th, i * 0.1)
+        dd = [d for d in ds if any(m[k] is not None and math.dist(m[k], tam) <= 0.095 for k in d['ks'])]   # diem tren mat ong (r 0,09 + nhieu)
+        dinh = ten in ('sat tuong', 'sat K4 0.00')       # ong DINH lien tuong: cung cum voi tuong => co the 'ngoai ban do' (van VAT chac)
+        assert dd and all(d['loai'] == 'VAT' and d['chac'] for d in dd) and (dinh or any(d['nhan'] == 'ong' for d in dd)), (
+            ten, [GV.dong_mem(d) for d in dd])
+        print('   %-12s %s' % (ten, GV.dong_mem(dd[0])))
+
+
+class IONhieu(X.NgatKhiChoNguoi):
+    """IOThe + nhieu LiDAR +-5 mm moi lan quet."""
+
+    def __init__(self, *a, **k):
+        super().__init__(*a, **k)
+        self.rd = random.Random(1628)
+        goc = self.gac_fn
+        self.gac_fn = lambda t: nhieu(goc(t), self.rd)
+
+
+def test_12_ve_A_tu_goc_K4_hop_xop_khong_CHO_VAT_toi_DEN_NOI():
+    """A++ 2 + 3: tu (0,85; -0,06; -163 do) lui toi mui 0,095 truoc goc K4 bo tron, nhieu +-5 mm: khong "ong", khong CHO_VAT / DOI_VAT
+    30 s, ve_A => DEN_NOI (khong CHO_NGUOI)."""
+    p, hl = lui_toi_mui(K4_TRON, TU_THE_K4[0])
+    cach = TG.CACH
+    TG.CACH = 0.16
+    try:
+        io = IONhieu(p, tuong=K4_TRON)
+        try:
+            ma = G.chay_mat(io, 've_A', 1, X.CFG3)
+        except KeyboardInterrupt:
+            ma = 'CHO_NGUOI'
+    finally:
+        TG.CACH = cach
+    assert ma == 0 and X.CUA(io.rows)[-1] == 'DEN_NOI', (ma, io.cau[-15:])
+    assert not any('DOI_VAT' in c or c.startswith('CHO_VAT') or '(ong:' in c for c in io.cau), [c for c in io.cau if 'DOI_VAT' in c or '(ong' in c][:5]
+    print('   ve_A tu goc K4 (mui %.3f): DEN_NOI, khong DOI_VAT / CHO_VAT / ong' % hl)
+
+
+def test_13_ong_that_truoc_mui_009_giua_san_van_CHO_VAT_30s():
+    """A++: ong that giua hanh lang duoi, truoc mui 0,09 (nhieu +-5 mm): van nhac doi (DOI_VAT ... vat chac, CHO_VAT n/30) nhu cu."""
+    o = ong(0.0 + 0.145 + 0.09 + 0.09 + 0.40, 0.02)
+    p = (0.40, 0.02, 0.0)
+    io = IONhieu(p, vat=[(o, 0.0, 1e9)])
+    cach = TG.CACH
+    TG.CACH = 0.16
+    try:
+        try:
+            G.chay_mat(io, 'di_B', 1, X.CFG3)
+        except KeyboardInterrupt:
+            pass
+    finally:
+        TG.CACH = cach
+    i = next((k for k, c in enumerate(io.cau) if c.startswith('SEP_LIDAR: DOI_VAT truoc vat chac')), None)
+    assert i is not None and any(c.startswith('CHO_VAT: 5/30') for c in io.cau[i:]), [c for c in io.cau if 'DOI_VAT' in c or 'MEM: truoc' in c][:6]
+    assert any('(ong: cung r=0.09' in c and 'on dinh' in c for c in io.cau), [c for c in io.cau if c.startswith('MEM: truoc')][:4]
+
+
+_KICH3 = r'''
+import json, math, random, sys
+sys.path.insert(0, sys.argv[1])
+import hanh_vi as HV
+if 'ong_on_dinh' in HV.MAC_DINH:
+    HV._nap()['tq'].update(ong_kiem_tam=False, ong_on_dinh=False, mui_tuong_khong_doi=False)
+import gac_vat_la as GV, sep_lidar as SL, the_gioi_gia as TG
+sys.path.insert(0, sys.argv[2])
+import test_phan_loai_cum_kich as KI
+BD = TG.doc_ban_do()
+ban = GV.BanDo(BD['w'], BD['h'], BD['res'], BD['ox'], BD['oy'], BD['data'])
+t, gt = SL.tham_so(), GV.tham_so()
+rd = random.Random(2026)
+out = []
+for n in range(40):
+    W = KI.the_gioi(n)
+    pose = (rd.uniform(0.0, 1.6), rd.uniform(-0.25, 0.80), rd.uniform(-math.pi, math.pi))
+    q0 = TG.quet(W, pose)
+    q = [None if p is None else (p[0] + rd.uniform(-0.003, 0.003), p[1] + rd.uniform(-0.003, 0.003)) for p in q0]
+    ds = GV.danh_gia(q, GV.bien_doi(q, pose), ban, gt)
+    pl, fl = SL.diem_loc_nhan(q, gt, ds)
+    dt, c, bo = SL.chon_dong_tac(pl, t, rd.uniform(-math.pi, math.pi), None, fl)
+    out.append(dict(mem=[GV.dong_mem(d) for d in ds], do=None if GV.do_vat(ds) is None else GV.dong_mem(GV.do_vat(ds)),
+                    chac=[d.get('chac') for d in ds], chon=None if dt is None else SL.ten_dong_tac(dt), bo=bo,
+                    khe={k: round(v, 9) if v != math.inf else 'inf' for k, v in SL.khe(pl, t, tuong=fl).items()}))
+print(json.dumps(out, sort_keys=True, default=lambda o: o.item() if hasattr(o, 'item') else str(o)))
+'''
+
+
+def test_14_duong_lui_ba_khoa_false_cung_quyet_dinh_50e4146():
+    """A++ duong lui: ong_kiem_tam / ong_on_dinh / mui_tuong_khong_doi = false => ma moi cho CUNG ket qua voi 50e4146 (ba dau hieu,
+    thoat ra xa) tren 40 canh: ban do / + goc K4 bo tron / + ong, nhieu 3 mm (MEM, do_vat, vat chac, chon dong tac, khe)."""
+    tam = tempfile.mkdtemp()
+    goc = os.path.dirname(DAY)
+    subprocess.run('git -C %s archive 50e4146 xe_scripts | tar -x -C %s' % (goc, tam), shell=True, check=True)
+    kich = tempfile.mkdtemp()
+    with open(os.path.join(kich, 'test_phan_loai_cum_kich.py'), 'w') as f:
+        f.write('import math\nimport the_gioi_gia as TG\nW = TG.canh_tuong(TG.doc_ban_do())\n'
+                'def ong(cx, cy, r=0.09, n=24):\n    p = [(cx + r * math.cos(2 * math.pi * k / n), cy + r * math.sin(2 * math.pi * k / n)) for k in range(n)]\n'
+                '    return [(p[k], p[(k + 1) %% n]) for k in range(n)]\n'
+                'K4 = %r\n'
+                'def the_gioi(n):\n    return [W, K4, W + ong(1.0, 0.1), K4 + ong(0.6, -0.065)][n %% 4]\n' % (K4_TRON,))
+    cu = os.path.join(tam, 'xe_scripts')
+    env = dict(os.environ, HANH_VI_YAML=os.path.join(cu, 'hanh_vi_xe.yaml'))
+    a = subprocess.run([sys.executable, '-c', _KICH3, cu, kich], capture_output=True, text=True, env=env, cwd=cu)
+    env['HANH_VI_YAML'] = os.path.join(DAY, 'hanh_vi_xe.yaml')
+    b = subprocess.run([sys.executable, '-c', _KICH3, DAY, kich], capture_output=True, text=True, env=env, cwd=DAY)
+    assert a.returncode == 0 and b.returncode == 0, (a.stderr[-600:], b.stderr[-600:])
+    ja, jb = json.loads(a.stdout), json.loads(b.stdout)
+    assert len(ja) == 40 and ja == jb, next(((i, x, y) for i, (x, y) in enumerate(zip(ja, jb)) if x != y), None)
+    assert any('(ong:' in m for x in ja for m in x['mem'])
+
+
 if __name__ == '__main__':
     import traceback
     ca = sorted((k, f) for k, f in globals().items() if k.startswith('test_') and callable(f))

@@ -687,6 +687,7 @@ class Mat:
 
     def __init__(self, io, kn):
         self.io, self.kn, self.t, self.mem = io, kn, GV.tham_so(), GV.Mem()
+        self.theo = GV.TheoDoiOng()                      # 10/11 A++: on dinh cung qua cac lan quet (ong_on_dinh)
 
     def quet(self):
         """-> ('OK', t_quet, ds, diem khung xe) | ('MU', None, None, None) (CANH BAO 1 lan moi dot, kn.mu) | ('CHUA', ...)."""
@@ -700,7 +701,7 @@ class Mat:
             return 'CHUA', None, None, None
         self.kn.mu = False
         t_q, pxe, pmap = q[1]
-        ds = GV.danh_gia(pxe, pmap, self.io.gac_ban(), self.t)
+        ds = GV.danh_gia(pxe, pmap, self.io.gac_ban(), self.t, self.theo, t_q)
         for c in self.mem.cap_nhat(ds):
             self.io.bao(c)
         return 'OK', t_q, ds, pxe

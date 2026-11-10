@@ -112,7 +112,10 @@ MOI_NAO_XE = {'kinh_nghiem_quan_sat_s': 15.0,           # so MOI cua nao xe (kho
               # 10/11 A+ (Thien duyet 15:34): phan loai ba dau hieu + thoat ra xa
               'phan_loai_cum': 'ba_dau_hieu', 'thoat_ra_xa': True, 'cung_r_min_m': 0.06, 'cung_r_max_m': 0.12, 'cung_rms_m': 0.01,
               'cung_so_diem': 5, 'ngoai_ban_do_m': 0.08, 'ngoai_so_diem': 2, 'thang_rms_m': 0.01, 'goc_gay_lech_deg': 20.0,
-              'khong_cham_m': 0.02}
+              'khong_cham_m': 0.02,
+              # 10/11 A++: on dinh ong, mui tren ban do
+              'ong_kiem_tam': True, 'ong_on_dinh': True, 'mui_tuong_khong_doi': True, 'ong_tam_sau_m': 0.05, 'ong_cach_cum_m': 0.05,
+              'ong_cua_so_s': 1.0, 'ong_ti_le': 0.6, 'ong_so_quet_min': 3, 'ong_goc_min_deg': 100.0}
 CU_AN_TOAN = {'cach_vat_toi_thieu_m': 0.06, 'sep_phat_toc_do': False, 'truoc_vat_do_m': 0.10, 'duoi_do_m': 0.06}   # 20:33: + 2 luat do
 
 
@@ -222,7 +225,7 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     import kiem_hanh_vi as K
     tq, at, tt = dict(HV.MAC_DINH), dict(HV.MAC_DINH_AN_TOAN), dict(HV.MAC_DINH_THAN_THE)
     kq = K.kiem(DAY, tq, at, tt)
-    assert all(d for _, _, d in kq) and len(kq) == 46 and {m for m, _, _ in kq} == {'a', 'b', 'c'}, kq
+    assert all(d for _, _, d in kq) and len(kq) == 47 and {m for m, _, _ in kq} == {'a', 'b', 'c'}, kq
     # (a) so trong tep chay that lech yaml: progress 10 -> 12 (tep rpp); 23:08: cay BT lai co BackUp; thieu drive_on_heading
     d = _thu_muc_chep()
     _sua(d, 'nav2_params_mat_rpp.yaml', 'movement_time_allowance: 10.0', 'movement_time_allowance: 12.0')
@@ -268,6 +271,6 @@ def test_06_kiem_hanh_vi_dat_tren_tep_kho_va_bat_3_ca_lech():
     with contextlib.redirect_stdout(e):
         assert K.main(['--thu-muc', DAY, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 0
         assert K.main(['--thu-muc', d, '--yaml', os.path.join(DAY, 'hanh_vi_xe.yaml')]) == 1
-    assert e.getvalue().splitlines()[46] == 'KIEM HANH VI: DAT (46 dong, 0 lech)'
+    assert e.getvalue().splitlines()[47] == 'KIEM HANH VI: DAT (47 dong, 0 lech)'
     kx = open(os.path.join(DAY, 'kiem_xe.sh')).read()
     assert 'python3 ~/kiem_hanh_vi.py || KQ=1' in kx and kx.index('# 8e.') > kx.index('# 8d.')

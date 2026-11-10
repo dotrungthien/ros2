@@ -31,6 +31,7 @@ bt_mat.xml|~/bt_mat.xml
 nav2_params_cho.yaml|~/nav2_params_cho.yaml
 nav2_params_mat.yaml|~/nav2_params_mat.yaml
 nav2_params_mat_rpp.yaml|~/nav2_params_mat_rpp.yaml
+nav2_params_mat_rpp_chung.yaml|~/nav2_params_mat_rpp_chung.yaml
 cai_cau_noi.sh|~/cai_cau_noi.sh
 cau_noi_xe.py|~/cau_noi/cau_noi_xe.py
 chon_b_v4.html|~/cau_noi/chon_b.html
@@ -39,6 +40,8 @@ trang_v10.html|~/cau_noi/trang_v10.html
 lai_xe_lidar.py|~/lai_xe_lidar.py
 sep.py|~/sep.py
 gui_duong.py|~/gui_duong.py
+ban_do_chung.py|~/ban_do_chung.py
+hop_den.py|~/hop_den.py
 dung_xe.py|~/dung_xe.py|tuychon
 tinh_tuyen.py|~/tinh_tuyen.py
 lop_huong_dan.py|~/lop_huong_dan.py

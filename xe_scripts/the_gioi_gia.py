@@ -163,3 +163,84 @@ class LuoiDi:
             ds.append(self.tam(k))
             k = nho[('cha', k)]
         return [a] + ds[::-1][:-1] + [b] if ds else [a, b]
+
+
+# ---------- 10/11 ban do chung (Thien 17:59): costmap gia kieu Nav2 Humble + NavFn gia ----------
+def _thoi(cost254, res, r_ins, r_inf, k):
+    """Inflation Nav2 (cell centre distance): 254 giu; d <= r_ins => 253; d <= r_inf => 252 exp(-k (d - r_ins)); xa hon 0."""
+    from scipy.ndimage import distance_transform_edt
+    if not cost254.any():
+        return np.zeros(cost254.shape)
+    d = distance_transform_edt(~cost254) * res
+    c = np.where(d <= r_inf + 1e-9, 252.0 * np.exp(-k * (d - r_ins)), 0.0)
+    c = np.where(d <= r_ins + 1e-9, 253.0, c)
+    return np.where(cost254, 254.0, np.floor(c))
+
+
+def costmap_gia(bd, kieu='dem', lech=(0.0, 0.0), vong=(), vat=(), lidar=True, r_inf=0.20, k=10.0, r_inf_tuong=0.30, k_tuong=4.0):
+    """Global costmap gia (mang [j, i] chi phi 0..254, hang 0 o duoi). kieu tuong ban do:
+      'giu251' (dang dung): tuong 251, khong inflation;  'lethal': tuong 254 + inflation (r_inf_tuong, k_tuong);
+      'dem' (chon): tuong 251 + dem mem ban_do_chung.dem_tuong (< 253, khong chan).
+    LiDAR (lidar=True): tuong THAT = tuong ban do dich lech (ban do lech so voi the gioi) => 254, inflation (r_inf, k).
+    vong: [(x, y, R)] => 254 (lop vong_vat) + inflation. vat: [(x, y)] diem vat LiDAR => 254."""
+    import ban_do_chung as BC
+    w, h, res, ox, oy = bd['w'], bd['h'], bd['res'], bd['ox'], bd['oy']
+    tinh = np.zeros((h, w))
+    for i, j in bd['o']:
+        tinh[j, i] = 254 if kieu == 'lethal' else 251
+    if kieu == 'dem':
+        tinh = np.maximum(tinh, np.array(BC.dem_tuong(w, h, res, bd['o']), dtype=float).reshape(h, w) * 254 / 100)
+    m = np.zeros((h, w), dtype=bool)
+    if lidar:
+        for i, j in bd['o']:
+            x, y = ox + (i + 0.5) * res + lech[0], oy + (j + 0.5) * res + lech[1]
+            a, b = int(math.floor((x - ox) / res)), int(math.floor((y - oy) / res))
+            if 0 <= a < w and 0 <= b < h:
+                m[b, a] = True
+    for x, y in vat:
+        a, b = int(math.floor((x - ox) / res)), int(math.floor((y - oy) / res))
+        if 0 <= a < w and 0 <= b < h:
+            m[b, a] = True
+    if vong:
+        m |= np.array(BC.luoi_vong(dict(w=w, h=h, res=res, ox=ox, oy=oy), vong)).reshape(h, w) == 100
+    c = np.maximum(tinh, _thoi(m, res, 0.08, r_inf, k))
+    if kieu == 'lethal':
+        c = np.maximum(c, _thoi(tinh >= 254, res, 0.08, r_inf_tuong, k_tuong))
+    return c
+
+
+def o_msg(c):
+    """Chi phi Nav2 -> gia tri OccupancyGrid cua /global_costmap/costmap (costmap_2d_publisher: 253 => 99, 254 => 100)."""
+    return np.where(c >= 254, 100, np.where(c >= 253, 99, np.where(c <= 0, 0, 1 + (97 * (c - 1)) // 251))).astype(int)
+
+
+def navfn_gia(c, bd, a, b):
+    """NavFn gia (Dijkstra 8 huong): o >= 253 cam (tru o xe), gia o = 50 + 0,8 x chi phi. -> [(x, y)] | None."""
+    w, h, res, ox, oy = bd['w'], bd['h'], bd['res'], bd['ox'], bd['oy']
+    ka = (int(math.floor((a[0] - ox) / res)), int(math.floor((a[1] - oy) / res)))
+    kb = (int(math.floor((b[0] - ox) / res)), int(math.floor((b[1] - oy) / res)))
+    gia = lambda k: None if not (0 <= k[0] < w and 0 <= k[1] < h) or (c[k[1], k[0]] >= 253 and k != ka) else 50 + 0.8 * min(c[k[1], k[0]], 252)
+    if gia(kb) is None:
+        return None
+    kc, cha, q = {ka: 0.0}, {}, [(0.0, ka)]
+    while q:
+        g, k = heapq.heappop(q)
+        if k == kb:
+            break
+        if g > kc[k]:
+            continue
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                m = (k[0] + dx, k[1] + dy)
+                if (dx or dy) and gia(m) is not None:
+                    g2 = g + math.hypot(dx, dy) * gia(m)
+                    if g2 < kc.get(m, math.inf):
+                        kc[m], cha[m] = g2, k
+                        heapq.heappush(q, (g2, m))
+    if kb not in kc:
+        return None
+    ds, k = [], kb
+    while k != ka:
+        ds.append((ox + (k[0] + 0.5) * res, oy + (k[1] + 0.5) * res))
+        k = cha[k]
+    return [a] + ds[::-1][:-1] + [b]

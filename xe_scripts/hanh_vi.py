@@ -162,10 +162,10 @@ MAC_DINH = {
     'ong_so_quet_min': 3,        # so lan quet toi thieu trong cua so (lan quet le khong du)
     'ong_goc_min_deg': 100.0,    # (ong_kiem_tam) cung that thay duoc toi thieu bay nhieu do (song nhieu tren tuong: 30-60 do)
     # MOI 10/11 muc 6 + 7 (Thien duyet 16:36; huong dan co loi ra): diem dan ve_A, diem vuot sau luot bi chan
-    've_A_diem_dan': True,       # ve_A tuyen 1: di qua diem dan giua khe K4-H0 truoc khi toi A
+    've_A_diem_dan': False,      # 10/11 ban do chung muc 3: TAT (giu_khe thay); ve_A tuyen 1: di qua diem dan giua khe K4-H0 truoc khi toi A
     'diem_dan_cach_k4_m': 0.15,  # tam xe tai diem dan cach mep tren K4 toi thieu
     'diem_dan_han_s': 20.0,      # han toi diem dan (qua => bo, di thang A)
-    'diem_vuot': True,           # sau luot bi chan + THOAT: di qua diem vuot V roi moi gui lai dich
+    'diem_vuot': False,          # 10/11 ban do chung muc 4: TAT; sau luot bi chan + THOAT: di qua diem vuot V roi moi gui lai dich
     'diem_vuot_han_s': 25.0,     # han toi V
     'diem_vuot_d_min_m': 0.35,   # V cach diem bi chan P toi thieu
     'diem_vuot_d_max_m': 0.60,   # V cach P toi da
@@ -173,6 +173,14 @@ MAC_DINH = {
     'vuot_tuong1_m': 0.05,       # bac 1: than cach TUONG
     'vuot_vat2_m': 0.08,         # bac 2: than cach VAT (0,06 + 0,02 du)
     'vuot_tuong2_m': 0.04,       # bac 2: than cach TUONG (0,02 + 0,02 du)
+    # MOI 10/11 BAN DO CHUNG (Thien duyet 17:59): sep va Nav2 dung chung mot ban do
+    'vong_vat': True,            # gui_duong gui vong an toan quanh VAT CHAC (/vong_vat_ds -> lop_huong_dan -> /vong_vat); false = khong gui
+    'vong_giu_s': 3.0,           # giu vong sau lan thay cuoi
+    'tuong_dem': True,           # lop_huong_dan cong dem mem quanh tuong /map_tinh (< 253, khong chan)
+    'giu_khe': True,             # dau moi luot chon khe theo costmap chung, diem dan giua khe, giu toi khi luot hong
+    'hop_den': True,             # ~/hop_den/<chuyen>/*.npz moi su kien + moi hop_den_nhip_s khi dang di
+    'hop_den_nhip_s': 2.0,
+    'hop_den_mb': 20.0,          # tran dung luong moi chuyen (xoay vong: xoa tep cu nhat cua chuyen do)
 }
 
 COT_KINH_NGHIEM = 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do'     # ~/kinh_nghiem.csv tu 09/11 (nao xe viec 4)

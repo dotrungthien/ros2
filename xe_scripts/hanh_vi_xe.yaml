@@ -157,10 +157,10 @@ thoi_quen:
   ong_so_quet_min: {gia_tri: 3, dung_o: "gac_vat_la.py", cho: "so lan quet toi thieu trong cua so (lan quet le khong du)"}
   ong_goc_min_deg: {gia_tri: 100.0, dung_o: "gac_vat_la.py", cho: "(ong_kiem_tam) cung phai thay >= so do nay (ong O18: 140-170 do; nhieu tren tuong / goc: 30-60 do)"}
   # 10/11 muc 6 + 7 (Thien duyet 16:36): diem dan ve_A + diem vuot (HUONG DAN co loi ra: bi chan / Nav2 tu choi / qua han => bo diem, khong thoat, khong tinh luot, khong tinh han gan dich)
-  ve_A_diem_dan: {gia_tri: true, dung_o: "gui_duong.py", cho: "ve_A tuyen 1: diem dan giua khe K4-H0 (tinh tu ban do, x 0,45-0,90) roi moi toi A"}
+  ve_A_diem_dan: {gia_tri: false, dung_o: "gui_duong.py", cho: "ve_A tuyen 1: diem dan giua khe K4-H0 (tinh tu ban do, x 0,45-0,90) roi moi toi A"}
   diem_dan_cach_k4_m: {gia_tri: 0.15, dung_o: "gui_duong.py", cho: "tam xe tai diem dan cach mep tren K4 >= so nay"}
   diem_dan_han_s: {gia_tri: 20.0, dung_o: "gui_duong.py", cho: "han toi diem dan"}
-  diem_vuot: {gia_tri: true, dung_o: "gui_duong.py", cho: "sau luot bi chan tai P + THOAT: chon V phia truoc P, lech phia thoang, di toi V roi gui dich"}
+  diem_vuot: {gia_tri: false, dung_o: "gui_duong.py", cho: "sau luot bi chan tai P + THOAT: chon V phia truoc P, lech phia thoang, di toi V roi gui dich"}
   diem_vuot_han_s: {gia_tri: 25.0, dung_o: "gui_duong.py", cho: "han toi V"}
   diem_vuot_d_min_m: {gia_tri: 0.35, dung_o: "gui_duong.py", cho: "V cach P toi thieu"}
   diem_vuot_d_max_m: {gia_tri: 0.6, dung_o: "gui_duong.py", cho: "V cach P toi da"}
@@ -168,3 +168,12 @@ thoi_quen:
   vuot_tuong1_m: {gia_tri: 0.05, dung_o: "gui_duong.py", cho: "bac 1: than cach TUONG"}
   vuot_vat2_m: {gia_tri: 0.08, dung_o: "gui_duong.py", cho: "bac 2 (khong co V bac 1): than cach VAT 0,06 + 0,02"}
   vuot_tuong2_m: {gia_tri: 0.04, dung_o: "gui_duong.py", cho: "bac 2: than cach TUONG 0,02 + 0,02"}
+  # 10/11 BAN DO CHUNG (Thien duyet 17:59): ve_A_diem_dan va diem_vuot TAT (muc 3, 4). Duong lui: vong_vat false + giu_khe false + tuong_dem false
+  # + ve_A_diem_dan / diem_vuot true = 1d175aa; Nav2 cu = NAV_PARAMS=/home/project1/nav2_params_mat_rpp.yaml trong ~/cau_noi/cau_noi.env
+  vong_vat: {gia_tri: true, dung_o: "gui_duong.py", cho: "gui vong an toan quanh VAT CHAC (ban kinh cum + 0,06 + 0,01) cho lop vong_vat cua global + local costmap"}
+  vong_giu_s: {gia_tri: 3.0, dung_o: "gui_duong.py, lop_huong_dan.py", cho: "giu vong sau lan thay cuoi"}
+  tuong_dem: {gia_tri: true, dung_o: "lop_huong_dan.py", cho: "dem mem quanh tuong /map_tinh trong /lop_huong_dan (< 253: KHONG chan, chi day duong ra giua)"}
+  giu_khe: {gia_tri: true, dung_o: "gui_duong.py", cho: "dau moi luot chon khe (duoi / tren) theo costmap chung, diem dan giua khe, giu toi khi luot hong; khe dong giua chung => bo diem dan, khong tinh luot"}
+  hop_den: {gia_tri: true, dung_o: "gui_duong.py", cho: "hop den ~/hop_den/<chuyen>/<gio>_<su_kien>.npz (costmap, /plan, tu the, diem nhan, vong, sep)"}
+  hop_den_nhip_s: {gia_tri: 2.0, dung_o: "gui_duong.py", cho: "luu moi bay nhieu s khi dang di"}
+  hop_den_mb: {gia_tri: 20.0, dung_o: "gui_duong.py", cho: "tran MB moi chuyen (xoay vong)"}

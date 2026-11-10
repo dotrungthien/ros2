@@ -14,13 +14,20 @@ Chi chay khi MAT_LAI=true (navigation_my_bot.launch.py mat_lai:=true: python3 /h
 Kiem (kiem_xe.sh buoc 8d): python3 ~/lop_huong_dan.py --kiem-costmap  => /global_costmap/costmap co tin trong 10 s va cung
   kich thuoc / do phan giai / goc voi ban do goc. Ma thoat 0 = DAT, 1 = KHONG DAT.
 Phan thuan (khong ROS) o nua tren, thu bang test_lop_huong_dan.py.
+10/11 BAN DO CHUNG (Thien 17:59, CHUA CHAY TREN XE; chi co tac dung khi nav2_params_mat_rpp_chung.yaml co lop 'vong_vat'):
+- /vong_vat (OccupancyGrid, cung hinh hoc, 0 | 100, TRANSIENT_LOCAL): vong an toan quanh VAT CHAC do gui_duong gui qua /vong_vat_ds
+  (String 'x y R;...'), giu ban_do_chung.GIU_S s sau lan nhan cuoi (gui_duong chet => tu het sau 3 s). Phat luoi 0 ngay khi bat
+  (planner cho moi lop co ban). Moi lan nhan / het han: phat THAY TOAN BO.
+- tuong_dem (hanh_vi_xe.yaml): co /map_tinh => cong dem mem quanh o tuong (< 99 => chi phi < 253, KHONG chan) vao /lop_huong_dan.
 """
 import math
 import os
 import re
 import struct
 import sys
+import time
 
+import ban_do_chung as BC  # 10/11 ban do chung: vong an toan /vong_vat + dem mem tuong
 import hanh_vi as HV      # 09/11 nao xe viec 2: so lay tu ~/hanh_vi_xe.yaml (mac dinh = so 2607fee)
 import tinh_tuyen as TT
 
@@ -107,7 +114,7 @@ def tam_vung_ton(diem):
     return tam
 
 
-def luoi(hh, chon, diem_kn):
+def luoi(hh, chon, diem_kn, dem=None):
     """Du lieu OccupancyGrid (hang 0 o duoi, i theo x): 0 | GIA_TON | GIA_CAM. chon = doc_chon_tuyen(...)."""
     w, h, res, ox, oy = hh['w'], hh['h'], hh['res'], hh['ox'], hh['oy']
     tam = tam_vung_ton(diem_kn)
@@ -127,7 +134,7 @@ def luoi(hh, chon, diem_kn):
                     v = GIA_CAM
             if v < GIA_TON and any(math.hypot(cx - a, cy - b) <= R_VUNG for a, b in tam):
                 v = GIA_TON
-            out[j * w + i] = v
+            out[j * w + i] = v if dem is None else max(v, dem[j * w + i])   # 10/11: dem mem tuong (< GIA_CAM khong doi y nghia)
     return out
 
 
@@ -169,11 +176,23 @@ if rclpy is not None:
             self.pub = self.create_publisher(OccupancyGrid, '/lop_huong_dan', qos_giu())
             self.create_subscription(String, '/chon_tuyen', self._on_chon, QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE))
             self.chon = None
+            # 10/11 ban do chung: dem mem (can o tuong /map_tinh) + vong an toan /vong_vat
+            self.dem, self.giu = None, BC.GiuVong(HV.so('vong_giu_s'))
+            self.create_subscription(OccupancyGrid, '/map_tinh', self._on_map, qos_giu())
+            self.pub_vong = self.create_publisher(OccupancyGrid, '/vong_vat', qos_giu())
+            self.create_subscription(String, '/vong_vat_ds', self._on_vong, QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE))
+            self.vong_cu = None
+            self.phat_vong([])
+            self.create_timer(0.5, lambda: self.phat_vong(self.giu.hien(time.monotonic())))
             self.phat()
 
         def phat(self):
             kn = doc_kinh_nghiem(self.get_parameter('kinh_nghiem').value)
-            data = luoi(self.hh, self.chon, kn)
+            data = luoi(self.hh, self.chon, kn, self.dem)
+            self.pub.publish(self._luoi(data))
+            print(tom_tat(data, self.chon, len(kn), len(tam_vung_ton(kn))), flush=True)
+
+        def _luoi(self, data):
             m = OccupancyGrid()
             m.header.frame_id = 'map'
             m.header.stamp = self.get_clock().now().to_msg()
@@ -183,8 +202,26 @@ if rclpy is not None:
             m.info.origin.position.x, m.info.origin.position.y = self.hh['ox'], self.hh['oy']
             m.info.origin.orientation.w = 1.0
             m.data = data
-            self.pub.publish(m)
-            print(tom_tat(data, self.chon, len(kn), len(tam_vung_ton(kn))), flush=True)
+            return m
+
+        def phat_vong(self, vong):
+            """Phat /vong_vat khi tap vong doi (thay toan bo)."""
+            if vong == self.vong_cu:
+                return
+            self.vong_cu = list(vong)
+            self.pub_vong.publish(self._luoi(BC.luoi_vong(self.hh, vong)))
+
+        def _on_vong(self, msg):
+            self.phat_vong(self.giu.cap_nhat(BC.doc_vong(msg.data), time.monotonic()))
+
+        def _on_map(self, msg):
+            i = msg.info
+            if not HV.so('tuong_dem') or not khop_hinh_hoc(i, self.hh)[0]:
+                return
+            tuong = {(k % i.width, k // i.width) for k, v in enumerate(msg.data) if v >= 65}
+            self.dem = BC.dem_tuong(i.width, i.height, i.resolution, tuong)
+            print('PHAT dem mem tuong: %d o tuong, %d o dem' % (len(tuong), sum(1 for v in self.dem if v > 0)), flush=True)
+            self.phat()
 
         def _on_chon(self, msg):
             try:

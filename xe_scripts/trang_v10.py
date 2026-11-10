@@ -117,7 +117,7 @@ def chuyen_cuoi_ct(dong):
         if s.startswith(('SEP_LIDAR: DOI_VAT', 'SEP_LIDAR: CHO_VI_TRI')):
             return 'CHO', s
         if s.startswith(('SEP_LIDAR: DI ', 'CHO_VI_TRI: vi tri tin lai')) or (s.startswith(('DIEM_DAN: (', 'DIEM_VUOT: P')) and '=> V' in s or
-                                                                            s.startswith('DIEM_DAN: (')):   # 10/11 muc 6/7: di toi diem phu = 이동
+                                                                            s.startswith(('DIEM_DAN: (', 'KHE: chon'))):   # 10/11 muc 6/7: di toi diem phu = 이동; ban do chung: di toi diem dan giua khe
             return 'DI', s
         # 09/11 18:47 (i): gui_duong het vong khe => 'CHO_NGUOI: ...' (dung yen, tien trinh song, cho nguoi bam 정지 / tu thu lai)
         if s.startswith('CHO_NGUOI:') and not s.startswith(('CHO_NGUOI: het ', 'CHO_NGUOI: sep het ')):     # 2 dong nay = di tiep

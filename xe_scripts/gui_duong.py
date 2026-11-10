@@ -66,6 +66,8 @@ import signal
 import sys
 import time
 
+import hop_den as HD       # 10/11 muc 0: hop den (numpy)
+import ban_do_chung as BC  # 10/11 ban do chung (Thien 17:59): vong an toan, khe theo costmap chung
 import gac_vat_la as GV  # 09/11 dung im ban 2: gac vat la (phan thuan)
 import hanh_vi as HV
 import sep_lidar as SL     # 09/11 23:08 sep LiDAR mot nguoi lai (phan thuan)      # 09/11 nao xe viec 2: moi so hanh vi lay tu ~/hanh_vi_xe.yaml (mac dinh = so 2607fee)
@@ -96,7 +98,8 @@ def cau_hinh(env=os.environ):
                 cho_vi_tri=h('cho_vi_tri_s'), v_thoat=h('toc_do_thoat_mps'), thoat_buoc=h('thoat_buoc_max'),
                 thoat_hong=h('thoat_hong_max'), thoat_han=h('thoat_han_s'),
                 # 10/11 muc 6 + 7: diem dan ve_A, diem vuot (huong dan co loi ra)
-                diem_dan=h('ve_A_diem_dan'), diem_dan_han=h('diem_dan_han_s'), diem_vuot=h('diem_vuot'), vuot_han=h('diem_vuot_han_s'))
+                diem_dan=h('ve_A_diem_dan'), diem_dan_han=h('diem_dan_han_s'), diem_vuot=h('diem_vuot'), vuot_han=h('diem_vuot_han_s'),
+                giu_khe=h('giu_khe'))                    # 10/11 ban do chung muc 3
 
 
 # ---------- 08/11 bo 1e: kieu mat (phan thuan) ----------
@@ -625,6 +628,22 @@ def huong_toi(p, dich):
     return math.atan2(dich[1] - p[1], dich[0] - p[0]) - p[2]
 
 
+def chon_khe_luot(io, kn, pose, dich, uu):
+    """10/11 ban do chung muc 3: dau luot. Xe va dich o hai phia khe => chon khe THONG (costmap chung: o < 99) theo uu, diem dan giua
+    khe. -> (ten khe | None, (x, y, yaw) | None). Khong can qua khe / vi tri khong tin => (None, None)."""
+    p = io.pose() or pose
+    if p is None or not tin_sep(io, kn) or not BC.can_dan(p, dich, BC.KHE['duoi']):
+        return None, None
+    c = BC.chon_khe(io.o_costmap, uu)
+    if c is None:
+        io.bao('KHE: ca hai khe dong voi Nav2 (costmap chung), Nav2 tu vach.')
+        return None, None
+    ten, tam, rong = c
+    yaw = 0.0 if dich[0] > p[0] else math.pi
+    io.bao('KHE: chon %s (thong %.2f m theo costmap chung), diem dan (%.2f; %.2f), giu toi khi luot hong.' % (ten, rong, tam[0], tam[1]))
+    return ten, (tam[0], tam[1], yaw)
+
+
 def tin_sep(io, kn):
     """Muc 6 / Q1: tin cua sep.py (/sep/trang_thai) la TIN, khong phai lenh. Thien 00:5x: vi tri khong tin CHI khi muc_tin KHONG_TIN
     (tin_cay < 0,50 lien tuc >= 5 s) hoac BAO (>= 15 s); NGHI (0,50-0,70) van tin (khong huy dich). In 1 dong khi doi: 'sep: KHONG_TIN (ghi, khong chan)',
@@ -693,6 +712,7 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
     io.ghi(nhan, thu_tu[0], 1, 0, 'KIEM_DAT', 0)
     luot, lan, can_thoat, nhac = Luot(cfg), 0, None, True
     diem_chan, da_dan = None, False                      # 10/11 muc 7: P (diem bi chan) cho diem vuot; muc 6: diem dan da dung
+    khe_giu, khe_hong, can_chon = None, None, True       # 10/11 ban do chung muc 3: khe dang giu, khe vua hong, dau luot moi
 
     def cho_nguoi_luot(ly):
         if cfg.get('cho_lai', 0) <= 0:
@@ -739,8 +759,26 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
             return 3
         r = thu_tu[0] if lan == 0 else 0
         lan += 1
+        dan = None
+        if cfg.get('giu_khe'):                           # 10/11 ban do chung muc 3: chon khe dau luot theo costmap chung, giu toi khi luot hong
+            if can_chon:
+                can_chon = False
+                uu = ('duoi', 'tren') if thu_tu[0] == 1 else ('tren', 'duoi')        # tuyen 1 = khe duoi (CAM[1] cam hanh lang tren)
+                if khe_hong:
+                    uu = tuple(k for k in uu if k != khe_hong) + (khe_hong,)        # luot vua hong o khe nay => thu khe kia truoc
+                khe_giu, dan = chon_khe_luot(io, kn, pose, (dx, dy), uu)
+            r = BC.KHE[khe_giu]['r'] if khe_giu else 0
         io.chon_tuyen('0' if r == 0 else '%d %.3f %.3f' % (r, pose[0], pose[1]))
         io.ngu(cfg['cho_chon'])
+        if dan is not None:
+            ten_k = khe_giu
+            dong = lambda: None if BC.do_khe(io.o_costmap, BC.KHE[ten_k])[0] > 0 else 'khe %s dong voi Nav2' % ten_k
+            if di_phu(io, cfg, kn, luot, dan[:2], dan[2], cfg['diem_dan_han'], 'DIEM_DAN', dong=dong) != 'TOI':
+                io.bao('DIEM_DAN: bo, di thang dich (Nav2 tu vach, khong tinh luot).')
+                if dong() is not None:                   # khe dong: bo ca uu tien khe do
+                    khe_giu, r = None, 0
+                    io.chon_tuyen('0')
+                    io.ngu(cfg['cho_chon'])
         if huong == 've_A' and r == 1 and cfg.get('diem_dan') and not da_dan and tin_sep(io, kn):   # muc 6 (9c: chi khi vi tri tin)
             da_dan = True
             dd = diem_dan_ve_A(io.gac_ban(), HV.so('diem_dan_cach_k4_m')) if io.gac_ban() is not None else None
@@ -780,6 +818,7 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
             luot.xa += 1
         kn.ngay('LUOT_CHAN', kq, 'HONG', ly_do_kinh_nghiem(io.tuoi_plan(), cfg['khong_tien']), p)
         diem_chan = None if p is None else (p[0], p[1])  # 10/11 muc 7
+        khe_hong, can_chon = khe_giu, True               # 10/11 ban do chung muc 3: luot hong => doi khe o luot sau
         io.chup(huong, 'luot bi chan (tuyen %d, %s)' % (r, kq))
         io.bao('   khong den duoc (%s%s).' % (kq, '' if lech is None else ', cach dich %.2f m' % lech))
         io.ghi(nhan, r, 1, lan, 'KHONG_DAT', giay, '-' if lech is None else '%.2f' % lech)
@@ -815,6 +854,8 @@ class Mat:
     def __init__(self, io, kn):
         self.io, self.kn, self.t, self.mem = io, kn, GV.tham_so(), GV.Mem()
         self.theo = GV.TheoDoiOng()                      # 10/11 A++: on dinh cung qua cac lan quet (ong_on_dinh)
+        self.giu = BC.GiuVong(HV.so('vong_giu_s'))       # 10/11 ban do chung muc 1: vong an toan giu 3 s
+        self.theo_xa = GV.TheoDoiOng()                   # on dinh cung cho vong (khong dung chung voi danh_gia: khong dem doi)
 
     def quet(self):
         """-> ('OK', t_quet, ds, diem khung xe) | ('MU', None, None, None) (CANH BAO 1 lan moi dot, kn.mu) | ('CHUA', ...)."""
@@ -829,6 +870,14 @@ class Mat:
         self.kn.mu = False
         t_q, pxe, pmap = q[1]
         ds = GV.danh_gia(pxe, pmap, self.io.gac_ban(), self.t, self.theo, t_q)
+        gv, hd = HV.so('vong_vat') and hasattr(self.io, 'gui_vong'), hasattr(self.io, 'nho_quet')
+        if (gv or hd) and t_q - getattr(self, 't_vong', -9.0) >= BC.NHIP_S - 1e-9:   # 10/11 ban do chung: moi cum trong 2,5 m, 2 lan/s
+            self.t_vong = t_q
+            vong, cum = BC.vong_quet(pxe, pmap, self.io.gac_ban(), self.t, self.theo_xa, t_q)
+            if gv:                                       # muc 1: ong / ngoai ban do => vong cho costmap Nav2 (giu 3 s)
+                self.io.gui_vong(self.giu.cap_nhat(vong, t_q))
+            if hd:                                       # muc 0: hop den (nhan moi cum)
+                self.io.nho_quet(pmap, cum)
         for c in self.mem.cap_nhat(ds):
             self.io.bao(c)
         return 'OK', t_q, ds, pxe
@@ -1100,7 +1149,7 @@ def thoat(io, cfg, kn, luot, dich, ly):
     return 'XONG'
 
 
-def di_diem(io, cfg, kn, luot, diem, yaw, k0=None, han=None, phu=False):
+def di_diem(io, cfg, kn, luot, diem, yaw, k0=None, han=None, phu=False, dong=None):
     """navigate_to_pose toi diem thoat, han thoat_han_s; vung do TE HON luc bat dau (k0, Q3 khong xet khe) => huy.
     -> 'TOI' (SUCCEEDED / cach diem <= tien_min) | 'HONG_<ly>' | 'HAN_GAN'."""
     if not io.gui_nav(diem, yaw):
@@ -1122,6 +1171,10 @@ def di_diem(io, cfg, kn, luot, diem, yaw, k0=None, han=None, phu=False):
             if ly is not None:
                 io.huy()
                 return 'TOI' if toi else 'HONG (%s)' % ly
+        ly = dong() if dong is not None else None       # 10/11 ban do chung muc 3: khe da chon dong giua chung => bo diem dan
+        if ly:
+            io.huy()
+            return 'HONG (%s)' % ly
         if not phu and luot.het_han_gan(io.now()):
             io.huy()
             return 'HAN_GAN'
@@ -1152,12 +1205,12 @@ def di_vuot(io, cfg, kn, luot, P, dich):
     return di_phu(io, cfg, kn, luot, c['V'], c['yaw'], cfg['vuot_han'], 'DIEM_VUOT')
 
 
-def di_phu(io, cfg, kn, luot, diem, yaw, han, ten):
+def di_phu(io, cfg, kn, luot, diem, yaw, han, ten, dong=None):
     """10/11 muc 6 / 7 + K2 + K3: di toi diem phu (dan / vuot). Nav2 tu choi / huy / vung do / qua han => 'BO' (KHONG thoat, KHONG tinh
     luot). Thoi gian di khong tinh vao han gan dich. -> 'TOI' | 'BO'."""
     t0 = io.now()
     k0 = SL.tom_tat(quet_moi(io, kn)[0] or [])
-    kq = di_diem(io, cfg, kn, luot, diem, yaw, k0, han=han, phu=True)
+    kq = di_diem(io, cfg, kn, luot, diem, yaw, k0, han=han, phu=True, dong=dong)
     if luot.t_gan0 is not None:
         luot.t_gan0 += io.now() - t0                     # K3: khong tinh vao han gan dich
     io.bao('   %s_XONG: (%.2f; %.2f) => %s.' % (ten, diem[0], diem[1], kq))
@@ -1405,6 +1458,11 @@ if rclpy is not None:
                 self.vet_xe = []                         # 09/11 gia X (d): (x, y) moi nhip_vi_tri_s trong chuyen
                 self.thu_muc_chup = os.path.expanduser('~/chup')
                 self.tep_log = os.path.expanduser('~/log_gui_duong.txt')
+                # 10/11 ban do chung: vong an toan -> lop_huong_dan (/vong_vat); hop den (local costmap, quet + nhan, vong)
+                self.pub_vong = self.create_publisher(String, '/vong_vat_ds', QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE))
+                self.vong_cuoi, self.t_vong, self.cm_l, self.quet_cuoi = [], 0.0, None, (None, None)
+                self.create_subscription(OccupancyGrid, '/local_costmap/costmap', self._on_cm_l, giu)
+                self.hd, self.t_hd = None, 0.0
 
         # --- nghe ---
         def _on_costmap(self, msg):
@@ -1429,6 +1487,9 @@ if rclpy is not None:
             while True:
                 if self.kieu == 'mat' and time.monotonic() - self.t_vi_tri >= HV.so('nhip_vi_tri_s'):     # 09/11 buoc 3 #3
                     self._ghi_vi_tri()
+                if (self.kieu == 'mat' and HV.so('hop_den') and time.monotonic() - self.t_hd >= HV.so('hop_den_nhip_s')
+                        and ((self.goal is not None and self.kq is None) or self.dong_tac_dang_chay())):
+                    self._luu_hd('DI')                       # 10/11 muc 0: moi 2 s khi dang di
                 con = t_het - time.monotonic()
                 if con <= 0:
                     return
@@ -1451,6 +1512,47 @@ if rclpy is not None:
         def bao(self, cau):
             self.dong.append(cau)
             print(cau, flush=True)
+            if self.kieu == 'mat' and HV.so('hop_den'):         # 10/11 muc 0: hop den moi su kien
+                ev = HD.su_kien(cau)
+                if ev:
+                    self._luu_hd(ev, cau)
+
+        # --- 10/11 ban do chung ---
+        def _on_cm_l(self, msg):
+            self.cm_l = msg
+
+        def gui_vong(self, vong):
+            """Vong an toan (da giu 3 s) -> /vong_vat_ds, toi da 5 lan/s (lop_huong_dan giu tiep 3 s va ve /vong_vat)."""
+            self.vong_cuoi = vong
+            if time.monotonic() - self.t_vong >= 0.2:
+                self.t_vong = time.monotonic()
+                m = String()
+                m.data = BC.chuoi_vong(vong)
+                self.pub_vong.publish(m)
+
+        def nho_quet(self, pmap, ds):
+            self.quet_cuoi = (pmap, ds)
+
+        @staticmethod
+        def _cm(msg):
+            if msg is None:
+                return None
+            i = msg.info
+            return (i.width, i.height, i.resolution, i.origin.position.x, i.origin.position.y, msg.data)
+
+        def _luu_hd(self, ev, dong=''):
+            """Mot tep hop den (loi ghi => bo qua, khong lam hong chuyen)."""
+            self.t_hd = time.monotonic()
+            if self.hd is None:
+                self.hd = HD.HopDen(os.path.expanduser('~/hop_den'), time.strftime('%m%d_%H%M%S') + '_' + (sys.argv[1] if len(sys.argv) > 1 else 'x'),
+                                    HV.so('hop_den_mb'))
+            try:
+                mo = self._tu_the(self.tf_buf.lookup_transform('map', 'odom', Time()))
+            except Exception:                        # noqa: BLE001
+                mo = None
+            pmap, ds = self.quet_cuoi
+            self.hd.luu(ev, time.time(), self.pose(), self._cm(self.cm), self._cm(self.cm_l), mo, self.plan_cuoi, pmap, ds,
+                        self.vong_cuoi, self.sep_tt, dong)
 
         def ghi(self, nhan, tuyen, diem, lan, ket_qua, giay, lech='-', lech_fp='-', tuoi='-'):
             moi = not os.path.exists(self.csv)

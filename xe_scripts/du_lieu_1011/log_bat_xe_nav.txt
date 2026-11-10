@@ -1,0 +1,295 @@
+[INFO] [launch]: All log files can be found below /home/project1/.ros/log/2026-11-10-19-26-57-402603-project1-26071
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [controller_server-1]: process started with pid [26091]
+[INFO] [planner_server-2]: process started with pid [26093]
+[INFO] [behavior_server-3]: process started with pid [26095]
+[INFO] [bt_navigator-4]: process started with pid [26097]
+[INFO] [velocity_smoother-5]: process started with pid [26099]
+[INFO] [collision_monitor-6]: process started with pid [26101]
+[INFO] [map_server-7]: process started with pid [26103]
+[INFO] [lop_huong_dan-8]: process started with pid [26107]
+[INFO] [lifecycle_manager-9]: process started with pid [26125]
+[lifecycle_manager-9] [INFO] [1794306419.482347939] [lifecycle_manager_navigation]: Creating
+[lifecycle_manager-9] [INFO] [1794306419.689632994] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[velocity_smoother-5] [INFO] [1794306419.850125142] [velocity_smoother]: 
+[velocity_smoother-5] 	velocity_smoother lifecycle node launched. 
+[velocity_smoother-5] 	Waiting on external lifecycle transitions to activate
+[velocity_smoother-5] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-2] [INFO] [1794306419.989961309] [planner_server]: 
+[planner_server-2] 	planner_server lifecycle node launched. 
+[planner_server-2] 	Waiting on external lifecycle transitions to activate
+[planner_server-2] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[behavior_server-3] [INFO] [1794306420.042215827] [behavior_server]: 
+[behavior_server-3] 	behavior_server lifecycle node launched. 
+[behavior_server-3] 	Waiting on external lifecycle transitions to activate
+[behavior_server-3] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-4] [INFO] [1794306420.216723679] [bt_navigator]: 
+[bt_navigator-4] 	bt_navigator lifecycle node launched. 
+[bt_navigator-4] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-4] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-4] [INFO] [1794306420.217317272] [bt_navigator]: Creating
+[planner_server-2] [INFO] [1794306420.227965068] [planner_server]: Creating
+[controller_server-1] [INFO] [1794306420.429442068] [controller_server]: 
+[controller_server-1] 	controller_server lifecycle node launched. 
+[controller_server-1] 	Waiting on external lifecycle transitions to activate
+[controller_server-1] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[collision_monitor-6] [INFO] [1794306420.523100161] [collision_monitor]: 
+[collision_monitor-6] 	collision_monitor lifecycle node launched. 
+[collision_monitor-6] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-6] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-7] [INFO] [1794306420.637419568] [map_server]: 
+[map_server-7] 	map_server lifecycle node launched. 
+[map_server-7] 	Waiting on external lifecycle transitions to activate
+[map_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[map_server-7] [INFO] [1794306420.665007883] [map_server]: Creating
+[controller_server-1] [INFO] [1794306420.962261142] [controller_server]: Creating controller server
+[lifecycle_manager-9] [INFO] [1794306422.007553086] [lifecycle_manager_navigation]: Waiting for service map_server/get_state...
+[planner_server-2] [INFO] [1794306423.176929418] [global_costmap.global_costmap]: 
+[planner_server-2] 	global_costmap lifecycle node launched. 
+[planner_server-2] 	Waiting on external lifecycle transitions to activate
+[planner_server-2] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-2] [INFO] [1794306423.184632826] [global_costmap.global_costmap]: Creating Costmap
+[lifecycle_manager-9] [INFO] [1794306423.366246677] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-9] [INFO] [1794306423.371253955] [lifecycle_manager_navigation]: [34m[1mConfiguring map_server[0m[0m
+[map_server-7] [INFO] [1794306423.372720603] [map_server]: Configuring
+[map_server-7] [INFO] [1794306423.372986214] [map_io]: Loading yaml file: /home/project1/map_xuong_v3_tinh.yaml
+[map_server-7] [INFO] [1794306423.374029640] [map_io]: resolution: 0.05
+[map_server-7] [INFO] [1794306423.374114585] [map_io]: origin[0]: -0.566
+[map_server-7] [INFO] [1794306423.374145863] [map_io]: origin[1]: -0.415
+[map_server-7] [INFO] [1794306423.374173937] [map_io]: origin[2]: 0
+[map_server-7] [INFO] [1794306423.374201566] [map_io]: free_thresh: 0.25
+[map_server-7] [INFO] [1794306423.374229659] [map_io]: occupied_thresh: 1.01
+[map_server-7] [INFO] [1794306423.374267066] [map_io]: mode: scale
+[map_server-7] [INFO] [1794306423.374301677] [map_io]: negate: 0
+[map_server-7] [INFO] [1794306423.375171992] [map_io]: Loading image_file: /home/project1/map_xuong_v3.png
+[controller_server-1] [INFO] [1794306423.381694381] [local_costmap.local_costmap]: 
+[controller_server-1] 	local_costmap lifecycle node launched. 
+[controller_server-1] 	Waiting on external lifecycle transitions to activate
+[controller_server-1] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-1] [INFO] [1794306423.385877548] [local_costmap.local_costmap]: Creating Costmap
+[map_server-7] [INFO] [1794306423.394004196] [map_io]: Read map /home/project1/map_xuong_v3.png: 52 X 32 map @ 0.05 m/cell
+[lifecycle_manager-9] [INFO] [1794306423.508833622] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-1] [INFO] [1794306423.511149696] [controller_server]: Configuring controller interface
+[controller_server-1] [INFO] [1794306423.511741714] [controller_server]: getting goal checker plugins..
+[controller_server-1] [INFO] [1794306423.512132955] [controller_server]: Controller frequency set to 10.0000Hz
+[controller_server-1] [INFO] [1794306423.513814529] [local_costmap.local_costmap]: Configuring
+[controller_server-1] [INFO] [1794306423.580803307] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[controller_server-1] [INFO] [1794306423.608600603] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-1] [INFO] [1794306423.678925844] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-1] [INFO] [1794306423.680064714] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-1] [INFO] [1794306423.697757048] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-1] [INFO] [1794306423.800074992] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-1] [INFO] [1794306423.820019881] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-1] [INFO] [1794306423.835133640] [controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[controller_server-1] [INFO] [1794306423.839954918] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-1] [INFO] [1794306423.943259473] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-9] [INFO] [1794306424.052909807] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-2] [INFO] [1794306424.055388881] [planner_server]: Configuring
+[planner_server-2] [INFO] [1794306424.055601436] [global_costmap.global_costmap]: Configuring
+[planner_server-2] [INFO] [1794306424.124891899] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-2] [INFO] [1794306424.158421788] [global_costmap.global_costmap]: Subscribing to the map topic (/map_tinh) with transient local durability
+[planner_server-2] [INFO] [1794306424.171514621] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-2] [INFO] [1794306424.173683214] [global_costmap.global_costmap]: Using plugin "lop_huong_dan"
+[planner_server-2] [INFO] [1794306424.190249547] [global_costmap.global_costmap]: Subscribing to the map topic (/lop_huong_dan) with transient local durability
+[planner_server-2] [INFO] [1794306424.200212862] [global_costmap.global_costmap]: Initialized plugin "lop_huong_dan"
+[planner_server-2] [INFO] [1794306424.202068492] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-2] [INFO] [1794306424.218641103] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-2] [INFO] [1794306424.275635788] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-2] [INFO] [1794306424.275828473] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-2] [INFO] [1794306424.287317047] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-2] [INFO] [1794306424.386255769] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner/NavfnPlanner
+[planner_server-2] [INFO] [1794306424.388557103] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-2] [INFO] [1794306424.399140973] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-9] [INFO] [1794306424.514897732] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-3] [INFO] [1794306424.516016806] [behavior_server]: Configuring
+[behavior_server-3] [INFO] [1794306424.617069825] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors/Spin
+[behavior_server-3] [INFO] [1794306424.623103547] [behavior_server]: Configuring spin
+[behavior_server-3] [INFO] [1794306424.732559454] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors/BackUp
+[behavior_server-3] [INFO] [1794306424.736309139] [behavior_server]: Configuring backup
+[behavior_server-3] [INFO] [1794306424.827156028] [behavior_server]: Creating behavior plugin drive_on_heading of type nav2_behaviors/DriveOnHeading
+[behavior_server-3] [INFO] [1794306424.830335158] [behavior_server]: Configuring drive_on_heading
+[behavior_server-3] [INFO] [1794306424.913117102] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors/Wait
+[behavior_server-3] [INFO] [1794306424.919027825] [behavior_server]: Configuring wait
+[lifecycle_manager-9] [INFO] [1794306425.001968991] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-4] [INFO] [1794306425.003170880] [bt_navigator]: Configuring
+[lifecycle_manager-9] [INFO] [1794306426.303530342] [lifecycle_manager_navigation]: [34m[1mConfiguring velocity_smoother[0m[0m
+[velocity_smoother-5] [INFO] [1794306426.342539435] [velocity_smoother]: Configuring velocity smoother
+[lifecycle_manager-9] [INFO] [1794306426.489403453] [lifecycle_manager_navigation]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-6] [INFO] [1794306426.499038046] [collision_monitor]: Configuring
+[lop_huong_dan-8] PHAT /lop_huong_dan: chon=khong o_cam=0 o_ton=1664 (kinh nghiem 8 dong, 1 vung)
+[collision_monitor-6] [INFO] [1794306427.456158360] [collision_monitor]: [ThanTruoc]: Creating Polygon
+[collision_monitor-6] [INFO] [1794306427.586944971] [collision_monitor]: [scan]: Creating Scan
+[lifecycle_manager-9] [INFO] [1794306427.834711730] [lifecycle_manager_navigation]: [34m[1mActivating map_server[0m[0m
+[map_server-7] [INFO] [1794306427.835508119] [map_server]: Activating
+[map_server-7] [INFO] [1794306427.836037175] [map_server]: Creating bond (map_server) to lifecycle manager.
+[planner_server-2] [INFO] [1794306427.841046712] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 52 X 32 at 0.050000 m/pix
+[lifecycle_manager-9] [INFO] [1794306428.103867563] [lifecycle_manager_navigation]: Server map_server connected with bond.
+[lifecycle_manager-9] [INFO] [1794306428.104041489] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-1] [INFO] [1794306428.104988452] [controller_server]: Activating
+[controller_server-1] [INFO] [1794306428.105166045] [local_costmap.local_costmap]: Activating
+[controller_server-1] [INFO] [1794306428.105229230] [local_costmap.local_costmap]: Checking transform
+[controller_server-1] [INFO] [1794306428.105579212] [local_costmap.local_costmap]: start
+[controller_server-1] [INFO] [1794306428.163178360] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-1] [INFO] [1794306428.163344119] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-9] [INFO] [1794306428.367771082] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-9] [INFO] [1794306428.367927582] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-2] [INFO] [1794306428.370369230] [planner_server]: Activating
+[planner_server-2] [INFO] [1794306428.370559508] [global_costmap.global_costmap]: Activating
+[planner_server-2] [INFO] [1794306428.370624971] [global_costmap.global_costmap]: Checking transform
+[planner_server-2] [INFO] [1794306428.370966471] [global_costmap.global_costmap]: start
+[planner_server-2] [INFO] [1794306429.458839155] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-2] [INFO] [1794306429.477351581] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-9] [INFO] [1794306429.610554544] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-9] [INFO] [1794306429.610716766] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-3] [INFO] [1794306429.611518025] [behavior_server]: Activating
+[behavior_server-3] [INFO] [1794306429.611630748] [behavior_server]: Activating spin
+[behavior_server-3] [INFO] [1794306429.611683174] [behavior_server]: Activating backup
+[behavior_server-3] [INFO] [1794306429.611724544] [behavior_server]: Activating drive_on_heading
+[behavior_server-3] [INFO] [1794306429.611766822] [behavior_server]: Activating wait
+[behavior_server-3] [INFO] [1794306429.611816914] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-9] [INFO] [1794306429.742921951] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-9] [INFO] [1794306429.743086914] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-4] [INFO] [1794306429.744210266] [bt_navigator]: Activating
+[bt_navigator-4] [INFO] [1794306430.325936173] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-9] [INFO] [1794306430.459005895] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-9] [INFO] [1794306430.459233506] [lifecycle_manager_navigation]: [34m[1mActivating velocity_smoother[0m[0m
+[velocity_smoother-5] [INFO] [1794306430.460779469] [velocity_smoother]: Activating
+[velocity_smoother-5] [INFO] [1794306430.461042821] [velocity_smoother]: Creating bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-9] [INFO] [1794306430.594073451] [lifecycle_manager_navigation]: Server velocity_smoother connected with bond.
+[lifecycle_manager-9] [INFO] [1794306430.594206155] [lifecycle_manager_navigation]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-6] [INFO] [1794306430.595084914] [collision_monitor]: Activating
+[collision_monitor-6] [INFO] [1794306430.595246617] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-9] [INFO] [1794306430.733895025] [lifecycle_manager_navigation]: Server collision_monitor connected with bond.
+[lifecycle_manager-9] [INFO] [1794306430.734064617] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-9] [INFO] [1794306430.734137654] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[planner_server-2] [INFO] [1794306456.935528157] [global_costmap.global_costmap]: Message Filter dropping message: frame 'laser_frame' at time 1794306456.560 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[controller_server-1] [INFO] [1794306473.701242758] [local_costmap.local_costmap]: Message Filter dropping message: frame 'laser_frame' at time 1794306473.303 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[planner_server-2] [INFO] [1794306473.701632740] [global_costmap.global_costmap]: Message Filter dropping message: frame 'laser_frame' at time 1794306473.303 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[planner_server-2] [INFO] [1794306478.771257570] [global_costmap.global_costmap]: Message Filter dropping message: frame 'laser_frame' at time 1794306478.388 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[controller_server-1] [INFO] [1794306482.897484012] [local_costmap.local_costmap]: Message Filter dropping message: frame 'laser_frame' at time 1794306482.464 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[bt_navigator-4] [WARN] [1794306495.347829005] [bt_navigator.rclcpp]: failed to send response to /bt_navigator/get_parameters (timeout): client will not receive response, at ./src/rmw_response.cpp:154, at ./src/rcl/service.c:314
+[lop_huong_dan-8] PHAT /lop_huong_dan: chon=khong o_cam=0 o_ton=1664 (kinh nghiem 8 dong, 1 vung)
+[lop_huong_dan-8] PHAT /lop_huong_dan: chon=tuyen 1 tu (0.01; 0.00) o_cam=252 o_ton=1412 (kinh nghiem 8 dong, 1 vung)
+[bt_navigator-4] [INFO] [1794306648.779155376] [bt_navigator]: Begin navigating from current location (0.01, 0.00) to (1.60, 0.82)
+[bt_navigator-4] [WARN] [1794306648.801890265] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[controller_server-1] [INFO] [1794306648.810606895] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-1] [WARN] [1794306648.811360876] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded general_goal_checker . This warning will appear once.
+[controller_server-1] [INFO] [1794306649.911866487] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306650.911875042] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306651.911866319] [controller_server]: Passing new path to controller.
+[bt_navigator-4] [ERROR] [1794306652.465060985] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for follow_path in node halt!
+[bt_navigator-4] [INFO] [1794306652.465569022] [bt_navigator]: [navigate_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-4] [INFO] [1794306652.466439578] [bt_navigator]: Goal canceled
+[controller_server-1] [INFO] [1794306652.511870856] [controller_server]: Goal was canceled. Stopping the robot.
+[controller_server-1] [INFO] [1794306652.512171467] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-4] [INFO] [1794306654.675426132] [bt_navigator]: Begin navigating from current location (0.44, -0.04) to (1.60, 0.82)
+[controller_server-1] [INFO] [1794306654.701225391] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-1] [INFO] [1794306655.802475113] [controller_server]: Passing new path to controller.
+[bt_navigator-4] [ERROR] [1794306655.980455983] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for follow_path in node halt!
+[bt_navigator-4] [INFO] [1794306655.980913298] [bt_navigator]: [navigate_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-4] [INFO] [1794306655.981348909] [bt_navigator]: Goal canceled
+[controller_server-1] [INFO] [1794306656.002006594] [controller_server]: Goal was canceled. Stopping the robot.
+[controller_server-1] [INFO] [1794306656.002355316] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[behavior_server-3] [INFO] [1794306691.243719573] [behavior_server]: Running spin
+[behavior_server-3] [INFO] [1794306691.250127351] [behavior_server]: Turning 1.05 for spin behavior.
+[behavior_server-3] [INFO] [1794306691.554495517] [behavior_server]: Canceling spin
+[behavior_server-3] [INFO] [1794306691.554861314] [behavior_server]: [spin] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-4] [INFO] [1794306691.967633906] [bt_navigator]: Begin navigating from current location (0.48, 0.01) to (1.08, -0.03)
+[controller_server-1] [INFO] [1794306691.997081480] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-1] [INFO] [1794306693.100014128] [controller_server]: Passing new path to controller.
+[bt_navigator-4] [ERROR] [1794306693.592878609] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for follow_path in node halt!
+[bt_navigator-4] [INFO] [1794306693.593341609] [bt_navigator]: [navigate_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-4] [INFO] [1794306693.593964442] [bt_navigator]: Goal canceled
+[controller_server-1] [INFO] [1794306693.599983720] [controller_server]: Goal was canceled. Stopping the robot.
+[controller_server-1] [INFO] [1794306693.600316924] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[behavior_server-3] [INFO] [1794306728.878503403] [behavior_server]: Running spin
+[behavior_server-3] [INFO] [1794306728.880811921] [behavior_server]: Turning 2.36 for spin behavior.
+[behavior_server-3] [INFO] [1794306729.281444884] [behavior_server]: Canceling spin
+[behavior_server-3] [INFO] [1794306729.281842328] [behavior_server]: [spin] [ActionServer] Client requested to cancel the goal. Cancelling.
+[behavior_server-3] [INFO] [1794306764.670457566] [behavior_server]: Running spin
+[behavior_server-3] [INFO] [1794306764.670830270] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-3] [INFO] [1794306768.071570490] [behavior_server]: spin completed successfully
+[behavior_server-3] [INFO] [1794306772.672879358] [behavior_server]: Running drive_on_heading
+[behavior_server-3] [INFO] [1794306772.679088080] [behavior_server]: DriveOnHeading: no acceleration or deceleration limits set
+[behavior_server-3] [INFO] [1794306773.278707080] [behavior_server]: drive_on_heading completed successfully
+[behavior_server-3] [INFO] [1794306778.388787262] [behavior_server]: Running spin
+[behavior_server-3] [INFO] [1794306778.389747595] [behavior_server]: Turning 0.52 for spin behavior.
+[behavior_server-3] [INFO] [1794306779.691078187] [behavior_server]: spin completed successfully
+[behavior_server-3] [INFO] [1794306779.989723502] [behavior_server]: Running spin
+[behavior_server-3] [INFO] [1794306779.992405817] [behavior_server]: Turning -0.52 for spin behavior.
+[behavior_server-3] [INFO] [1794306781.296203186] [behavior_server]: spin completed successfully
+[lop_huong_dan-8] PHAT /lop_huong_dan: chon=khong o_cam=0 o_ton=1664 (kinh nghiem 8 dong, 1 vung)
+[bt_navigator-4] [INFO] [1794306844.068146649] [bt_navigator]: Begin navigating from current location (0.49, 0.07) to (1.60, 0.82)
+[controller_server-1] [INFO] [1794306844.095455093] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-1] [INFO] [1794306845.198243148] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306846.198214944] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306847.198221036] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306848.298203702] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306849.298814479] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306850.298187849] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306851.398249385] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306852.398194625] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306853.398199736] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306854.498252976] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306855.498197494] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306856.498188604] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306857.598196807] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306858.598201622] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306859.598233343] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306860.598238769] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306861.698212601] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306862.698231582] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306863.698220600] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306864.798215025] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306865.798197358] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306866.798221432] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306867.898283042] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306868.898239115] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306869.898297874] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306870.998232651] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306871.998241910] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306872.998196557] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306874.098191890] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306875.098212890] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306876.098196982] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306877.198231925] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306878.198301073] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306878.199582888] [controller_server]: Reached the goal!
+[bt_navigator-4] [INFO] [1794306878.239759147] [bt_navigator]: Goal succeeded
+[lop_huong_dan-8] PHAT /lop_huong_dan: chon=khong o_cam=0 o_ton=1664 (kinh nghiem 8 dong, 1 vung)
+[lop_huong_dan-8] PHAT /lop_huong_dan: chon=khong o_cam=0 o_ton=1664 (kinh nghiem 8 dong, 1 vung)
+[lop_huong_dan-8] PHAT /lop_huong_dan: chon=tuyen 2 tu (1.49; 0.77) o_cam=288 o_ton=1376 (kinh nghiem 8 dong, 1 vung)
+[bt_navigator-4] [INFO] [1794306982.759584899] [bt_navigator]: Begin navigating from current location (1.49, 0.77) to (0.00, 0.00)
+[controller_server-1] [INFO] [1794306982.792205788] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-1] [INFO] [1794306983.896817658] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306984.896803120] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306985.896798268] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306986.996815990] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306987.996797063] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306988.996812211] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306990.096800062] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306991.096831302] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306992.096797505] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306993.097006690] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306994.196815245] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306995.196817411] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306996.197379891] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306997.296797243] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306998.297177372] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794306999.296805612] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307000.396829204] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307001.396840833] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307002.396811203] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307003.496787276] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307004.497761405] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307005.496832886] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307006.496791367] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307007.596826366] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307008.596839329] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307009.596831939] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307010.596797753] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307011.696816401] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307012.696801437] [controller_server]: Passing new path to controller.
+[controller_server-1] [INFO] [1794307012.698124308] [controller_server]: Reached the goal!
+[bt_navigator-4] [INFO] [1794307012.749251196] [bt_navigator]: Goal succeeded
+[lop_huong_dan-8] PHAT /lop_huong_dan: chon=khong o_cam=0 o_ton=1664 (kinh nghiem 8 dong, 1 vung)

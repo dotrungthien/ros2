@@ -1,0 +1,101 @@
+== cau_noi_xe 19:26:42: tat truoc ==
+== Tat ghi vi tri, sep, lai_xe_lidar, Nav2, launch chinh ==
+T+0 buoc 1
+T+0 buoc 2
+T+1 buoc 5
+T+4 buoc 6
+DA_DON 0 tep /dev/shm
+KIEM_XONG: da tat sach.
+== bat ==
+[shm] /dev/shm co 0 tep truoc khi bat (19:26:48)
+== B1: bat he thong (XE DUNG YEN, KHONG CHAM VAO XE) ==
+Con quay da lay so 0 luc 19:26:55. Han chot gui muc tieu: 19:34:55 (8 phut).
+[gyro_mpu6050.py-10] [INFO] [1794306414.749732664] [gyro_mpu6050]: 보정 완료: bias=36.79 raw (표본 201 개, 표준편차 34.50)
+== B2: bat Nav2 ==
+MAT_LAI=true
+~/goc_dang_chay = mat
+Nav2 dung tham so: /home/project1/nav2_params_mat_rpp.yaml
+Nav2 san sang luc 19:27:11.
+== B2b: bat sep (ra_lenh=false ra_thoat=false) va phu lai (phat_lenh=false) ==
+sep + phu lai: nghe_follow_path:=false (MAT_LAI=true)
+== B3: kiem tham so va vi tri (A = x 0, y 0, goc 0) ==
+The daemon is not running
+The daemon has been started
+Mong doi cay hanh vi: /home/project1/bt_mat.xml
+== Dien ap Pi (0x0 = chua tung thieu dien/qua nong tu luc bat) ==
+throttled=0x0
+== Buoc 5: 3 tham so ==
+DAT        yaw_nguon = gyro
+DAT        gyro_scale = 131.0
+DAT        dau_yaw = -1.0
+DAT        ros-humble-tf2 = 0.25.24-1jammy.20260916.043544
+== Buoc 7: vi tri xe tren ban do (doc khoang 8 giay) ==
+DAT         vi tri: x=0.010 m (lech +0.010, cho phep 0.10), y=0.000 m (lech +0.000, cho phep 0.05), goc=-1.8 do (lech -1.8, cho phep 5.0)
+== Buoc 8: cay hanh vi, tien trinh trung, costmap (v3, chi doc) ==
+DOC_LAI    bt_xml: lan 1/3 sau 3 s (han 10 s, ngan sach con 30 s)
+DOC_LAI    bt_xml: lan 2/3 sau 3 s (han 10 s, ngan sach con 17 s)
+DAT        bt_xml = /home/project1/bt_mat.xml
+DAT        planner_server: 1 tien trinh
+DAT        controller_server: 1 tien trinh
+DAT        bt_navigator: 1 tien trinh
+DAT        31 node, khong trung ten
+GHI LAI    costmap toan cuc: x=0.030 m, y=-0.000 m, tuoi tin 2.4 s (so voi tf o Buoc 7; tuoi tin > 5 s la dau hieu tf cu trong Nav2)
+DAT        /lop_huong_dan: 1 publisher
+DAT        global_costmap cung kich thuoc ban do goc: 52x32 o 0.050 m, goc (-0.566; -0.415); ban do goc 52x32 o 0.050 m, goc (-0.566; -0.415)
+DAT        (a) nav2_params_mat.yaml footprint_padding_m = 0, yaml 0
+DAT        (a) nav2_params_mat.yaml inflation_radius_m = 0.2, yaml 0.2
+DAT        (a) nav2_params_mat.yaml cost_scaling_factor = 10, yaml 10
+DAT        (a) nav2_params_mat.yaml backup_nhin_truoc_s = 0.7, yaml 0.7
+DAT        (a) nav2_params_mat.yaml vung_phanh_m = 0.07, yaml 0.07
+DAT        (a) nav2_params_mat.yaml nhin_truoc_phanh_s = 1.5, yaml 1.5
+DAT        (a) nav2_params_mat.yaml progress_s = 10, yaml 10
+DAT        (a) nav2_params_mat.yaml xoay_thoat_rad_s = 0.6, yaml 0.6
+DAT        (a) nav2_params_mat.yaml behavior_plugins spin + backup + drive_on_heading: co
+DAT        (a) nav2_params_mat_rpp.yaml footprint_padding_m = 0, yaml 0
+DAT        (a) nav2_params_mat_rpp.yaml inflation_radius_m = 0.2, yaml 0.2
+DAT        (a) nav2_params_mat_rpp.yaml cost_scaling_factor = 10, yaml 10
+DAT        (a) nav2_params_mat_rpp.yaml backup_nhin_truoc_s = 0.7, yaml 0.7
+DAT        (a) nav2_params_mat_rpp.yaml vung_phanh_m = 0.07, yaml 0.07
+DAT        (a) nav2_params_mat_rpp.yaml nhin_truoc_phanh_s = 1.5, yaml 1.5
+DAT        (a) nav2_params_mat_rpp.yaml progress_s = 10, yaml 10
+DAT        (a) nav2_params_mat_rpp.yaml xoay_thoat_rad_s = 0.6, yaml 0.6
+DAT        (a) nav2_params_mat_rpp.yaml behavior_plugins spin + backup + drive_on_heading: co
+DAT        (a) bt_mat.xml ve_lai_duong_hz = 1, yaml 1
+DAT        (a) bt_mat.xml khong co BackUp tu dong (23:08 muc 5: mot chu thoat)
+DAT        (b) toc_do_thoat_mps 0.1 >= v_min_mps 0.092
+DAT        (b) tien_toi_thieu_m 0.1 >= o_luoi_m 0.05
+DAT        (b) vang_hong_m 0.12 >= cach_vat_toi_thieu_m 0.06
+DAT        (b) vang_truoc_m 0.3 >= truoc_vat_do_m 0.1
+DAT        (b) vang_sau_m 0.1 >= duoi_do_m 0.06
+DAT        (b) vang_truoc_m 0.3 >= vung_phanh_m 0.07
+DAT        (b) inflation_radius_m 0.2 >= rong_xe_m/2 + vang_hong_m 0.2
+DAT        (b) vat_dai_max_m 0.25 < tuong_dai_min_m 0.4
+DAT        (b) gia_x_r_m 0.2 >= o_luoi_m 0.05
+DAT        (b) gia_x_v_ms 0.11 >= v_min_mps 0.092
+DAT        (b) gia_x_giay_mac_dinh 10 >= 0
+DAT        (b) so_luot_chan 3 >= 1
+DAT        (b) so_luot_gan_dich 2 >= 1
+DAT        (b) thoat_hong_max 3 >= 1
+DAT        (b) thoat_buoc_max 6 >= 1
+DAT        (b) nhac_doi_m 0.14 > truoc_vat_do_m 0.1
+DAT        (b) cho_chat_m 0.12 >= cach_vat_toi_thieu_m 0.06
+DAT        (b) thoat_diem_min_m 0.3 <= thoat_diem_max_m 0.4; thoat_trong_m - truoc_vat_do_m 0.3 >= thoat_diem_min_m
+DAT        (b) cho_lai_s 60 > 0 (het luot cho nguoi, khong thoat)
+DAT        (b) phan_loai_cum ba_dau_hieu thuoc {cu, ba_dau_hieu}
+DAT        (b) cung_r_min_m 0.06 < cung_r_max_m 0.12, cung_so_diem 5 >= 3
+DAT        (b) ong: 0 < ong_ti_le 0.6 <= 1, ong_so_quet_min 3 >= 2, ong_cach_cum_m 0.05 > 0
+DAT        (c) khong_cham_m 0.02 > 0 va <= cach_vat_toi_thieu_m 0.06 (tuong hong chi nhe hon vat)
+DAT        (c) vung_ton_diem_gia_tri 0 < NGUONG_CAM 72
+DAT        (c) vung_phanh_m 0.07 >= cach_vat_toi_thieu_m 0.06
+DAT        (c) BackUp / DriveOnHeading nhin 0.06 m >= duoi_do_m 0.06 (dung khi vat cach 0.05-0.11 m)
+DAT        (c) sep_phat_toc_do false: sep.py khong co publisher Twist
+KIEM HANH VI: DAT (47 dong, 0 lech)
+DAT        gac: /map_tinh 52x32 o 0.050 m, 252 o tuong
+DAT        action /backup co
+DAT        action /drive_on_heading co
+DAT        action /spin co
+==========
+KET QUA: DAT
+==========
+SAN SANG. Con 337 giay de gui muc tieu (han chot 19:34:55).
+Viec tiep theo (lam bang tay): tab project1@ moi, bat ghi vi tri (buoc 9), go san lenh muc tieu (buoc 10), bat cong tac motor (buoc 11).

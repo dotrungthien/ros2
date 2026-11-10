@@ -1,0 +1,2870 @@
+== 2026-11-09 16:34:00 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.12 m).
+== 2026-11-09 16:36:45 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (1.54; 0.72) toi (0.00; 0.00)
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-09 16:45:05 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+   Nav2 hoi phuc: number_of_recoveries = 1.
+GAC: dung im, vung=truoc, (0.78; -0.02)
+CHO_VAT: 5/30 s (cach dich 1.44 m)
+GAC: het chan sau 7 s
+   DI_TIEP: xe tien lai.
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-09 16:46:37 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (1.58; 0.69) toi (0.00; 0.00)
+CHO_VAT: 5/30 s (cach dich 1.70 m)
+   DI_TIEP: xe tien lai.
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-09 16:59:54 gui_duong kieu mat di_B: ma 1 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+   Nav2 hoi phuc: number_of_recoveries = 1.
+   Nav2 hoi phuc: number_of_recoveries = 4.
+   Nav2 hoi phuc: number_of_recoveries = 5.
+   Nav2 hoi phuc: number_of_recoveries = 8.
+CHO_VAT: 5/30 s (cach dich 1.79 m)
+   Nav2 hoi phuc: number_of_recoveries = 9.
+   Nav2 hoi phuc: number_of_recoveries = 12.
+CHO_VAT: 10/30 s (cach dich 1.79 m)
+   Nav2 hoi phuc: number_of_recoveries = 13.
+   Nav2 hoi phuc: number_of_recoveries = 16.
+CHO_VAT: 15/30 s (cach dich 1.79 m)
+   Nav2 hoi phuc: number_of_recoveries = 17.
+   Nav2 hoi phuc: number_of_recoveries = 20.
+   Nav2 hoi phuc: number_of_recoveries = 21.
+CHO_VAT: 20/30 s (cach dich 1.79 m)
+   Nav2 hoi phuc: number_of_recoveries = 24.
+   Nav2 hoi phuc: number_of_recoveries = 25.
+   Nav2 hoi phuc: number_of_recoveries = 28.
+CHO_VAT: 25/30 s (cach dich 1.79 m)
+   Nav2 hoi phuc: number_of_recoveries = 29.
+   Nav2 hoi phuc: number_of_recoveries = 32.
+   khong den duoc (CHO_VAT_30s, cach dich 1.79 m).
+== Tuyen 1 hong. ==
+LUI_RA: gui 0.35 (truoc tuyen 2, /backup 0.10 m/s)
+   LUI_XONG: gui => ABORTED (xe lui 0.15 m).
+-- tuyen 2, lan 1/1: navigate_to_pose tu (-0.14; 0.01) toi (1.60; 0.82)
+   Nav2 hoi phuc: number_of_recoveries = 2.
+LUI_RA: bt 0.25
+CHO_VAT: 5/30 s (cach dich 1.22 m)
+   LUI_XONG: bt => SUCCEEDED.
+   DI_TIEP: xe tien lai.
+   Nav2 hoi phuc: number_of_recoveries = 5.
+CHO_VAT: 5/30 s (cach dich 1.03 m)
+   DI_TIEP: xe tien lai.
+   Nav2 hoi phuc: number_of_recoveries = 10.
+LUI_RA: bt 0.25
+   LUI_XONG: bt => ABORTED.
+CHO_VAT: 5/30 s (cach dich 0.87 m)
+LUI_RA: bt 0.25
+   Nav2 hoi phuc: number_of_recoveries = 15.
+   LUI_XONG: bt => ABORTED.
+CHO_VAT: 10/30 s (cach dich 0.87 m)
+CHO_VAT: 15/30 s (cach dich 0.87 m)
+   Nav2 hoi phuc: number_of_recoveries = 20.
+LUI_RA: bt 0.25
+   LUI_XONG: bt => ABORTED.
+CHO_VAT: 20/30 s (cach dich 0.87 m)
+   Nav2 hoi phuc: number_of_recoveries = 22.
+LUI_RA: bt 0.25
+   Nav2 hoi phuc: number_of_recoveries = 25.
+   LUI_XONG: bt => ABORTED.
+CHO_VAT: 25/30 s (cach dich 0.87 m)
+   Nav2 hoi phuc: number_of_recoveries = 30.
+LUI_RA: bt 0.25
+   LUI_XONG: bt => ABORTED.
+   khong den duoc (CHO_VAT_30s, cach dich 0.87 m).
+== Tuyen 2 hong. ==
+HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.
+== 2026-11-09 17:37:11 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (0.02; 0.01) toi (1.60; 0.82)
+   Nav2 hoi phuc: number_of_recoveries = 1.
+   Nav2 hoi phuc: number_of_recoveries = 4.
+   Nav2 hoi phuc: number_of_recoveries = 5.
+   Nav2 hoi phuc: number_of_recoveries = 8.
+CHO_VAT: 5/30 s (cach dich 1.78 m)
+   Nav2 hoi phuc: number_of_recoveries = 9.
+   Nav2 hoi phuc: number_of_recoveries = 12.
+CHO_VAT: 10/30 s (cach dich 1.78 m)
+   Nav2 hoi phuc: number_of_recoveries = 13.
+   Nav2 hoi phuc: number_of_recoveries = 16.
+CHO_VAT: 15/30 s (cach dich 1.78 m)
+   Nav2 hoi phuc: number_of_recoveries = 17.
+   Nav2 hoi phuc: number_of_recoveries = 20.
+   Nav2 hoi phuc: number_of_recoveries = 21.
+CHO_VAT: 20/30 s (cach dich 1.78 m)
+   Nav2 hoi phuc: number_of_recoveries = 24.
+   Nav2 hoi phuc: number_of_recoveries = 25.
+   Nav2 hoi phuc: number_of_recoveries = 28.
+CHO_VAT: 25/30 s (cach dich 1.78 m)
+   Nav2 hoi phuc: number_of_recoveries = 29.
+   Nav2 hoi phuc: number_of_recoveries = 32.
+   khong den duoc (CHO_VAT_30s, cach dich 1.78 m).
+== Tuyen 1 hong. ==
+LUI_RA: gui 0.35 (truoc tuyen 2, /backup 0.10 m/s)
+   LUI_XONG: gui => ABORTED (xe lui 0.14 m).
+-- tuyen 2, lan 1/1: navigate_to_pose tu (-0.12; 0.01) toi (1.60; 0.82)
+LUI_RA: bt 0.25
+   Nav2 hoi phuc: number_of_recoveries = 2.
+   LUI_XONG: bt => SUCCEEDED.
+CHO_VAT: 5/30 s (cach dich 1.37 m)
+   DI_TIEP: xe tien lai.
+   Nav2 hoi phuc: number_of_recoveries = 5.
+DEN_NOI: di_B xong theo tuyen 2 (cach dich 0.14 m).
+== 2026-11-09 17:38:33 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (1.48; 0.75) toi (0.00; 0.00)
+CHO_VAT: 5/30 s (cach dich 1.60 m)
+LUI_RA: bt 0.25
+   Nav2 hoi phuc: number_of_recoveries = 2.
+   LUI_XONG: bt => SUCCEEDED.
+CHO_VAT: 10/30 s (cach dich 1.60 m)
+   DI_TIEP: xe tien lai.
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.14 m).
+== 2026-11-09 18:20:57 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+   Nav2 hoi phuc: number_of_recoveries = 1.
+   Nav2 hoi phuc: number_of_recoveries = 4.
+   Nav2 hoi phuc: number_of_recoveries = 5.
+   Nav2 hoi phuc: number_of_recoveries = 8.
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.12 m).
+== 2026-11-09 18:22:36 gui_duong kieu mat ve_A: ma 1 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (1.53; 0.72) toi (0.00; 0.00)
+LUI_RA: bt 0.25
+   Nav2 hoi phuc: number_of_recoveries = 2.
+   LUI_XONG: bt => SUCCEEDED.
+CHO_VAT: 5/30 s (cach dich 1.52 m)
+   DI_TIEP: xe tien lai.
+   Nav2 hoi phuc: number_of_recoveries = 3.
+   Nav2 hoi phuc: number_of_recoveries = 6.
+   Nav2 hoi phuc: number_of_recoveries = 7.
+CHO_VAT: 5/30 s (cach dich 0.73 m)
+   Nav2 hoi phuc: number_of_recoveries = 10.
+   Nav2 hoi phuc: number_of_recoveries = 11.
+   Nav2 hoi phuc: number_of_recoveries = 14.
+CHO_VAT: 10/30 s (cach dich 0.73 m)
+   Nav2 hoi phuc: number_of_recoveries = 15.
+   Nav2 hoi phuc: number_of_recoveries = 18.
+CHO_VAT: 15/30 s (cach dich 0.73 m)
+   Nav2 hoi phuc: number_of_recoveries = 19.
+   Nav2 hoi phuc: number_of_recoveries = 22.
+CHO_VAT: 20/30 s (cach dich 0.73 m)
+   Nav2 hoi phuc: number_of_recoveries = 23.
+   Nav2 hoi phuc: number_of_recoveries = 26.
+   Nav2 hoi phuc: number_of_recoveries = 27.
+CHO_VAT: 25/30 s (cach dich 0.73 m)
+   Nav2 hoi phuc: number_of_recoveries = 30.
+   Nav2 hoi phuc: number_of_recoveries = 31.
+   Nav2 hoi phuc: number_of_recoveries = 34.
+   khong den duoc (CHO_VAT_30s, cach dich 0.73 m).
+== Tuyen 1 hong. ==
+LUI_RA: gui 0.35 (truoc tuyen 2, /backup 0.10 m/s)
+   LUI_XONG: gui => SUCCEEDED (xe lui 0.36 m).
+-- tuyen 2, lan 1/1: navigate_to_pose tu (1.08; -0.13) toi (0.00; 0.00)
+   Nav2 hoi phuc: number_of_recoveries = 4.
+   Nav2 hoi phuc: number_of_recoveries = 5.
+   Nav2 hoi phuc: number_of_recoveries = 8.
+CHO_VAT: 5/30 s (cach dich 1.09 m)
+   Nav2 hoi phuc: number_of_recoveries = 9.
+   Nav2 hoi phuc: number_of_recoveries = 12.
+CHO_VAT: 10/30 s (cach dich 1.09 m)
+   Nav2 hoi phuc: number_of_recoveries = 13.
+   Nav2 hoi phuc: number_of_recoveries = 16.
+CHO_VAT: 15/30 s (cach dich 1.09 m)
+   Nav2 hoi phuc: number_of_recoveries = 17.
+   Nav2 hoi phuc: number_of_recoveries = 20.
+   Nav2 hoi phuc: number_of_recoveries = 21.
+CHO_VAT: 20/30 s (cach dich 1.09 m)
+   Nav2 hoi phuc: number_of_recoveries = 24.
+   Nav2 hoi phuc: number_of_recoveries = 25.
+   Nav2 hoi phuc: number_of_recoveries = 28.
+CHO_VAT: 25/30 s (cach dich 1.09 m)
+   Nav2 hoi phuc: number_of_recoveries = 29.
+   Nav2 hoi phuc: number_of_recoveries = 32.
+   khong den duoc (CHO_VAT_30s, cach dich 1.09 m).
+== Tuyen 2 hong. ==
+HET_DUONG: ca hai tuyen deu khong di duoc. Xe dung yen.
+== 2026-11-09 19:33:42 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (chua co /map_tinh)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-09 19:34:28 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (1.54; 0.70) toi (0.00; 0.00)
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-09 19:43:56 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/1: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+GAC: dung im, vung=phai, (0.40; 0.45)
+CHO_VAT: 5/30 s (cach dich 1.31 m)
+CHO_VAT: 10/30 s (cach dich 1.31 m)
+CHO_VAT: 15/30 s (cach dich 1.31 m)
+CHO_VAT: 20/30 s (cach dich 1.31 m)
+CHO_VAT: 25/30 s (cach dich 1.31 m)
+   khong den duoc (CHO_VAT_30s, cach dich 1.31 m).
+== Tuyen 1 hong. ==
+LUI_RA: gui 0.35 (truoc tuyen 2, /backup 0.10 m/s)
+   LUI_XONG: gui => SUCCEEDED (xe lui 0.36 m).
+GAC: cho cong, vung=truoc, (0.39; 0.47)
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+   khong den duoc (CHO_CONG_30s, cach dich 1.67 m).
+== Tuyen 2 hong. ==
+LUI_RA: gui 0.35 (truoc tuyen 1, /backup 0.10 m/s)
+   LUI_XONG: gui => ABORTED (xe lui 0.11 m).
+-- tuyen 1, lan 1/1: navigate_to_pose tu (-0.16; 0.54) toi (1.60; 0.82)
+GAC: dung im, vung=phai, (0.42; 0.46)
+CHO_VAT: 5/30 s (cach dich 1.28 m)
+CHO_VAT: 10/30 s (cach dich 1.28 m)
+CHO_VAT: 15/30 s (cach dich 1.28 m)
+CHO_VAT: 20/30 s (cach dich 1.28 m)
+CHO_VAT: 25/30 s (cach dich 1.28 m)
+KINH_NGHIEM: CHO_VAT_LA DUOC cach 0.05 m => thu tu cu
+   khong den duoc (CHO_VAT_30s, cach dich 1.28 m).
+== Tuyen 1 hong. ==
+LUI_RA: gui 0.35 (truoc tuyen 2, /backup 0.10 m/s)
+   LUI_XONG: gui => SUCCEEDED (xe lui 0.36 m).
+GAC: cho cong, vung=truoc, (0.39; 0.46)
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+   khong den duoc (CHO_CONG_30s, cach dich 1.64 m).
+== Tuyen 2 hong. ==
+LUI_RA: gui 0.35 (truoc tuyen 1, /backup 0.10 m/s)
+   LUI_XONG: gui => ABORTED (xe lui 0.31 m).
+-- tuyen 1, lan 1/1: navigate_to_pose tu (-0.31; 0.49) toi (1.60; 0.82)
+   Nav2 hoi phuc: number_of_recoveries = 2.
+LUI_RA: bt 0.25
+CHO_VAT: 5/30 s (cach dich 1.52 m)
+   LUI_XONG: bt => SUCCEEDED.
+CHO_VAT: 10/30 s (cach dich 1.41 m)
+   Nav2 hoi phuc: number_of_recoveries = 5.
+CHO_VAT: 15/30 s (cach dich 1.41 m)
+CHO_VAT: 20/30 s (cach dich 1.56 m)
+CHO_VAT: 25/30 s (cach dich 1.57 m)
+GAC: dung im, vung=truoc, (0.42; 0.32)
+   khong den duoc (CHO_VAT_30s, cach dich 1.57 m).
+== Tuyen 1 hong. ==
+LUI_RA: gui 0.35 (truoc tuyen 2, /backup 0.10 m/s)
+   LUI_XONG: gui => SUCCEEDED (xe lui 0.36 m).
+-- tuyen 2, lan 1/1: navigate_to_pose tu (-0.12; -0.06) toi (1.60; 0.82)
+DEN_NOI: di_B xong theo tuyen 2 (cach dich 0.13 m).
+== 2026-11-09 21:18:38 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+GIA_X: t1 2.14m + 10s; t2 2.19m + 10s; thu tu (1,2)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+MEM: truoc 2 diem cach 0.30 m (tuong)
+MEM: truoc 25 diem cach 0.27 m (tuong)
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.14 m).
+GIA_X: DA_GIAI (-0.12; -0.06)
+== 2026-11-09 21:19:39 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/3: navigate_to_pose tu (1.55; 0.69) toi (0.00; 0.00)
+MEM: truoc 54 diem cach 0.28 m (tuong)
+MEM: truoc 1 diem cach 0.26 m (vat) LECH ban do=tuong
+MEM: truoc 1 diem cach 0.26 m (tuong)
+MEM: truoc 1 diem cach 0.26 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.26 m (tuong)
+MEM: truoc 2 diem cach 0.30 m (tuong)
+MEM: sach
+CHO_VAT: 5/30 s (cach dich 1.63 m)
+   DI_TIEP: xe tien lai.
+MEM: truoc 2 diem cach 0.29 m (tuong)
+MEM: sach
+MEM: truoc 1 diem cach 0.29 m (tuong)
+MEM: sach
+MEM: truoc 1 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.26 m (vat) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.23 m (vat) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.22 m (tuong)
+MEM: truoc 8 diem cach 0.20 m (vat) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.17 m (tuong)
+MEM: truoc 17 diem cach 0.15 m (vat) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: hong 6 diem cach 0.10 m (vat) LECH ban do=tuong
+MEM: sau 1 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: hong 4 diem cach 0.09 m (vat)
+MEM: sau 13 diem cach 0.09 m (vat)
+MEM: hong 9 diem cach 0.09 m (vat) LECH ban do=tuong
+MEM: sau 9 diem cach 0.09 m (vat) LECH ban do=tuong
+MEM: sau 1 diem cach 0.10 m (tuong)
+MEM: sach
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.14 m).
+== 2026-11-09 21:39:27 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+MEM: truoc 11 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.26 m (vat) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.20 m (vat) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.14 m (vat) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.11 m (vat) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.09 m (0.71; -0.01)
+MEM: hong 10 diem cach 0.02 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.05 m (vat) LECH ban do=tuong
+MEM: hong 4 diem cach 0.06 m (vat) LECH ban do=tuong
+MEM: truoc 29 diem cach 0.09 m (vat) LECH ban do=tuong
+MEM: hong 10 diem cach 0.02 m (vat) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 1.41 m)
+MEM: truoc 25 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: sach
+GAC: het chan sau 7 s
+   DI_TIEP: xe tien lai.
+MEM: truoc 4 diem cach 0.29 m (tuong)
+MEM: truoc 6 diem cach 0.25 m (vat) LECH ban do=tuong
+MEM: truoc 24 diem cach 0.24 m (tuong)
+MEM: truoc 6 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.26 m (tuong)
+MEM: truoc 1 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: truoc 5 diem cach 0.30 m (vat) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.30 m (tuong)
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.11 m).
+== 2026-11-09 21:40:33 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/3: navigate_to_pose tu (1.50; 0.77) toi (0.00; 0.00)
+MEM: truoc 10 diem cach 0.30 m (tuong)
+MEM: sach
+MEM: truoc 2 diem cach 0.30 m (vat) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.27 m (vat) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.23 m (tuong)
+MEM: truoc 14 diem cach 0.23 m (vat) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.21 m (tuong)
+MEM: truoc 21 diem cach 0.18 m (vat) LECH ban do=tuong
+MEM: truoc 28 diem cach 0.14 m (vat) LECH ban do=tuong
+MEM: hong 1 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: sach
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-09 22:00:02 gui_duong kieu mat di_B: ma 130 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+MEM: truoc 12 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.26 m (vat) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.20 m (vat)
+MEM: truoc 28 diem cach 0.19 m (vat) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.17 m (vat)
+MEM: truoc 26 diem cach 0.16 m (vat) LECH ban do=tuong
+MEM: truoc 30 diem cach 0.13 m (vat) LECH ban do=tuong
+MEM: truoc 28 diem cach 0.10 m (vat) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.09 m (0.71; 0.01)
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 29 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 35 diem cach 0.08 m (vat)
+MEM: truoc 29 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 29 diem cach 0.08 m (vat) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 1.38 m)
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 35 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 26 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 21 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 35 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 30 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 28 diem cach 0.08 m (vat) LECH ban do=tuong
+CHO_VAT: 10/30 s (cach dich 1.38 m)
+MEM: truoc 31 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 29 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 27 diem cach 0.08 m (vat) LECH ban do=tuong
+CHO_VAT: 15/30 s (cach dich 1.38 m)
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 33 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 25 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+CHO_VAT: 20/30 s (cach dich 1.38 m)
+MEM: truoc 19 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 26 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 35 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 35 diem cach 0.08 m (vat)
+MEM: truoc 28 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 35 diem cach 0.08 m (vat)
+MEM: truoc 30 diem cach 0.08 m (vat) LECH ban do=tuong
+CHO_VAT: 25/30 s (cach dich 1.38 m)
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat)
+MEM: truoc 28 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 32 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 31 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+MEM: truoc 33 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat)
+KINH_NGHIEM: CHO_VAT_LA DUOC cach 0.05 m => tham khao (luot sau Nav2 tu vach)
+   khong den duoc (CHO_VAT_30s, cach dich 1.38 m).
+== Luot 1 bi chan. ==
+LUI_RA: gui 0.35 (truoc luot 2, /backup 0.10 m/s)
+MEM: truoc 29 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: truoc 29 diem cach 0.15 m (vat)
+MEM: hong 2 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.17 m (vat) LECH ban do=tuong
+MEM: truoc 28 diem cach 0.21 m (vat) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.24 m (vat)
+MEM: truoc 22 diem cach 0.26 m (vat) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 1 diem cach 0.12 m (vat) LECH ban do=tuong
+   LUI_XONG: gui => SUCCEEDED (xe lui 0.36 m).
+GAC: cho cong, truoc vat cach 0.11 m
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+   khong den duoc (CHO_CONG_30s, cach dich 1.73 m).
+== Luot 2 bi chan. ==
+LUI_NGAN: 0.20 thay 0.35 (vat sau duoi 0.26 m)
+LUI_RA: gui 0.20 (truoc luot 3, /backup 0.10 m/s)
+MEM: hong 3 diem cach 0.12 m (tuong)
+MEM: sau 16 diem cach 0.09 m (tuong)
+MEM: hong 30 diem cach 0.08 m (tuong)
+MEM: truoc 6 diem cach 0.15 m (vat) LECH ban do=tuong
+MEM: sau 27 diem cach 0.06 m (tuong)
+MEM: truoc 3 diem cach 0.19 m (vat) LECH ban do=tuong
+MEM: hong 39 diem cach 0.05 m (vat) LECH ban do=tuong
+MEM: sau 29 diem cach 0.04 m (vat) LECH ban do=tuong
+GAC: huy lui, hong <= 0.06
+   LUI_XONG: gui => GAC_HONG (xe lui 0.19 m).
+GAC: cho cong, hong vat cach 0.04 m
+MEM: truoc 3 diem cach 0.22 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 5/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 10/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 15/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 20/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 25/30 s
+   khong den duoc (CHO_CONG_30s, cach dich 1.93 m).
+== Luot 3 bi chan. ==
+CHO_NGUOI: khong tim thay duong (3 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+LUI_NGAN: bo, vat sau duoi 0.02 m (do duoi 0.06)
+GAC: cho cong, hong vat cach 0.03 m
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 5/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 10/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 15/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 20/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 25/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+   khong den duoc (CHO_CONG_30s, cach dich 1.93 m).
+== Luot 4 bi chan. ==
+CHO_NGUOI: khong tim thay duong (4 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+LUI_NGAN: bo, vat sau duoi 0.02 m (do duoi 0.06)
+GAC: cho cong, hong vat cach 0.03 m
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 5/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 10/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 15/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 20/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 25/30 s
+MEM: truoc 1 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+   khong den duoc (CHO_CONG_30s, cach dich 1.93 m).
+== Luot 5 bi chan. ==
+CHO_NGUOI: khong tim thay duong (5 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+LUI_NGAN: bo, vat sau duoi 0.02 m (do duoi 0.06)
+GAC: cho cong, hong vat cach 0.03 m
+CHO_VAT: 5/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 20/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 25/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+   khong den duoc (CHO_CONG_30s, cach dich 1.93 m).
+== Luot 6 bi chan. ==
+CHO_NGUOI: khong tim thay duong (6 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+LUI_NGAN: bo, vat sau duoi 0.02 m (do duoi 0.06)
+GAC: cho cong, hong vat cach 0.03 m
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 5/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 1 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 10/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 25/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+   khong den duoc (CHO_CONG_30s, cach dich 1.93 m).
+== Luot 7 bi chan. ==
+CHO_NGUOI: khong tim thay duong (7 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+LUI_NGAN: bo, vat sau duoi 0.02 m (do duoi 0.06)
+GAC: cho cong, hong vat cach 0.03 m
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 15/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 20/30 s
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+CHO_VAT: 25/30 s
+MEM: truoc 2 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.24 m (vat) LECH ban do=tuong
+   khong den duoc (CHO_CONG_30s, cach dich 1.93 m).
+== Luot 8 bi chan. ==
+CHO_NGUOI: khong tim thay duong (8 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+LUI_RA: gui 0.35 (truoc luot 9, /backup 0.10 m/s)
+MEM: sach
+   LUI_XONG: gui => DUNG (xe lui 0.00 m).
+CHO_NGUOI: sep DUNG (KHONG_TIN_QUA_15s), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+HUY_DICH_KHI_NGAT khong_co_dich
+== 2026-11-10 14:50:31 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+GIA_X: t1 2.09m + 10s; t2 2.20m + 10s; thu tu (1,2)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.01) toi (1.60; 0.82)
+MEM: truoc 1 diem cach 0.30 m (tuong)
+MEM: truoc 8 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.29 m (tuong)
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.13 m).
+GIA_X: DA_GIAI (0.14; -0.12)
+== 2026-11-10 14:51:23 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (1.54; 0.71) toi (0.00; 0.00)
+MEM: truoc 12 diem cach 0.30 m (tuong)
+MEM: truoc 10 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.28 m (tuong)
+MEM: sach
+MEM: truoc 7 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.21 m (vat) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.17 m (vat) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.14 m (vat) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.11 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: hong 1 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: sach
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.15 m).
+== 2026-11-10 15:01:38 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+MEM: truoc 1 diem cach 0.30 m (vat) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.29 m (vat)
+MEM: truoc 2 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.26 m (vat)
+MEM: truoc 28 diem cach 0.23 m (vat)
+MEM: truoc 16 diem cach 0.21 m (vat) LECH ban do=tuong
+MEM: truoc 29 diem cach 0.21 m (vat)
+MEM: truoc 27 diem cach 0.18 m (vat)
+MEM: truoc 31 diem cach 0.15 m (vat)
+GAC: dung im, truoc vat cach 0.14 m (0.73; 0.03)
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.14 m (nhac doi), dung yen toi da 30 s.
+MEM: truoc 24 diem cach 0.11 m (vat)
+MEM: truoc 31 diem cach 0.07 m (vat)
+MEM: truoc 19 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.07 m (vat)
+MEM: truoc 17 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.07 m (vat)
+MEM: truoc 21 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.07 m (vat)
+MEM: hong 17 diem cach 0.01 m (vat) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.07 m (vat)
+MEM: truoc 23 diem cach 0.07 m (vat) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 1.37 m)
+MEM: truoc 32 diem cach 0.07 m (vat)
+MEM: truoc 17 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.07 m (vat)
+MEM: truoc 23 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 35 diem cach 0.07 m (vat)
+CHO_VAT: 10/30 s (cach dich 1.37 m)
+CHO_VAT: 15/30 s (cach dich 1.37 m)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.07 m (vat)
+CHO_VAT: 20/30 s (cach dich 1.37 m)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.07 m (vat)
+MEM: truoc 15 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.07 m (vat)
+CHO_VAT: 25/30 s (cach dich 1.37 m)
+MEM: truoc 16 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.07 m (vat)
+MEM: truoc 20 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.07 m (vat)
+MEM: truoc 22 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.07 m (vat)
+   khong den duoc (CHO_VAT_30s, cach dich 1.37 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+SEP_LIDAR: THOAT lui=0.05 (CHO_VAT_30s; cho chat: truoc 0.07, hong 0.07, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+   THOAT_XONG: lui=0.05 => SUCCEEDED.
+MEM: truoc 21 diem cach 0.11 m (vat) LECH ban do=tuong
+SEP_LIDAR: THOAT xoay=-30 (CHO_VAT_30s; cho chat: truoc 0.11, hong 0.11, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 30 diem cach 0.13 m (vat)
+MEM: truoc 22 diem cach 0.13 m (vat) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.13 m (vat)
+   THOAT_XONG: xoay=-30 => SUCCEEDED.
+SEP_LIDAR: THOAT xoay=+30 (CHO_VAT_30s; cho chat: truoc 0.12, hong 0.12, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 19 diem cach 0.13 m (vat) LECH ban do=tuong
+   THOAT_XONG: xoay=+30 => SUCCEEDED.
+MEM: truoc 22 diem cach 0.13 m (vat)
+SEP_LIDAR: THOAT diem (0.17; 0.33): sector +110 do, 0.40 m (CHO_VAT_30s).
+MEM: truoc 14 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.12 m (vat)
+MEM: truoc 53 diem cach 0.15 m (tuong)
+MEM: truoc 13 diem cach 0.18 m (vat) LECH ban do=tuong
+MEM: truoc 42 diem cach 0.18 m (tuong)
+MEM: sau 2 diem cach 0.10 m (vat) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.17 m (vat) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.17 m (tuong)
+MEM: hong 3 diem cach 0.11 m (vat) LECH ban do=tuong
+MEM: sach
+   THOAT_XONG: diem => TOI.
+SEP_LIDAR: DI dich (1.60; 0.82), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (0.25; 0.14) toi (1.60; 0.82) (Nav2 tu vach)
+MEM: truoc 8 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.26 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: truoc 1 diem cach 0.25 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: truoc 6 diem cach 0.30 m (tuong)
+MEM: truoc 11 diem cach 0.27 m (vat) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.22 m (vat) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.18 m (vat) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.15 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: hong 1 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: truoc 7 diem cach 0.30 m (tuong)
+DEN_NOI: di_B xong theo duong Nav2 tu vach (cach dich 0.14 m).
+== 2026-11-10 15:03:38 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (1.49; 0.74) toi (0.00; 0.00)
+MEM: truoc 10 diem cach 0.30 m (tuong)
+MEM: sach
+MEM: truoc 1 diem cach 0.30 m (tuong)
+MEM: truoc 4 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.28 m (tuong)
+MEM: sach
+MEM: truoc 3 diem cach 0.29 m (vat)
+MEM: truoc 10 diem cach 0.26 m (vat)
+MEM: truoc 4 diem cach 0.23 m (vat)
+MEM: truoc 13 diem cach 0.20 m (vat)
+MEM: truoc 28 diem cach 0.16 m (vat)
+GAC: dung im, truoc vat cach 0.14 m (0.83; 0.08)
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.14 m (nhac doi), dung yen toi da 30 s.
+CHO_VAT: 5/30 s (cach dich 1.13 m)
+CHO_VAT: 10/30 s (cach dich 1.13 m)
+CHO_VAT: 15/30 s (cach dich 1.13 m)
+CHO_VAT: 20/30 s (cach dich 1.13 m)
+CHO_VAT: 25/30 s (cach dich 1.13 m)
+   khong den duoc (CHO_VAT_30s, cach dich 1.13 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+SEP_LIDAR: THOAT diem (1.15; 0.51): sector -100 do, 0.40 m (CHO_VAT_30s).
+MEM: truoc 33 diem cach 0.12 m (vat)
+MEM: truoc 10 diem cach 0.11 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: hong 1 diem cach 0.12 m (vat)
+MEM: hong 3 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.12 m (vat) LECH ban do=tuong
+   THOAT_XONG: diem => TOI.
+MEM: hong 37 diem cach 0.09 m (vat) LECH ban do=tuong
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (1.14; 0.33) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: truoc 1 diem cach 0.09 m (vat) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: truoc 24 diem cach 0.25 m (vat) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.22 m (vat) LECH ban do=tuong
+MEM: hong 18 diem cach 0.08 m (vat)
+MEM: truoc 14 diem cach 0.21 m (vat)
+MEM: hong 23 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.21 m (vat) LECH ban do=tuong
+MEM: hong 20 diem cach 0.08 m (tuong)
+MEM: hong 21 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: hong 20 diem cach 0.09 m (tuong)
+MEM: hong 6 diem cach 0.09 m (vat) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.17 m (vat) LECH ban do=tuong
+MEM: hong 21 diem cach 0.10 m (tuong)
+MEM: hong 7 diem cach 0.11 m (vat) LECH ban do=tuong
+MEM: hong 16 diem cach 0.11 m (tuong)
+MEM: hong 4 diem cach 0.11 m (vat) LECH ban do=tuong
+MEM: hong 8 diem cach 0.11 m (tuong)
+MEM: sach
+MEM: truoc 8 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.26 m (vat) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.23 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.20 m (tuong)
+MEM: sach
+DEN_NOI: ve_A xong theo duong Nav2 tu vach (cach dich 0.12 m).
+== 2026-11-10 15:18:23 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.01) toi (1.60; 0.82)
+MEM: truoc 6 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.25 m (vat)
+MEM: truoc 6 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.23 m (vat)
+MEM: truoc 15 diem cach 0.19 m (vat)
+MEM: truoc 17 diem cach 0.15 m (vat)
+MEM: truoc 18 diem cach 0.14 m (vat) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.11 m (vat) LECH ban do=tuong
+MEM: hong 1 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: truoc 1 diem cach 0.30 m (vat) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.25 m (vat) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.22 m (vat) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.18 m (vat) LECH ban do=tuong
+MEM: sau 3 diem cach 0.10 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: truoc 3 diem cach 0.29 m (tuong)
+MEM: truoc 3 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.28 m (tuong)
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.12 m).
+== 2026-11-10 15:25:51 gui_duong kieu mat ve_A: ma 130 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (1.53; 0.72) toi (0.00; 0.00)
+MEM: truoc 45 diem cach 0.27 m (tuong)
+MEM: truoc 5 diem cach 0.26 m (vat) LECH ban do=tuong
+MEM: truoc 43 diem cach 0.25 m (tuong)
+MEM: truoc 3 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 4 diem cach 0.28 m (tuong)
+MEM: truoc 6 diem cach 0.25 m (tuong)
+MEM: truoc 19 diem cach 0.21 m (tuong)
+MEM: truoc 51 diem cach 0.17 m (tuong)
+MEM: truoc 26 diem cach 0.17 m (vat) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.18 m (tuong)
+MEM: truoc 13 diem cach 0.20 m (vat) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.17 m (vat) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.13 m (vat) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.08 m (vat) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.08 m (0.63; -0.22)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.08 m (vung do), dung yen toi da 30 s.
+CHO_VAT: 5/30 s (cach dich 0.82 m)
+CHO_VAT: 10/30 s (cach dich 0.82 m)
+CHO_VAT: 15/30 s (cach dich 0.82 m)
+CHO_VAT: 20/30 s (cach dich 0.82 m)
+CHO_VAT: 25/30 s (cach dich 0.82 m)
+   khong den duoc (VUNG_DO_30s, cach dich 0.82 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+SEP_LIDAR: THOAT lui=0.10 (VUNG_DO_30s; cho chat: truoc 0.06, hong 0.06, sau - => cuoi 0.15).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 28 diem cach 0.06 m (vat)
+MEM: truoc 14 diem cach 0.07 m (vat) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.11 m (vat) LECH ban do=tuong
+   THOAT_XONG: lui=0.10 => SUCCEEDED.
+MEM: truoc 18 diem cach 0.14 m (vat) LECH ban do=tuong
+SEP_LIDAR: THOAT diem (0.52; -0.02): sector -20 do, 0.40 m (VUNG_DO_30s).
+MEM: truoc 29 diem cach 0.11 m (vat) LECH ban do=tuong
+   THOAT_XONG: diem => HONG (truoc vat 0.10 <= 0.10).
+MEM: truoc 29 diem cach 0.05 m (vat) LECH ban do=tuong
+SEP_LIDAR: DOI_VAT truoc vat cach 0.05 m (vung do), dung yen toi da 30 s.
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+SEP_LIDAR: THOAT lui=0.10 (VUNG_DO_30s; cho chat: truoc 0.06, hong 0.05, sau - => cuoi 0.15).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 21 diem cach 0.05 m (vat)
+   THOAT_XONG: lui=0.10 => HUY (truoc 0.05 <= 0.07 (moi vat)).
+MEM: truoc 9 diem cach 0.06 m (vat) LECH ban do=tuong
+SEP_LIDAR: DOI_VAT truoc vat cach 0.06 m (vung do), dung yen toi da 30 s.
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+SEP_LIDAR: THOAT lui=0.10 (VUNG_DO_30s; cho chat: truoc 0.07, hong 0.06, sau - => cuoi 0.15).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 13 diem cach 0.06 m (vat)
+   THOAT_XONG: lui=0.10 => HUY (hong vat 0.06 <= 0.06).
+CHO_NGUOI: thoat hong 3 lan lien tiep, xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+MEM: truoc 18 diem cach 0.07 m (vat) LECH ban do=tuong
+SEP_LIDAR: DOI_VAT truoc vat cach 0.07 m (vung do), dung yen toi da 30 s.
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+SEP_LIDAR: THOAT lui=0.05 (VUNG_DO_30s; cho chat: truoc 0.08, hong 0.07, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+   THOAT_XONG: lui=0.05 => SUCCEEDED (xe dich 0.06 m).
+SEP_LIDAR: THOAT lui=0.05 (VUNG_DO_30s; cho chat: truoc 0.10, hong 0.09, sau - => cuoi 0.14).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 20 diem cach 0.12 m (vat) LECH ban do=tuong
+   THOAT_XONG: lui=0.05 => SUCCEEDED (xe dich 0.06 m).
+MEM: truoc 15 diem cach 0.15 m (vat) LECH ban do=tuong
+SEP_LIDAR: THOAT diem (0.57; 0.02): sector -20 do, 0.40 m (VUNG_DO_30s).
+MEM: truoc 18 diem cach 0.17 m (tuong)
+MEM: truoc 29 diem cach 0.16 m (vat) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.09 m (vat) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.06 m (vat) LECH ban do=tuong
+   THOAT_XONG: diem => HONG (hong vat 0.06 <= 0.06).
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (0.81; -0.07) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: hong 7 diem cach 0.04 m (vat) LECH ban do=tuong
+GAC: dung im, hong vat cach 0.04 m (0.60; -0.18)
+SEP_LIDAR: DOI_VAT hong vat cach 0.04 m (vung do), dung yen toi da 30 s.
+CHO_VAT: 5/30 s (cach dich 0.76 m)
+CHO_VAT: 10/30 s (cach dich 0.76 m)
+CHO_VAT: 15/30 s (cach dich 0.76 m)
+CHO_VAT: 20/30 s (cach dich 0.76 m)
+CHO_VAT: 25/30 s (cach dich 0.76 m)
+   khong den duoc (VUNG_DO_30s, cach dich 0.76 m).
+== Luot 2 bi chan (xa dich 2/3). ==
+KINH_NGHIEM: lui=0.05 DUOC cach 0.09 m => bo (LiDAR: khong lam tot len (khe 0.040, thieu do 0.020))
+SEP_LIDAR: THOAT lui=0.20 (VUNG_DO_30s; cho chat: truoc -, hong 0.04, sau - => cuoi 0.14).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: hong 16 diem cach 0.04 m (vat)
+MEM: truoc 25 diem cach 0.04 m (vat)
+MEM: hong 18 diem cach 0.04 m (vat) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.04 m (vat) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.08 m (vat) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.11 m (vat) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.15 m (vat) LECH ban do=tuong
+   THOAT_XONG: lui=0.20 => SUCCEEDED (xe dich 0.21 m).
+SEP_LIDAR: THOAT diem (0.58; 0.01): sector -10 do, 0.40 m (VUNG_DO_30s).
+MEM: truoc 14 diem cach 0.16 m (tuong)
+MEM: truoc 16 diem cach 0.16 m (vat) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.08 m (vat) LECH ban do=tuong
+   THOAT_XONG: diem => HONG (hong vat 0.05 <= 0.06).
+MEM: truoc 33 diem cach 0.04 m (vat) LECH ban do=tuong
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 3/3: navigate_to_pose tu (0.77; -0.07) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: hong 5 diem cach 0.04 m (vat) LECH ban do=tuong
+GAC: dung im, hong vat cach 0.04 m (0.62; -0.18)
+SEP_LIDAR: DOI_VAT hong vat cach 0.04 m (vung do), dung yen toi da 30 s.
+CHO_VAT: 5/30 s (cach dich 0.76 m)
+CHO_VAT: 10/30 s (cach dich 0.76 m)
+CHO_VAT: 15/30 s (cach dich 0.76 m)
+CHO_VAT: 20/30 s (cach dich 0.76 m)
+CHO_VAT: 25/30 s (cach dich 0.76 m)
+   khong den duoc (VUNG_DO_30s, cach dich 0.76 m).
+== Luot 3 bi chan (xa dich 3/3). ==
+CHO_NGUOI: khong tim thay duong (3 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+KINH_NGHIEM: lui=0.05 DUOC cach 0.08 m => thu truoc
+SEP_LIDAR: THOAT lui=0.05 (VUNG_DO_30s; cho chat: truoc -, hong 0.04, sau - => cuoi 0.06).
+   THOAT_XONG: lui=0.05 => SUCCEEDED (xe dich 0.06 m).
+KINH_NGHIEM: lui=0.05 DUOC cach 0.02 m => thu truoc
+SEP_LIDAR: THOAT lui=0.05 (VUNG_DO_30s; cho chat: truoc -, hong 0.07, sau - => cuoi 0.11).
+MEM: truoc 13 diem cach 0.08 m (vat) LECH ban do=tuong
+   THOAT_XONG: lui=0.05 => SUCCEEDED (xe dich 0.05 m).
+KINH_NGHIEM: lui=0.05 DUOC cach 0.03 m => thu truoc
+SEP_LIDAR: THOAT lui=0.05 (VUNG_DO_30s; cho chat: truoc -, hong 0.10, sau - => cuoi 0.14).
+MEM: truoc 28 diem cach 0.12 m (vat) LECH ban do=tuong
+   THOAT_XONG: lui=0.05 => SUCCEEDED (xe dich 0.05 m).
+SEP_LIDAR: THOAT diem (0.53; 0.02): sector -10 do, 0.40 m (VUNG_DO_30s).
+MEM: truoc 10 diem cach 0.09 m (vat) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.05 m (vat) LECH ban do=tuong
+   THOAT_XONG: diem => HONG (hong vat 0.05 <= 0.06).
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 4/4: navigate_to_pose tu (0.75; -0.07) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: hong 9 diem cach 0.04 m (vat) LECH ban do=tuong
+GAC: dung im, hong vat cach 0.04 m (0.60; -0.17)
+SEP_LIDAR: DOI_VAT hong vat cach 0.04 m (vung do), dung yen toi da 30 s.
+CHO_VAT: 5/30 s (cach dich 0.74 m)
+CHO_VAT: 10/30 s (cach dich 0.74 m)
+CHO_VAT: 15/30 s (cach dich 0.74 m)
+CHO_VAT: 20/30 s (cach dich 0.74 m)
+CHO_VAT: 25/30 s (cach dich 0.74 m)
+   khong den duoc (VUNG_DO_30s, cach dich 0.74 m).
+== Luot 3 bi chan (xa dich 3/3). ==
+CHO_NGUOI: khong tim thay duong (3 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+HUY_DICH_KHI_NGAT khong_co_dich
+== 2026-11-10 15:53:28 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.01) toi (1.60; 0.82)
+MEM: truoc 1 diem cach 0.19 m (vat) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.15 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: truoc 3 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: hong 3 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: sach
+MEM: hong 10 diem cach 0.12 m (vat) LECH ban do=tuong
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 3 diem cach 0.30 m (tuong)
+MEM: sach
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-10 15:54:57 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (1.52; 0.72) toi (0.00; 0.00)
+MEM: truoc 1 diem cach 0.30 m (vat) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.29 m (tuong)
+MEM: truoc 2 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.29 m (tuong)
+MEM: truoc 2 diem cach 0.30 m (vat) LECH ban do=tuong
+MEM: truoc 4 diem cach 0.30 m (tuong)
+MEM: sach
+MEM: truoc 2 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 4 diem cach 0.28 m (tuong)
+MEM: truoc 3 diem cach 0.28 m (vat) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.30 m (tuong)
+MEM: sach
+MEM: truoc 3 diem cach 0.29 m (vat) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.25 m (tuong)
+MEM: truoc 6 diem cach 0.24 m (vat) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.22 m (tuong)
+MEM: truoc 10 diem cach 0.20 m (vat) LECH ban do=tuong
+MEM: truoc 28 diem cach 0.17 m (vat) LECH ban do=tuong
+MEM: truoc 24 diem cach 0.13 m (vat) LECH ban do=tuong
+MEM: truoc 29 diem cach 0.10 m (vat) LECH ban do=tuong
+MEM: hong 1 diem cach 0.10 m (vat) LECH ban do=tuong
+MEM: hong 17 diem cach 0.07 m (vat) LECH ban do=tuong
+GAC: dung im, hong vat cach 0.06 m (0.59; -0.20)
+SEP_LIDAR: DOI_VAT hong vat cach 0.06 m (vung do), dung yen toi da 30 s.
+MEM: sau 3 diem cach 0.05 m (vat) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 0.50 m)
+CHO_VAT: 10/30 s (cach dich 0.50 m)
+CHO_VAT: 15/30 s (cach dich 0.50 m)
+CHO_VAT: 20/30 s (cach dich 0.50 m)
+CHO_VAT: 25/30 s (cach dich 0.50 m)
+   khong den duoc (VUNG_DO_30s, cach dich 0.50 m).
+== Luot 1 bi chan (gan dich 1/2). ==
+KINH_NGHIEM: xoay=-30 DUOC cach 0.10 m => bo (LiDAR: xoay: diem cach tam 0.155 <= 0.186)
+SEP_LIDAR: THOAT tien=0.20 (VUNG_DO_30s; cho chat: truoc -, hong 0.05, sau 0.05 => cuoi 0.11).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: sau 11 diem cach 0.08 m (vat) LECH ban do=tuong
+   THOAT_XONG: tien=0.20 => SUCCEEDED (xe dich 0.10 m).
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+KINH_NGHIEM: xoay=-30 DUOC cach 0.04 m => bo (LiDAR: khe hong+duoi 0.091 < luc dau 0.093)
+SEP_LIDAR: THOAT tien=0.10 (VUNG_DO_30s; cho chat: truoc -, hong 0.10, sau 0.09 => cuoi 0.13).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: hong 15 diem cach 0.10 m (vat)
+MEM: sau 11 diem cach 0.10 m (vat)
+MEM: hong 15 diem cach 0.10 m (vat) LECH ban do=tuong
+MEM: sau 11 diem cach 0.10 m (vat) LECH ban do=tuong
+MEM: sach
+   THOAT_XONG: tien=0.10 => SUCCEEDED.
+KINH_NGHIEM: xoay=-30 DUOC cach 0.11 m => bo (LiDAR: khe hong+duoi 0.100 < luc dau -)
+SEP_LIDAR: THOAT xoay=+30 (VUNG_DO_30s; cho chat: truoc -, hong -, sau - => cuoi 0.15).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+   THOAT_XONG: xoay=+30 => SUCCEEDED.
+SEP_LIDAR: THOAT diem (-0.09; -0.00): sector -10 do, 0.40 m (VUNG_DO_30s).
+   THOAT_XONG: diem => TOI.
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (0.03; -0.03) toi (0.00; 0.00) (Nav2 tu vach)
+DEN_NOI: ve_A xong theo duong Nav2 tu vach (cach dich 0.05 m).
+== 2026-11-10 16:11:55 gui_duong kieu mat di_B: ma 130 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+SEP_LIDAR: CHO_VI_TRI (khong co tf moi): dung yen, chi giao dich khi vi tri tin lai.
+CHO_VI_TRI: khong co tf moi qua 60 s, bao nguoi; van cho, vi tri tin lai thi tu di tiep (bam 정지 de dung).
+HUY_DICH_KHI_NGAT khong_co_dich
+== 2026-11-10 16:19:22 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+   CANH BAO: /chon_tuyen chua co ai nghe (lop_huong_dan?): "0" co the mat
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.01) toi (1.60; 0.82)
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 3 diem cach 0.30 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.30 m (tuong: tren ban do, thang)
+MEM: truoc 5 diem cach 0.30 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.14 m).
+== 2026-11-10 16:20:13 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (1.53; 0.70) toi (0.00; 0.00)
+MEM: truoc 13 diem cach 0.30 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.29 m (tuong: tren ban do, thang)
+MEM: truoc 16 diem cach 0.29 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.28 m (tuong: tren ban do, thang)
+MEM: truoc 17 diem cach 0.28 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.29 m (tuong: tren ban do, thang)
+MEM: truoc 4 diem cach 0.30 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: sach
+MEM: truoc 1 diem cach 0.30 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.27 m (tuong: tren ban do, goc 99 do)
+MEM: sach
+MEM: truoc 6 diem cach 0.29 m (tuong: tren ban do, goc 89 do)
+MEM: truoc 10 diem cach 0.26 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 24 diem cach 0.23 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.22 m (tuong: tren ban do, goc 109 do)
+MEM: truoc 15 diem cach 0.21 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.20 m (tuong: tren ban do, thang)
+MEM: truoc 10 diem cach 0.19 m (vat: khong ban do, lidar vat)
+MEM: truoc 20 diem cach 0.18 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 17 diem cach 0.15 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.14 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 25 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: truoc 28 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 37 diem cach 0.09 m (tuong: tren ban do, goc 105 do)
+MEM: truoc 33 diem cach 0.08 m (ong: cung r=0.08 rms=0.001) LECH ban do=tuong
+MEM: hong 8 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 35 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: hong 13 diem cach 0.08 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: truoc 36 diem cach 0.08 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: hong 16 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 32 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 10 diem cach 0.11 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 4 diem cach 0.12 m (tuong: tren ban do, goc 89 do)
+MEM: hong 23 diem cach 0.10 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: hong 24 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sau 2 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: sach
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-10 16:26:40 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.01) toi (1.60; 0.82)
+MEM: truoc 4 diem cach 0.29 m (vat: ngoai ban do 17 diem) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.25 m (ong: cung r=0.07 rms=0.004) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.20 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.17 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.14 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.10 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+MEM: hong 9 diem cach 0.10 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+MEM: hong 34 diem cach 0.07 m (ong: cung r=0.09 rms=0.001)
+MEM: truoc 4 diem cach 0.08 m (ong: cung r=0.09 rms=0.001)
+MEM: truoc 13 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: sau 3 diem cach 0.07 m (vat: ngoai ban do 4 diem)
+MEM: sau 2 diem cach 0.10 m (vat: ngoai ban do 12 diem)
+MEM: hong 3 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: sau 13 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: hong 18 diem cach 0.10 m (ong: cung r=0.08 rms=0.001)
+MEM: hong 14 diem cach 0.10 m (ong: cung r=0.07 rms=0.001) LECH ban do=tuong
+MEM: sach
+MEM: truoc 6 diem cach 0.29 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.29 m (tuong: tren ban do, thang)
+MEM: truoc 17 diem cach 0.29 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.29 m (tuong: tren ban do, goc 109 do)
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.14 m).
+== 2026-11-10 16:29:08 gui_duong kieu mat ve_A: ma 130 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (1.50; 0.72) toi (0.00; 0.00)
+MEM: truoc 16 diem cach 0.30 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 22 diem cach 0.30 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 30 diem cach 0.30 m (tuong: tren ban do, thang)
+MEM: truoc 26 diem cach 0.29 m (ong: cung r=0.08 rms=0.001) LECH ban do=tuong
+MEM: truoc 4 diem cach 0.28 m (tuong: tren ban do, thang)
+MEM: truoc 17 diem cach 0.28 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: sach
+MEM: truoc 3 diem cach 0.28 m (tuong: tren ban do, goc 99 do)
+MEM: truoc 15 diem cach 0.24 m (tuong: tren ban do, goc 103 do)
+MEM: truoc 23 diem cach 0.21 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.24 m (tuong: tren ban do, thang)
+MEM: truoc 7 diem cach 0.28 m (tuong: tren ban do, goc 91 do)
+MEM: sach
+MEM: truoc 2 diem cach 0.29 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 3 diem cach 0.28 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 6 diem cach 0.26 m (tuong: tren ban do, goc 101 do)
+MEM: truoc 17 diem cach 0.24 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.23 m (tuong: tren ban do, goc 86 do)
+MEM: truoc 16 diem cach 0.20 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.20 m (tuong: tren ban do, goc 85 do)
+MEM: truoc 12 diem cach 0.16 m (tuong: tren ban do, thang)
+MEM: truoc 18 diem cach 0.15 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.14 m (tuong: tren ban do, goc 88 do)
+MEM: truoc 16 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.08 m (0.66; -0.18)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.08 m (nhac doi), dung yen toi da 30 s.
+MEM: truoc 24 diem cach 0.08 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 10 diem cach 0.08 m (ong: cung r=0.07 rms=0.001) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.08 m (tuong: tren ban do, goc 103 do)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.08 m (tuong: tren ban do, goc 96 do)
+MEM: truoc 27 diem cach 0.08 m (ong: cung r=0.06 rms=0.001) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.08 m (tuong: tren ban do, goc 103 do)
+MEM: truoc 22 diem cach 0.08 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+MEM: truoc 30 diem cach 0.08 m (tuong: tren ban do, goc 103 do)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.08 m (tuong: tren ban do, goc 104 do)
+MEM: truoc 25 diem cach 0.08 m (ong: cung r=0.06 rms=0.001) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 14 diem cach 0.08 m (ong: cung r=0.12 rms=0.001) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.08 m (ong: cung r=0.10 rms=0.001) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 14 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.08 m (tuong: tren ban do, goc 94 do)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.08 m (tuong: tren ban do, goc 102 do)
+MEM: truoc 27 diem cach 0.08 m (ong: cung r=0.06 rms=0.001) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 0.85 m)
+MEM: truoc 10 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.08 m (tuong: tren ban do, goc 104 do)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.08 m (tuong: tren ban do, goc 105 do)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.08 m (tuong: tren ban do, goc 104 do)
+MEM: truoc 16 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.08 m (tuong: tren ban do, goc 94 do)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.08 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 17 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.08 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 12 diem cach 0.08 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+CHO_VAT: 10/30 s (cach dich 0.85 m)
+MEM: truoc 11 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.08 m (ong: cung r=0.10 rms=0.001) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 13 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.08 m (tuong: tren ban do, goc 91 do)
+MEM: truoc 14 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.08 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.08 m (tuong: tren ban do, goc 102 do)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.08 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 12 diem cach 0.08 m (ong: cung r=0.08 rms=0.001) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.08 m (tuong: tren ban do, thang)
+CHO_VAT: 15/30 s (cach dich 0.85 m)
+MEM: truoc 22 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.08 m (tuong: tren ban do, goc 94 do)
+MEM: truoc 17 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 16 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.08 m (tuong: tren ban do, goc 103 do)
+MEM: truoc 13 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.08 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 22 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 13 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 12 diem cach 0.08 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.08 m (tuong: tren ban do, goc 103 do)
+MEM: truoc 12 diem cach 0.08 m (ong: cung r=0.07 rms=0.001) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.08 m (tuong: tren ban do, goc 100 do)
+CHO_VAT: 20/30 s (cach dich 0.85 m)
+MEM: truoc 25 diem cach 0.08 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.08 m (tuong: tren ban do, goc 105 do)
+MEM: truoc 13 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 22 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.08 m (tuong: tren ban do, thang)
+CHO_VAT: 25/30 s (cach dich 0.85 m)
+MEM: truoc 13 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.08 m (tuong: tren ban do, goc 110 do)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 26 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.08 m (tuong: tren ban do, goc 94 do)
+MEM: truoc 13 diem cach 0.08 m (ong: cung r=0.08 rms=0.001) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 10 diem cach 0.08 m (ong: cung r=0.07 rms=0.001) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.08 m (tuong: tren ban do, goc 101 do)
+MEM: truoc 9 diem cach 0.08 m (ong: cung r=0.07 rms=0.000) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.08 m (tuong: tren ban do, goc 96 do)
+   khong den duoc (CHO_VAT_30s, cach dich 0.85 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+KINH_NGHIEM: lui=0.05 DUOC cach 0.02 m => thu truoc
+SEP_LIDAR: THOAT lui=0.05 (CHO_VAT_30s; cho chat: truoc 0.08, hong 0.08, sau - => cuoi 0.13).
+   THOAT_XONG: lui=0.05 => HUY (khe hong+duoi 0.10 < luc bat dau 0.107) (xe dich 0.01 m).
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (0.86; -0.06) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.08 m (0.66; -0.19)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.08 m (vung do), dung yen toi da 30 s.
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 14 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.08 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, goc 110 do)
+MEM: truoc 24 diem cach 0.08 m (ong: cung r=0.07 rms=0.001) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.08 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.08 m (tuong: tren ban do, goc 109 do)
+MEM: truoc 13 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.08 m (tuong: tren ban do, goc 100 do)
+MEM: truoc 11 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.08 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 20 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 7 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.08 m (tuong: tren ban do, goc 91 do)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 0.86 m)
+MEM: truoc 19 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 13 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.08 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 22 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 14 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 7 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 25 diem cach 0.08 m (ong: cung r=0.12 rms=0.001) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.08 m (tuong: tren ban do, goc 105 do)
+MEM: truoc 20 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.08 m (tuong: tren ban do, goc 93 do)
+CHO_VAT: 10/30 s (cach dich 0.86 m)
+MEM: truoc 20 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.08 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.08 m (tuong: tren ban do, goc 91 do)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.08 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 29 diem cach 0.08 m (ong: cung r=0.08 rms=0.001) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 14 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+CHO_VAT: 15/30 s (cach dich 0.86 m)
+MEM: truoc 17 diem cach 0.08 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.08 m (tuong: tren ban do, goc 91 do)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 18 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.08 m (tuong: tren ban do, goc 101 do)
+MEM: truoc 22 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 22 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.08 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 9 diem cach 0.08 m (ong: cung r=0.10 rms=0.000) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.08 m (tuong: tren ban do, goc 105 do)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.08 m (tuong: tren ban do, thang)
+CHO_VAT: 20/30 s (cach dich 0.86 m)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 29 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.08 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 26 diem cach 0.08 m (ong: cung r=0.07 rms=0.001) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.08 m (tuong: tren ban do, goc 92 do)
+MEM: truoc 9 diem cach 0.08 m (ong: cung r=0.09 rms=0.000) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.08 m (tuong: tren ban do, goc 108 do)
+CHO_VAT: 25/30 s (cach dich 0.86 m)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 24 diem cach 0.08 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 19 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.08 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 14 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 14 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.08 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 7 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 14 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.08 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 23 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.08 m (tuong: tren ban do, goc 91 do)
+MEM: truoc 17 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 15 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.08 m (tuong: tren ban do, thang)
+   khong den duoc (VUNG_DO_30s, cach dich 0.86 m).
+== Luot 2 bi chan (xa dich 2/3). ==
+KINH_NGHIEM: lui=0.05 DUOC cach 0.02 m => thu truoc
+SEP_LIDAR: THOAT lui=0.05 (VUNG_DO_30s; cho chat: truoc 0.08, hong 0.09, sau - => cuoi 0.13).
+MEM: truoc 21 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+   THOAT_XONG: lui=0.05 => HUY (truoc vat 0.08 <= 0.10) (xe dich 0.02 m).
+MEM: truoc 14 diem cach 0.08 m (tuong: tren ban do, thang)
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 3/3: navigate_to_pose tu (0.88; -0.05) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: truoc 13 diem cach 0.09 m (ong: cung r=0.06 rms=0.001) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.09 m (0.68; -0.20)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.09 m (nhac doi), dung yen toi da 30 s.
+MEM: truoc 7 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 12 diem cach 0.09 m (ong: cung r=0.08 rms=0.001) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 18 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 11 diem cach 0.09 m (ong: cung r=0.07 rms=0.001) LECH ban do=tuong
+MEM: truoc 7 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.09 m (tuong: tren ban do, goc 99 do)
+MEM: truoc 17 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.09 m (tuong: tren ban do, goc 107 do)
+MEM: truoc 18 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.09 m (tuong: tren ban do, goc 108 do)
+MEM: truoc 19 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.09 m (tuong: tren ban do, goc 102 do)
+MEM: truoc 12 diem cach 0.09 m (ong: cung r=0.07 rms=0.001) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.09 m (tuong: tren ban do, goc 103 do)
+CHO_VAT: 5/30 s (cach dich 0.88 m)
+MEM: truoc 12 diem cach 0.09 m (ong: cung r=0.09 rms=0.001) LECH ban do=tuong
+MEM: truoc 24 diem cach 0.09 m (tuong: tren ban do, goc 104 do)
+MEM: truoc 17 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.09 m (tuong: tren ban do, goc 107 do)
+MEM: truoc 20 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 20 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.09 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 24 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.09 m (tuong: tren ban do, goc 95 do)
+CHO_VAT: 10/30 s (cach dich 0.88 m)
+MEM: truoc 17 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 16 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.09 m (tuong: tren ban do, goc 97 do)
+MEM: truoc 13 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.09 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 11 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.09 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 16 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.09 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 20 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.09 m (tuong: tren ban do, goc 105 do)
+MEM: truoc 21 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.09 m (tuong: tren ban do, goc 102 do)
+CHO_VAT: 15/30 s (cach dich 0.88 m)
+MEM: truoc 16 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.09 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 17 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.09 m (tuong: tren ban do, goc 100 do)
+MEM: truoc 20 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.09 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 16 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.09 m (tuong: tren ban do, goc 104 do)
+MEM: truoc 11 diem cach 0.09 m (ong: cung r=0.08 rms=0.002) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.09 m (tuong: tren ban do, goc 94 do)
+CHO_VAT: 20/30 s (cach dich 0.88 m)
+MEM: truoc 18 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.09 m (tuong: tren ban do, goc 99 do)
+MEM: truoc 13 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 23 diem cach 0.09 m (ong: cung r=0.07 rms=0.001) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.09 m (tuong: tren ban do, goc 100 do)
+MEM: truoc 9 diem cach 0.09 m (ong: cung r=0.10 rms=0.001) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.09 m (tuong: tren ban do, goc 103 do)
+MEM: truoc 25 diem cach 0.09 m (ong: cung r=0.06 rms=0.002) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.09 m (tuong: tren ban do, goc 103 do)
+MEM: truoc 18 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 18 diem cach 0.09 m (tuong: tren ban do, goc 108 do)
+MEM: truoc 18 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.09 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 15 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 22 diem cach 0.09 m (tuong: tren ban do, goc 106 do)
+MEM: truoc 19 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.09 m (tuong: tren ban do, goc 109 do)
+CHO_VAT: 25/30 s (cach dich 0.88 m)
+MEM: truoc 14 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 16 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.09 m (tuong: tren ban do, goc 102 do)
+MEM: truoc 22 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.09 m (tuong: tren ban do, goc 103 do)
+MEM: truoc 11 diem cach 0.09 m (ong: cung r=0.06 rms=0.001) LECH ban do=tuong
+MEM: truoc 19 diem cach 0.09 m (tuong: tren ban do, goc 97 do)
+MEM: truoc 20 diem cach 0.09 m (ong: cung r=0.08 rms=0.000) LECH ban do=tuong
+   khong den duoc (CHO_VAT_30s, cach dich 0.88 m).
+== Luot 3 bi chan (xa dich 3/3). ==
+CHO_NGUOI: khong tim thay duong (3 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+HUY_DICH_KHI_NGAT khong_co_dich
+== 2026-11-10 17:07:09 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+   CANH BAO: /chon_tuyen chua co ai nghe (lop_huong_dan?): "0" co the mat
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.02; 0.01) toi (1.60; 0.82)
+MEM: truoc 2 diem cach 0.30 m (vat: ngoai ban do 22 diem) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.26 m (vat: ngoai ban do 20 diem) LECH ban do=tuong
+MEM: truoc 17 diem cach 0.22 m (vat: ngoai ban do 26 diem) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.19 m (vat: ngoai ban do 29 diem) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.16 m (vat: ngoai ban do 21 diem)
+MEM: truoc 24 diem cach 0.14 m (vat: ngoai ban do 32 diem) LECH ban do=tuong
+MEM: truoc 24 diem cach 0.13 m (vat: ngoai ban do 24 diem)
+MEM: truoc 25 diem cach 0.09 m (vat: ngoai ban do 25 diem)
+MEM: hong 3 diem cach 0.09 m (vat: ngoai ban do 28 diem)
+MEM: truoc 24 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: hong 14 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 26 diem cach 0.07 m (tuong: tren ban do, thang)
+MEM: hong 38 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: truoc 11 diem cach 0.04 m (tuong: tren ban do, thang)
+MEM: truoc 17 diem cach 0.18 m (tuong: tren ban do, thang)
+MEM: truoc 5 diem cach 0.27 m (tuong: tren ban do, thang)
+MEM: sau 8 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: sau 10 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: sau 15 diem cach 0.07 m (tuong: tren ban do, thang)
+MEM: sau 14 diem cach 0.07 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: sau 15 diem cach 0.07 m (tuong: tren ban do, thang)
+MEM: sau 26 diem cach 0.04 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: sau 24 diem cach 0.04 m (tuong: tren ban do, goc 101 do)
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: sau 14 diem cach 0.08 m (tuong: tren ban do, goc 98 do)
+MEM: sach
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.12 m).
+== 2026-11-10 17:08:00 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+DIEM_DAN: (0.68; 0.09) huong -173 do, cach K4 0.25 m, cach H0 0.25 m (ban do).
+MEM: truoc 1 diem cach 0.30 m (tuong: khong chac, tren ban do, khong thang)
+MEM: sach
+MEM: truoc 3 diem cach 0.29 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 10 diem cach 0.26 m (tuong: tren ban do, goc 99 do)
+MEM: truoc 21 diem cach 0.22 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 4 diem cach 0.27 m (tuong: tren ban do, thang)
+MEM: truoc 18 diem cach 0.23 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 22 diem cach 0.19 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 25 diem cach 0.16 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 24 diem cach 0.13 m (tuong: tren ban do, goc 105 do)
+MEM: hong 2 diem cach 0.11 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 12 diem cach 0.11 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: hong 4 diem cach 0.10 m (vat: ngoai ban do 34 diem) LECH ban do=tuong
+   DIEM_DAN_XONG: (0.68; 0.09) => TOI.
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.79; -0.03) toi (0.00; 0.00)
+MEM: hong 14 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: hong 10 diem cach 0.09 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 33 diem cach 0.09 m (vat: khong ban do, lidar khong_chac)
+MEM: hong 13 diem cach 0.09 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 35 diem cach 0.09 m (tuong: khong chac, tren ban do, khong thang)
+MEM: hong 37 diem cach 0.08 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 31 diem cach 0.10 m (vat: khong ban do, lidar khong_chac)
+MEM: hong 41 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 31 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: hong 62 diem cach 0.08 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.10 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: hong 13 diem cach 0.08 m (tuong: tren ban do, thang, bo cung r=0.07 chi 26 do)
+MEM: hong 71 diem cach 0.08 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: hong 7 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: sau 3 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: hong 16 diem cach 0.09 m (vat: khong ban do, lidar vat)
+MEM: sau 10 diem cach 0.09 m (vat: khong ban do, lidar vat)
+MEM: hong 6 diem cach 0.09 m (tuong: tren ban do, thang, bo cung r=0.10 chi 32 do)
+MEM: sau 9 diem cach 0.09 m (tuong: tren ban do, thang, bo cung r=0.10 chi 32 do)
+MEM: sach
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-10 17:18:19 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+MEM: truoc 8 diem cach 0.30 m (vat: ngoai ban do 23 diem)
+MEM: truoc 24 diem cach 0.25 m (ong: cung r=0.09 rms=0.001, on dinh 3/3)
+MEM: truoc 28 diem cach 0.21 m (ong: cung r=0.09 rms=0.001, on dinh 6/6)
+MEM: truoc 10 diem cach 0.18 m (vat: ngoai ban do 10 diem)
+MEM: truoc 16 diem cach 0.15 m (tuong: tren ban do, thang)
+MEM: truoc 21 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: hong 2 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: truoc 32 diem cach 0.10 m (vat: ngoai ban do 32 diem) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.10 m (0.73; 0.03)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.10 m (nhac doi), dung yen toi da 30 s.
+MEM: truoc 3 diem cach 0.08 m (vat: ngoai ban do 3 diem)
+MEM: hong 6 diem cach -0.05 m (vat: ngoai ban do 6 diem) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.02 m (vat: ngoai ban do 5 diem)
+MEM: truoc 9 diem cach 0.07 m (vat: ngoai ban do 9 diem)
+MEM: hong 6 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.07 m (vat: ngoai ban do 13 diem) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.07 m (vat: ngoai ban do 21 diem)
+MEM: hong 14 diem cach -0.08 m (vat: ngoai ban do 14 diem) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.00 m (vat: ngoai ban do 19 diem) LECH ban do=tuong
+MEM: hong 17 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: truoc 3 diem cach 0.04 m (vat: ngoai ban do 3 diem) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.07 m (vat: ngoai ban do 25 diem) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 1.39 m)
+MEM: truoc 21 diem cach 0.07 m (vat: ngoai ban do 21 diem)
+MEM: truoc 28 diem cach 0.07 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+CHO_VAT: 10/30 s (cach dich 1.39 m)
+MEM: truoc 26 diem cach 0.07 m (vat: ngoai ban do 26 diem)
+MEM: truoc 34 diem cach 0.07 m (vat: ngoai ban do 34 diem) LECH ban do=tuong
+CHO_VAT: 15/30 s (cach dich 1.39 m)
+CHO_VAT: 20/30 s (cach dich 1.39 m)
+MEM: truoc 15 diem cach 0.07 m (vat: ngoai ban do 15 diem)
+MEM: truoc 25 diem cach 0.07 m (vat: ngoai ban do 25 diem) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.07 m (vat: ngoai ban do 14 diem)
+MEM: truoc 27 diem cach 0.07 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+CHO_VAT: 25/30 s (cach dich 1.39 m)
+MEM: truoc 16 diem cach 0.07 m (vat: ngoai ban do 16 diem)
+   khong den duoc (CHO_VAT_30s, cach dich 1.39 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+MEM: truoc 34 diem cach 0.07 m (vat: ngoai ban do 34 diem) LECH ban do=tuong
+KINH_NGHIEM: tien=0.20 DUOC cach 0.02 m => bo (LiDAR: cham vat: 0.057 < 0.060 (nguong 0.06 / luc dau))
+SEP_LIDAR: THOAT lui=0.10 (CHO_VAT_30s; cho chat: truoc 0.10, hong 0.07, sau - => cuoi 0.13).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: hong 1 diem cach 0.10 m (vat: khong ban do, lidar vat)
+MEM: truoc 15 diem cach 0.07 m (vat: khong ban do, lidar vat)
+   THOAT_XONG: lui=0.10 => HUY (truoc vat 0.10 <= 0.10).
+MEM: hong 14 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: truoc 22 diem cach 0.08 m (vat: ngoai ban do 22 diem) LECH ban do=tuong
+DIEM_VUOT: P (0.50; -0.02) => V (1.10; -0.05), phia phai, ly do bac 1, than cach vat 0.22 / tuong 0.15, duong cach them -0.06.
+MEM: truoc 26 diem cach 0.07 m (vat: ngoai ban do 26 diem)
+MEM: truoc 33 diem cach 0.05 m (vat: ngoai ban do 33 diem) LECH ban do=tuong
+   DIEM_VUOT_XONG: (1.10; -0.05) => HONG (truoc vat 0.10 <= 0.10).
+SEP_LIDAR: DOI_VAT truoc vat cach 0.04 m (vung do), dung yen toi da 30 s.
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+KINH_NGHIEM: tien=0.20 DUOC cach 0.03 m => bo (LiDAR: cham vat: 0.033 < 0.036 (nguong 0.06 / luc dau))
+SEP_LIDAR: THOAT lui=0.10 (VUNG_DO_30s; cho chat: truoc 0.07, hong 0.04, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: hong 31 diem cach 0.08 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 37 diem cach 0.04 m (vat: khong ban do, lidar vat)
+MEM: hong 28 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 28 diem cach 0.05 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 35 diem cach 0.07 m (vat: ngoai ban do 35 diem)
+MEM: truoc 24 diem cach 0.10 m (vat: ngoai ban do 24 diem) LECH ban do=tuong
+   THOAT_XONG: lui=0.10 => SUCCEEDED.
+MEM: truoc 24 diem cach 0.10 m (tuong: tren ban do, thang)
+KINH_NGHIEM: xoay=-30 DUOC cach 0.02 m => bo (LiDAR: khong lam tot len (khe 0.071, thieu do 0.012))
+SEP_LIDAR: THOAT xoay=+30 (VUNG_DO_30s; cho chat: truoc 0.15, hong 0.10, sau - => cuoi 0.13).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: hong 1 diem cach 0.12 m (vat: khong ban do, lidar vat)
+MEM: truoc 18 diem cach 0.11 m (vat: khong ban do, lidar vat)
+MEM: truoc 13 diem cach 0.14 m (vat: ngoai ban do 13 diem)
+   THOAT_XONG: xoay=+30 => SUCCEEDED.
+SEP_LIDAR: THOAT diem (0.22; 0.34): sector +110 do, 0.40 m (VUNG_DO_30s).
+MEM: truoc 19 diem cach 0.15 m (vat: ngoai ban do 19 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.15 m (vat: ngoai ban do 31 diem)
+MEM: hong 3 diem cach 0.12 m (tuong: khong chac, tren ban do, khong thang)
+MEM: sau 10 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sau 27 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: sau 31 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: sau 34 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: truoc 48 diem cach 0.17 m (tuong: tren ban do, thang)
+MEM: sau 36 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 51 diem cach 0.17 m (vat: ngoai ban do 3 diem) LECH ban do=tuong
+MEM: truoc 48 diem cach 0.18 m (tuong: tren ban do, thang)
+MEM: truoc 46 diem cach 0.19 m (vat: ngoai ban do 3 diem) LECH ban do=tuong
+MEM: truoc 37 diem cach 0.20 m (tuong: tren ban do, thang)
+MEM: truoc 35 diem cach 0.20 m (vat: ngoai ban do 4 diem) LECH ban do=tuong
+MEM: hong 7 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: sau 29 diem cach 0.08 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: sau 28 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: sach
+   THOAT_XONG: diem => TOI.
+SEP_LIDAR: DI dich (1.60; 0.82), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (0.24; 0.19) toi (1.60; 0.82) (Nav2 tu vach)
+MEM: truoc 5 diem cach 0.29 m (tuong: tren ban do, thang)
+MEM: truoc 11 diem cach 0.26 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 3 diem cach 0.22 m (tuong: tren ban do, thang)
+MEM: truoc 3 diem cach 0.18 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 4 diem cach 0.14 m (tuong: tren ban do, goc 89 do)
+MEM: sach
+MEM: truoc 1 diem cach 0.30 m (tuong: tren ban do, goc 100 do)
+MEM: truoc 8 diem cach 0.27 m (tuong: tren ban do, goc 107 do)
+MEM: truoc 16 diem cach 0.23 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 22 diem cach 0.19 m (tuong: tren ban do, goc 101 do)
+MEM: truoc 17 diem cach 0.15 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 32 diem cach 0.12 m (tuong: khong chac, tren ban do, khong thang)
+MEM: hong 7 diem cach 0.11 m (tuong: khong chac, tren ban do, khong thang)
+MEM: sau 2 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sach
+DEN_NOI: di_B xong theo duong Nav2 tu vach (cach dich 0.13 m).
+== 2026-11-10 17:20:46 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+DIEM_DAN: (0.68; 0.09) huong -173 do, cach K4 0.25 m, cach H0 0.25 m (ban do).
+MEM: truoc 2 diem cach 0.30 m (tuong: khong chac, tren ban do, khong thang)
+MEM: sach
+MEM: truoc 2 diem cach 0.30 m (tuong: tren ban do, thang)
+MEM: truoc 8 diem cach 0.25 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: truoc 3 diem cach 0.27 m (vat: ngoai ban do 19 diem)
+MEM: truoc 5 diem cach 0.23 m (vat: ngoai ban do 19 diem)
+MEM: truoc 13 diem cach 0.20 m (vat: ngoai ban do 26 diem)
+MEM: truoc 8 diem cach 0.17 m (vat: ngoai ban do 16 diem)
+MEM: sach
+MEM: truoc 14 diem cach 0.28 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 31 diem cach 0.25 m (tuong: tren ban do, goc 100 do)
+MEM: truoc 6 diem cach 0.12 m (vat: ngoai ban do 25 diem)
+   DIEM_DAN_XONG: (0.68; 0.09) => HONG (truoc vat 0.10 <= 0.10).
+DIEM_DAN: bo, di thang A (Nav2 tu vach, khong tinh luot).
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 1/3: navigate_to_pose tu (1.07; 0.05) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: truoc 11 diem cach 0.07 m (vat: ngoai ban do 11 diem)
+GAC: dung im, truoc vat cach 0.07 m (0.84; 0.05)
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.07 m (nhac doi), dung yen toi da 30 s.
+CHO_VAT: 5/30 s (cach dich 1.07 m)
+CHO_VAT: 10/30 s (cach dich 1.07 m)
+CHO_VAT: 15/30 s (cach dich 1.07 m)
+CHO_VAT: 20/30 s (cach dich 1.07 m)
+CHO_VAT: 25/30 s (cach dich 1.07 m)
+   khong den duoc (CHO_VAT_30s, cach dich 1.07 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+SEP_LIDAR: THOAT lui=0.05 (CHO_VAT_30s; cho chat: truoc 0.07, hong 0.07, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+   THOAT_XONG: lui=0.05 => SUCCEEDED.
+MEM: truoc 13 diem cach 0.11 m (vat: ngoai ban do 13 diem)
+SEP_LIDAR: THOAT xoay=+90 (CHO_VAT_30s; cho chat: truoc 0.11, hong 0.11, sau - => cuoi 0.17).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 6 diem cach 0.15 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 30 diem cach 0.22 m (tuong: tren ban do, goc 101 do)
+   THOAT_XONG: xoay=+90 => SUCCEEDED.
+SEP_LIDAR: THOAT diem (1.09; 0.43): sector -160 do, 0.40 m (CHO_VAT_30s).
+MEM: truoc 10 diem cach 0.26 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 2 diem cach 0.29 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: truoc 21 diem cach 0.13 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: truoc 12 diem cach 0.12 m (tuong: tren ban do, goc 107 do)
+MEM: hong 6 diem cach 0.11 m (tuong: tren ban do, goc 89 do)
+MEM: truoc 33 diem cach 0.09 m (tuong: tren ban do, thang)
+   THOAT_XONG: diem => TOI.
+DIEM_VUOT: P (1.07; 0.05) => V (0.47; 0.02), phia thang, ly do bac 1, than cach vat 0.18 / tuong 0.12, duong cach them -0.06.
+MEM: hong 24 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: truoc 25 diem cach 0.05 m (tuong: tren ban do, thang)
+   DIEM_VUOT_XONG: (0.47; 0.02) => HONG (truoc 0.06 <= 0.07 (moi vat)).
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (1.16; 0.35) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: truoc 41 diem cach 0.05 m (vat: khong ban do, lidar vat)
+GAC: dung im, truoc vat cach 0.05 m
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.05 m (vung do), dung yen toi da 30 s.
+MEM: truoc 45 diem cach 0.04 m (tuong: tren ban do, thang)
+GAC: het chan sau 2 s
+MEM: truoc 42 diem cach 0.04 m (vat: khong ban do, lidar vat)
+GAC: dung im, truoc vat cach 0.04 m
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.04 m (vung do), dung yen toi da 30 s.
+MEM: truoc 4 diem cach 0.04 m (tuong: tren ban do, thang)
+GAC: het chan sau 2 s
+MEM: truoc 26 diem cach 0.04 m (vat: khong ban do, lidar vat)
+GAC: dung im, truoc vat cach 0.04 m
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.04 m (vung do), dung yen toi da 30 s.
+MEM: hong 4 diem cach 0.05 m (tuong: tren ban do, thang)
+MEM: truoc 43 diem cach 0.04 m (tuong: tren ban do, thang)
+GAC: het chan sau 2 s
+MEM: hong 16 diem cach 0.06 m (vat: khong ban do, lidar vat)
+MEM: truoc 25 diem cach 0.06 m (vat: khong ban do, lidar vat)
+MEM: hong 22 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: truoc 25 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: hong 40 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: truoc 6 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: hong 45 diem cach 0.10 m (vat: khong ban do, lidar vat)
+MEM: hong 38 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: hong 3 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: hong 3 diem cach 0.12 m (tuong: tren ban do, thang, bo cung r=0.11 chi 20 do)
+MEM: sach
+MEM: hong 3 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: hong 1 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: hong 1 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: truoc 1 diem cach 0.30 m (tuong: khong chac, tren ban do, khong thang)
+MEM: hong 5 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: hong 1 diem cach 0.12 m (tuong: tren ban do, goc 101 do)
+MEM: truoc 12 diem cach 0.26 m (tuong: tren ban do, thang)
+MEM: hong 11 diem cach 0.10 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 14 diem cach 0.24 m (vat: khong ban do, lidar vat)
+MEM: hong 14 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: truoc 13 diem cach 0.23 m (tuong: tren ban do, thang)
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 12 diem cach 0.19 m (tuong: tren ban do, thang)
+MEM: truoc 1 diem cach 0.19 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 8 diem cach 0.19 m (tuong: tren ban do, thang)
+MEM: hong 15 diem cach 0.10 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: hong 15 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: hong 12 diem cach 0.10 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: hong 6 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: hong 7 diem cach 0.11 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: hong 6 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: hong 5 diem cach 0.11 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: hong 4 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: truoc 1 diem cach 0.15 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: truoc 5 diem cach 0.30 m (tuong: tren ban do, goc 89 do)
+MEM: truoc 23 diem cach 0.27 m (tuong: tren ban do, thang)
+MEM: truoc 10 diem cach 0.23 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 5 diem cach 0.20 m (tuong: tren ban do, goc 85 do)
+MEM: sach
+DEN_NOI: ve_A xong theo duong Nav2 tu vach (cach dich 0.12 m).
+== 2026-11-10 17:36:48 gui_duong kieu mat di_B: ma 130 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+   CANH BAO: /chon_tuyen chua co ai nghe (lop_huong_dan?): "0" co the mat
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: sau 5 diem cach 0.00 m (vat: ngoai ban do 5 diem)
+MEM: hong 9 diem cach -0.06 m (vat: ngoai ban do 15 diem)
+GAC: dung im, hong vat cach -0.06 m (0.65; 0.12)
+SEP_LIDAR: DOI_VAT hong vat chac cach -0.06 m (vung do), dung yen toi da 30 s.
+MEM: sau 11 diem cach 0.00 m (vat: ngoai ban do 15 diem)
+MEM: hong 9 diem cach -0.05 m (vat: ngoai ban do 22 diem)
+MEM: sau 30 diem cach 0.04 m (vat: ngoai ban do 30 diem)
+MEM: sach
+GAC: het chan sau 2 s
+sep: KHONG_TIN (ghi, khong chan)
+   khong den duoc (VI_TRI_KHONG_TIN, cach dich 1.05 m): cho vi tri.
+SEP_LIDAR: CHO_VI_TRI (sep bao vi tri khong tin): dung yen, chi giao dich khi vi tri tin lai.
+HUY_DICH_KHI_NGAT khong_co_dich
+== 2026-11-10 17:41:11 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.01) toi (1.60; 0.82)
+MEM: truoc 2 diem cach 0.29 m (vat: ngoai ban do 32 diem) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.26 m (vat: ngoai ban do 17 diem)
+MEM: truoc 14 diem cach 0.24 m (vat: ngoai ban do 24 diem) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.23 m (vat: ngoai ban do 22 diem)
+MEM: truoc 20 diem cach 0.19 m (vat: ngoai ban do 29 diem)
+MEM: truoc 22 diem cach 0.15 m (vat: ngoai ban do 29 diem)
+MEM: truoc 27 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: hong 8 diem cach 0.10 m (vat: ngoai ban do 34 diem)
+MEM: truoc 20 diem cach 0.08 m (vat: ngoai ban do 37 diem)
+MEM: hong 33 diem cach 0.07 m (vat: ngoai ban do 33 diem)
+MEM: truoc 12 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sau 2 diem cach 0.07 m (vat: ngoai ban do 4 diem)
+MEM: hong 9 diem cach 0.10 m (vat: ngoai ban do 31 diem)
+MEM: hong 6 diem cach 0.10 m (vat: ngoai ban do 24 diem) LECH ban do=tuong
+MEM: sach
+DEN_NOI: di_B xong theo tuyen 1 (cach dich 0.13 m).
+== 2026-11-10 17:42:06 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+DIEM_DAN: (0.68; 0.09) huong -173 do, cach K4 0.25 m, cach H0 0.25 m (ban do).
+MEM: truoc 1 diem cach 0.30 m (tuong: khong chac, tren ban do, khong thang)
+MEM: sach
+MEM: truoc 2 diem cach 0.30 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 8 diem cach 0.27 m (tuong: tren ban do, goc 95 do)
+MEM: sach
+MEM: truoc 1 diem cach 0.29 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 17 diem cach 0.26 m (tuong: tren ban do, goc 91 do)
+MEM: truoc 22 diem cach 0.22 m (tuong: tren ban do, goc 105 do)
+MEM: truoc 17 diem cach 0.19 m (tuong: tren ban do, goc 109 do)
+MEM: truoc 12 diem cach 0.16 m (tuong: tren ban do, thang)
+MEM: truoc 14 diem cach 0.13 m (tuong: tren ban do, thang)
+   DIEM_DAN_XONG: (0.68; 0.09) => TOI.
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.80; -0.03) toi (0.00; 0.00)
+MEM: truoc 23 diem cach 0.11 m (vat: ngoai ban do 3 diem) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.11 m (tuong: tren ban do, goc 110 do)
+MEM: truoc 28 diem cach 0.10 m (vat: ngoai ban do 3 diem) LECH ban do=tuong
+MEM: truoc 26 diem cach 0.10 m (tuong: khong chac, tren ban do, khong thang)
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: hong 5 diem cach 0.10 m (vat: ngoai ban do 3 diem) LECH ban do=tuong
+MEM: truoc 21 diem cach 0.10 m (vat: ngoai ban do 33 diem) LECH ban do=tuong
+MEM: hong 8 diem cach 0.10 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 8 diem cach 0.09 m (vat: ngoai ban do 8 diem)
+MEM: truoc 15 diem cach 0.09 m (vat: ngoai ban do 34 diem) LECH ban do=tuong
+MEM: hong 13 diem cach 0.09 m (vat: ngoai ban do 32 diem) LECH ban do=tuong
+MEM: truoc 7 diem cach 0.08 m (vat: ngoai ban do 7 diem)
+MEM: hong 8 diem cach 0.08 m (vat: ngoai ban do 10 diem)
+MEM: hong 31 diem cach 0.08 m (vat: ngoai ban do 37 diem) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.09 m (vat: ngoai ban do 5 diem) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: hong 61 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: sau 1 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: hong 30 diem cach 0.09 m (vat: ngoai ban do 30 diem) LECH ban do=tuong
+MEM: hong 4 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sach
+DEN_NOI: ve_A xong theo tuyen 1 (cach dich 0.14 m).
+== 2026-11-10 17:47:48 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+   CANH BAO: /chon_tuyen chua co ai nghe (lop_huong_dan?): "0" co the mat
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+MEM: truoc 5 diem cach 0.30 m (vat: ngoai ban do 22 diem)
+MEM: truoc 23 diem cach 0.26 m (vat: ngoai ban do 25 diem)
+MEM: truoc 26 diem cach 0.22 m (vat: ngoai ban do 26 diem)
+MEM: truoc 26 diem cach 0.22 m (vat: ngoai ban do 26 diem) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.21 m (vat: ngoai ban do 27 diem)
+MEM: truoc 16 diem cach 0.18 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.15 m (vat: ngoai ban do 10 diem)
+GAC: dung im, truoc vat cach 0.13 m (0.74; 0.03)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.13 m (nhac doi), dung yen toi da 30 s.
+MEM: truoc 33 diem cach 0.11 m (vat: ngoai ban do 33 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.11 m (vat: ngoai ban do 12 diem)
+MEM: truoc 25 diem cach 0.11 m (vat: ngoai ban do 25 diem) LECH ban do=tuong
+MEM: truoc 6 diem cach 0.11 m (vat: ngoai ban do 6 diem)
+MEM: truoc 21 diem cach 0.11 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.11 m (vat: ngoai ban do 8 diem)
+MEM: truoc 20 diem cach 0.11 m (vat: ngoai ban do 20 diem) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.11 m (vat: ngoai ban do 13 diem)
+MEM: truoc 24 diem cach 0.11 m (vat: ngoai ban do 24 diem) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 1.41 m)
+MEM: truoc 11 diem cach 0.11 m (vat: ngoai ban do 11 diem)
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.11 m (vat: ngoai ban do 11 diem)
+MEM: truoc 27 diem cach 0.11 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.11 m (vat: ngoai ban do 15 diem)
+MEM: truoc 22 diem cach 0.11 m (vat: ngoai ban do 22 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.11 m (vat: ngoai ban do 11 diem)
+MEM: truoc 25 diem cach 0.11 m (vat: ngoai ban do 25 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: truoc 26 diem cach 0.11 m (vat: ngoai ban do 26 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.11 m (vat: ngoai ban do 11 diem)
+MEM: truoc 28 diem cach 0.11 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+CHO_VAT: 10/30 s (cach dich 1.41 m)
+MEM: truoc 9 diem cach 0.11 m (vat: ngoai ban do 9 diem)
+MEM: truoc 19 diem cach 0.11 m (vat: ngoai ban do 19 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.11 m (vat: ngoai ban do 11 diem)
+MEM: truoc 26 diem cach 0.11 m (vat: ngoai ban do 26 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: truoc 30 diem cach 0.11 m (vat: ngoai ban do 30 diem) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.11 m (vat: ngoai ban do 10 diem)
+MEM: truoc 24 diem cach 0.11 m (vat: ngoai ban do 24 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: truoc 32 diem cach 0.11 m (vat: ngoai ban do 32 diem) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.11 m (vat: ngoai ban do 12 diem)
+MEM: truoc 20 diem cach 0.11 m (vat: ngoai ban do 20 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.11 m (vat: ngoai ban do 11 diem)
+MEM: truoc 30 diem cach 0.11 m (vat: ngoai ban do 30 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: truoc 26 diem cach 0.11 m (vat: ngoai ban do 26 diem) LECH ban do=tuong
+CHO_VAT: 15/30 s (cach dich 1.41 m)
+MEM: truoc 13 diem cach 0.11 m (vat: ngoai ban do 13 diem)
+MEM: truoc 21 diem cach 0.11 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: truoc 28 diem cach 0.11 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.11 m (vat: ngoai ban do 11 diem)
+MEM: truoc 28 diem cach 0.11 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.11 m (vat: ngoai ban do 13 diem)
+MEM: truoc 21 diem cach 0.11 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: truoc 29 diem cach 0.11 m (vat: ngoai ban do 29 diem)
+MEM: truoc 21 diem cach 0.11 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: truoc 23 diem cach 0.11 m (vat: ngoai ban do 23 diem) LECH ban do=tuong
+CHO_VAT: 20/30 s (cach dich 1.41 m)
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: truoc 21 diem cach 0.11 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.11 m (vat: ngoai ban do 12 diem)
+MEM: truoc 30 diem cach 0.11 m (vat: ngoai ban do 30 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.11 m (vat: ngoai ban do 9 diem)
+MEM: truoc 18 diem cach 0.11 m (vat: ngoai ban do 18 diem) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.11 m (vat: ngoai ban do 13 diem)
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.11 m (vat: ngoai ban do 14 diem)
+MEM: truoc 32 diem cach 0.11 m (vat: ngoai ban do 32 diem) LECH ban do=tuong
+CHO_VAT: 25/30 s (cach dich 1.41 m)
+MEM: truoc 12 diem cach 0.11 m (vat: ngoai ban do 12 diem)
+MEM: truoc 25 diem cach 0.11 m (vat: ngoai ban do 25 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.11 m (vat: ngoai ban do 31 diem)
+MEM: truoc 23 diem cach 0.11 m (vat: ngoai ban do 23 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.11 m (vat: ngoai ban do 8 diem)
+MEM: truoc 23 diem cach 0.11 m (vat: ngoai ban do 23 diem) LECH ban do=tuong
+   khong den duoc (CHO_VAT_30s, cach dich 1.41 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+KINH_NGHIEM: tien=0.20 DUOC cach 0.05 m => bo (LiDAR: mui 0.069 <= 0.07)
+SEP_LIDAR: THOAT xoay=+30 (CHO_VAT_30s; cho chat: truoc 0.12, hong 0.11, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 30 diem cach 0.11 m (vat: khong ban do, lidar vat)
+MEM: truoc 31 diem cach 0.13 m (vat: ngoai ban do 31 diem) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.13 m (vat: ngoai ban do 16 diem)
+MEM: truoc 26 diem cach 0.14 m (vat: ngoai ban do 26 diem) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.14 m (vat: ngoai ban do 25 diem)
+   THOAT_XONG: xoay=+30 => SUCCEEDED.
+SEP_LIDAR: THOAT diem (0.26; 0.33): sector +100 do, 0.40 m (CHO_VAT_30s).
+MEM: truoc 18 diem cach 0.14 m (vat: ngoai ban do 18 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.14 m (vat: ngoai ban do 31 diem)
+MEM: truoc 24 diem cach 0.14 m (vat: ngoai ban do 24 diem) LECH ban do=tuong
+MEM: truoc 23 diem cach 0.14 m (vat: ngoai ban do 23 diem)
+MEM: hong 2 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sau 4 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: truoc 5 diem cach 0.16 m (tuong: tren ban do, thang)
+MEM: truoc 53 diem cach 0.17 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: truoc 50 diem cach 0.18 m (tuong: tren ban do, thang)
+MEM: truoc 49 diem cach 0.18 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: truoc 25 diem cach 0.19 m (tuong: tren ban do, thang)
+MEM: truoc 25 diem cach 0.18 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: sau 44 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: truoc 15 diem cach 0.18 m (tuong: tren ban do, thang)
+MEM: truoc 16 diem cach 0.18 m (vat: ngoai ban do 4 diem) LECH ban do=tuong
+MEM: hong 2 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: sau 23 diem cach 0.07 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: sau 21 diem cach 0.08 m (tuong: tren ban do, thang)
+MEM: sau 21 diem cach 0.09 m (vat: khong chac, tren ban do, khong thang) LECH ban do=tuong
+MEM: sau 5 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: truoc 4 diem cach 0.13 m (vat: ngoai ban do 17 diem) LECH ban do=tuong
+   THOAT_XONG: diem => TOI.
+SEP_LIDAR: DI dich (1.60; 0.82), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (0.25; 0.20) toi (1.60; 0.82) (Nav2 tu vach)
+MEM: hong 1 diem cach 0.12 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: hong 1 diem cach 0.12 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 4 diem cach 0.11 m (vat: khong ban do, lidar vat)
+MEM: hong 4 diem cach 0.11 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.11 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 3 diem cach 0.30 m (tuong: tren ban do, thang)
+MEM: truoc 3 diem cach 0.27 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: truoc 1 diem cach 0.30 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 12 diem cach 0.27 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 14 diem cach 0.23 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 13 diem cach 0.19 m (tuong: tren ban do, thang)
+MEM: truoc 23 diem cach 0.16 m (tuong: tren ban do, goc 96 do)
+MEM: truoc 28 diem cach 0.12 m (tuong: khong chac, tren ban do, khong thang)
+MEM: hong 7 diem cach 0.10 m (tuong: tren ban do, goc 99 do)
+MEM: sach
+DEN_NOI: di_B xong theo duong Nav2 tu vach (cach dich 0.13 m).
+== 2026-11-10 17:52:01 gui_duong kieu mat ve_A: ma 130 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+DIEM_DAN: (0.68; 0.09) huong -173 do, cach K4 0.25 m, cach H0 0.25 m (ban do).
+MEM: truoc 4 diem cach 0.29 m (vat: ngoai ban do 22 diem)
+MEM: truoc 13 diem cach 0.26 m (vat: ngoai ban do 22 diem)
+MEM: truoc 19 diem cach 0.23 m (vat: ngoai ban do 21 diem)
+MEM: sach
+MEM: truoc 2 diem cach 0.30 m (tuong: tren ban do, thang)
+MEM: sach
+   DIEM_DAN_XONG: (0.68; 0.09) => HONG_HET_20s.
+DIEM_DAN: bo, di thang A (Nav2 tu vach, khong tinh luot).
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 1/3: navigate_to_pose tu (1.23; 0.13) toi (0.00; 0.00) (Nav2 tu vach)
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: sau 4 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sach
+   khong den duoc (KHONG_TIEN_10s, cach dich 1.31 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+SEP_LIDAR: THOAT xoay=-90 (KHONG_TIEN_10s; cho chat: truoc -, hong -, sau - => cuoi 0.14).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+   THOAT_XONG: xoay=-90 => SUCCEEDED.
+SEP_LIDAR: THOAT diem (1.03; 0.02): sector -40 do, 0.40 m (KHONG_TIEN_10s).
+MEM: truoc 2 diem cach 0.29 m (vat: ngoai ban do 8 diem) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.29 m (vat: ngoai ban do 21 diem)
+MEM: truoc 5 diem cach 0.27 m (ong: cung r=0.09 rms=0.001, on dinh 2/3) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.23 m (ong: cung r=0.08 rms=0.002, on dinh 5/6) LECH ban do=tuong
+   THOAT_XONG: diem => TOI.
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (1.25; 0.18) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: truoc 1 diem cach 0.19 m (vat: ngoai ban do 18 diem)
+MEM: truoc 13 diem cach 0.12 m (tuong: tren ban do, goc 92 do, bo cung r=0.08 chi 41 do)
+MEM: truoc 29 diem cach 0.09 m (tuong: khong chac, tren ban do, khong thang)
+MEM: hong 4 diem cach 0.11 m (tuong: khong chac, tren ban do, khong thang)
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+   khong den duoc (KHONG_TIEN_10s, cach dich 1.31 m).
+== Luot 2 bi chan (xa dich 2/3). ==
+SEP_LIDAR: THOAT diem (1.06; 0.01): sector +160 do, 0.40 m (KHONG_TIEN_10s).
+MEM: truoc 3 diem cach 0.13 m (tuong: tren ban do, thang)
+MEM: truoc 37 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: truoc 5 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sach
+   THOAT_XONG: diem => TOI.
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 3/3: navigate_to_pose tu (1.23; 0.19) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: truoc 3 diem cach 0.20 m (vat: ngoai ban do 3 diem)
+MEM: truoc 13 diem cach 0.17 m (ong: cung r=0.07 rms=0.001, on dinh 2/3)
+MEM: truoc 3 diem cach 0.14 m (tuong: tren ban do, thang)
+MEM: truoc 8 diem cach 0.11 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 19 diem cach 0.10 m (vat: khong ban do, lidar vat)
+MEM: truoc 18 diem cach 0.09 m (tuong: tren ban do, goc 99 do)
+MEM: truoc 27 diem cach 0.09 m (vat: khong ban do, lidar vat)
+MEM: truoc 20 diem cach 0.09 m (tuong: khong chac, tren ban do, khong thang)
+MEM: hong 4 diem cach 0.10 m (tuong: tren ban do, goc 102 do)
+MEM: sach
+MEM: hong 1 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sach
+   khong den duoc (KHONG_TIEN_10s, cach dich 1.40 m).
+== Luot 3 bi chan (xa dich 3/3). ==
+CHO_NGUOI: khong tim thay duong (3 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+SEP_LIDAR: THOAT diem (1.09; -0.03): sector +170 do, 0.40 m (KHONG_TIEN_10s).
+MEM: hong 1 diem cach 0.12 m (tuong: khong chac, tren ban do, khong thang)
+MEM: sau 2 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: sau 1 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sach
+   THOAT_XONG: diem => TOI.
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+SEP_LIDAR: DI dich (0.00; 0.00), Nav2 tu vach
+-- tuyen 0, lan 4/4: navigate_to_pose tu (1.23; 0.15) toi (0.00; 0.00) (Nav2 tu vach)
+MEM: truoc 5 diem cach 0.21 m (vat: ngoai ban do 27 diem)
+MEM: truoc 10 diem cach 0.15 m (tuong: tren ban do, goc 93 do)
+MEM: truoc 14 diem cach 0.11 m (tuong: tren ban do, goc 106 do)
+MEM: hong 3 diem cach 0.11 m (tuong: tren ban do, goc 102 do)
+MEM: sau 5 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sach
+   khong den duoc (KHONG_TIEN_10s, cach dich 1.37 m).
+== Luot 3 bi chan (xa dich 3/3). ==
+CHO_NGUOI: khong tim thay duong (3 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+SEP_LIDAR: THOAT diem (1.18; 0.13): sector +150 do, 0.40 m (KHONG_TIEN_10s).
+MEM: hong 1 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: hong 6 diem cach 0.11 m (vat: khong ban do, lidar vat)
+MEM: truoc 3 diem cach 0.10 m (vat: khong ban do, lidar vat)
+MEM: hong 3 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: truoc 6 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: truoc 4 diem cach 0.14 m (tuong: tren ban do, thang)
+MEM: sach
+HUY_DICH_KHI_NGAT ok
+== 2026-11-10 18:38:58 gui_duong kieu mat di_B: ma 130 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+GIA_X: t1 2.15m + 0s; t2 2.17m + 0s; thu tu (1,2)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+KHE: chon duoi (thong 0.10 m theo costmap chung), diem dan (0.91; -0.02), giu toi khi luot hong.
+   DIEM_DAN_XONG: (0.91; -0.02) => HONG (khe duoi dong voi Nav2).
+DIEM_DAN: bo, di thang dich (Nav2 tu vach, khong tinh luot).
+SEP_LIDAR: DI dich (1.60; 0.82), Nav2 tu vach
+-- tuyen 0, lan 1/3: navigate_to_pose tu (0.02; 0.01) toi (1.60; 0.82) (Nav2 tu vach)
+MEM: truoc 2 diem cach 0.29 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 12 diem cach 0.26 m (tuong: tren ban do, thang)
+MEM: truoc 18 diem cach 0.22 m (tuong: khong chac, tren ban do, khong thang)
+   khong den duoc (KHONG_TIEN_10s, cach dich 1.88 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+SEP_LIDAR: THOAT diem (0.14; 0.34): sector -100 do, 0.34 m (KHONG_TIEN_10s).
+MEM: truoc 4 diem cach 0.27 m (tuong: tren ban do, thang)
+MEM: sach
+   THOAT_XONG: diem => TOI.
+MEM: truoc 3 diem cach 0.30 m (tuong: khong chac, tren ban do, khong thang)
+KHE: chon tren (thong 0.35 m theo costmap chung), diem dan (1.01; 0.73), giu toi khi luot hong.
+MEM: truoc 13 diem cach 0.29 m (vat: ngoai ban do 23 diem) LECH ban do=tuong
+MEM: sach
+   DIEM_DAN_XONG: (1.01; 0.73) => HONG_HET_20s.
+DIEM_DAN: bo, di thang dich (Nav2 tu vach, khong tinh luot).
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 2
+-- tuyen 2, lan 2/3: navigate_to_pose tu (0.25; 0.67) toi (1.60; 0.82)
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 3 diem cach 0.29 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 18 diem cach 0.26 m (tuong: tren ban do, goc 98 do)
+MEM: truoc 16 diem cach 0.21 m (tuong: tren ban do, goc 90 do)
+MEM: truoc 18 diem cach 0.15 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 24 diem cach 0.11 m (vat: khong ban do, lidar vat)
+GAC: dung im, truoc vat cach 0.11 m
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.11 m (nhac doi), dung yen toi da 30 s.
+MEM: truoc 15 diem cach 0.10 m (tuong: tren ban do, goc 100 do)
+GAC: het chan sau 2 s
+MEM: hong 7 diem cach 0.08 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 31 diem cach 0.07 m (tuong: tren ban do, goc 101 do)
+MEM: hong 23 diem cach 0.07 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 35 diem cach 0.08 m (vat: khong ban do, lidar khong_chac)
+MEM: hong 25 diem cach 0.07 m (tuong: tren ban do, thang)
+MEM: truoc 36 diem cach 0.07 m (tuong: tren ban do, thang)
+MEM: hong 61 diem cach 0.06 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 30 diem cach 0.08 m (vat: khong ban do, lidar khong_chac)
+MEM: hong 32 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: truoc 30 diem cach 0.08 m (tuong: tren ban do, thang)
+   Nav2 hoi phuc: number_of_recoveries = 1.
+MEM: hong 63 diem cach 0.06 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 29 diem cach 0.08 m (vat: khong ban do, lidar khong_chac)
+MEM: hong 62 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: truoc 27 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: hong 62 diem cach 0.06 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 29 diem cach 0.08 m (vat: khong ban do, lidar khong_chac)
+MEM: hong 3 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: truoc 30 diem cach 0.08 m (tuong: tren ban do, thang)
+   Nav2 hoi phuc: number_of_recoveries = 4.
+   khong den duoc (KHONG_TIEN_10s, cach dich 0.90 m).
+== Luot 2 bi chan (xa dich 2/3). ==
+SEP_LIDAR: THOAT tien=0.20 (KHONG_TIEN_10s; cho chat: truoc -, hong 0.06, sau - => cuoi 0.08).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: hong 63 diem cach 0.06 m (vat: khong ban do, lidar khong_chac)
+MEM: truoc 29 diem cach 0.08 m (vat: khong ban do, lidar khong_chac)
+MEM: hong 10 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: truoc 27 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: sau 1 diem cach 0.06 m (tuong: tren ban do, thang)
+   THOAT_XONG: tien=0.20 => HUY (khe hong+duoi 0.06 < luc bat dau 0.061).
+SEP_LIDAR: DI dich (1.60; 0.82), Nav2 tu vach
+-- tuyen 0, lan 3/3: navigate_to_pose tu (0.82; 0.83) toi (1.60; 0.82) (Nav2 tu vach)
+   Nav2 hoi phuc: number_of_recoveries = 1.
+   Nav2 hoi phuc: number_of_recoveries = 4.
+   Nav2 hoi phuc: number_of_recoveries = 5.
+   Nav2 hoi phuc: number_of_recoveries = 8.
+MEM: hong 10 diem cach 0.07 m (vat: khong ban do, lidar vat)
+MEM: sau 10 diem cach 0.06 m (vat: khong ban do, lidar vat)
+MEM: truoc 9 diem cach 0.11 m (vat: khong ban do, lidar khong_chac)
+MEM: hong 1 diem cach 0.07 m (tuong: tren ban do, thang)
+MEM: sau 10 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: truoc 9 diem cach 0.11 m (tuong: tren ban do, thang)
+   Nav2 hoi phuc: number_of_recoveries = 9.
+   Nav2 hoi phuc: number_of_recoveries = 12.
+   khong den duoc (KHONG_TIEN_10s, cach dich 0.70 m).
+== Luot 3 bi chan (xa dich 3/3). ==
+CHO_NGUOI: khong tim thay duong (3 luot bi chan), xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+HUY_DICH_KHI_NGAT khong_co_dich
+== 2026-11-10 18:53:06 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+GIA_X: t1 2.16m + 20s; t2 2.20m + 20s; thu tu (1,2)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.01) toi (1.60; 0.82)
+MEM: truoc 7 diem cach 0.29 m (vat: ngoai ban do 8 diem)
+MEM: truoc 21 diem cach 0.25 m (vat: ngoai ban do 22 diem)
+MEM: truoc 27 diem cach 0.21 m (vat: ngoai ban do 27 diem)
+MEM: truoc 25 diem cach 0.20 m (vat: ngoai ban do 25 diem) LECH ban do=tuong
+MEM: truoc 28 diem cach 0.17 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 16 diem cach 0.13 m (tuong: tren ban do, thang)
+MEM: truoc 33 diem cach 0.11 m (vat: ngoai ban do 33 diem) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.11 m (0.76; 0.03)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.11 m (nhac doi), dung yen toi da 30 s.
+MEM: hong 4 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: truoc 34 diem cach 0.10 m (vat: ngoai ban do 34 diem)
+MEM: truoc 21 diem cach 0.10 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.10 m (vat: ngoai ban do 33 diem)
+CHO_VAT: 5/30 s (cach dich 1.38 m)
+CHO_VAT: 10/30 s (cach dich 1.38 m)
+CHO_VAT: 15/30 s (cach dich 1.38 m)
+MEM: truoc 21 diem cach 0.10 m (vat: ngoai ban do 21 diem) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.10 m (vat: ngoai ban do 27 diem)
+MEM: truoc 22 diem cach 0.10 m (vat: ngoai ban do 22 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.10 m (vat: ngoai ban do 31 diem)
+MEM: truoc 22 diem cach 0.10 m (vat: ngoai ban do 22 diem) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.10 m (vat: ngoai ban do 32 diem)
+CHO_VAT: 20/30 s (cach dich 1.38 m)
+CHO_VAT: 25/30 s (cach dich 1.38 m)
+   khong den duoc (CHO_VAT_30s, cach dich 1.38 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+KINH_NGHIEM: tien=0.20 DUOC cach 0.05 m => bo (LiDAR: cham vat: 0.056 < 0.060 (nguong 0.06 / luc dau))
+SEP_LIDAR: THOAT xoay=+30 (CHO_VAT_30s; cho chat: truoc 0.13, hong 0.10, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: hong 3 diem cach 0.12 m (vat: khong ban do, lidar vat)
+   THOAT_XONG: xoay=+30 => SUCCEEDED.
+SEP_LIDAR: THOAT diem (0.21; 0.30): sector +120 do, 0.40 m (CHO_VAT_30s).
+MEM: hong 2 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sau 7 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: truoc 10 diem cach 0.13 m (vat: ngoai ban do 18 diem)
+MEM: sau 31 diem cach 0.07 m (tuong: tren ban do, thang)
+MEM: truoc 54 diem cach 0.17 m (tuong: tren ban do, thang)
+MEM: truoc 58 diem cach 0.18 m (vat: ngoai ban do 3 diem) LECH ban do=tuong
+MEM: truoc 27 diem cach 0.20 m (tuong: tren ban do, thang)
+MEM: truoc 38 diem cach 0.20 m (vat: ngoai ban do 5 diem) LECH ban do=tuong
+MEM: truoc 20 diem cach 0.19 m (tuong: tren ban do, thang)
+MEM: truoc 15 diem cach 0.19 m (vat: ngoai ban do 4 diem) LECH ban do=tuong
+MEM: hong 5 diem cach 0.09 m (tuong: tren ban do, thang)
+MEM: hong 26 diem cach 0.06 m (tuong: tren ban do, thang)
+MEM: hong 10 diem cach 0.10 m (tuong: tren ban do, thang)
+MEM: sach
+   THOAT_XONG: diem => TOI.
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+DIEM_VUOT: P (0.48; 0.01) => V (1.08; -0.03), phia phai, ly do bac 1, than cach vat 0.16 / tuong 0.16, duong cach them -0.06.
+MEM: truoc 4 diem cach 0.11 m (vat: ngoai ban do 8 diem) LECH ban do=tuong
+   DIEM_VUOT_XONG: (1.08; -0.03) => HONG (truoc vat 0.10 <= 0.10).
+SEP_LIDAR: DI dich (1.60; 0.82), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (0.33; 0.08) toi (1.60; 0.82) (Nav2 tu vach)
+MEM: truoc 30 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: truoc 33 diem cach 0.11 m (vat: ngoai ban do 5 diem) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.10 m (0.45; 0.31)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.10 m (vung do), dung yen toi da 30 s.
+GAC: het chan sau 2 s
+MEM: sach
+MEM: truoc 7 diem cach 0.29 m (tuong: tren ban do, thang)
+MEM: truoc 9 diem cach 0.26 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 10 diem cach 0.22 m (tuong: tren ban do, goc 104 do)
+MEM: sach
+MEM: truoc 4 diem cach 0.29 m (tuong: tren ban do, goc 110 do)
+MEM: truoc 12 diem cach 0.26 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 16 diem cach 0.23 m (tuong: tren ban do, goc 101 do, bo cung r=0.07 chi 70 do)
+MEM: truoc 19 diem cach 0.20 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 17 diem cach 0.17 m (tuong: tren ban do, goc 95 do)
+MEM: truoc 25 diem cach 0.13 m (tuong: tren ban do, goc 104 do)
+MEM: hong 2 diem cach 0.11 m (tuong: tren ban do, goc 108 do)
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: sach
+MEM: hong 1 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: hong 2 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: sach
+DEN_NOI: di_B xong theo duong Nav2 tu vach (cach dich 0.14 m).
+GIA_X: DA_GIAI (0.70; 0.84)
+== 2026-11-10 18:53:55 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+GIA_X: t1 2.03m + 10s; t2 2.01m + 10s; thu tu (2,1)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 2
+-- tuyen 2, lan 1/3: navigate_to_pose tu (1.48; 0.75) toi (0.00; 0.00)
+MEM: truoc 3 diem cach 0.30 m (tuong: khong chac, tren ban do, khong thang)
+MEM: sach
+MEM: truoc 3 diem cach 0.28 m (tuong: tren ban do, goc 88 do, bo cung r=0.07 chi 68 do)
+MEM: sach
+MEM: truoc 4 diem cach 0.30 m (tuong: tren ban do, goc 100 do)
+MEM: truoc 1 diem cach 0.28 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: truoc 2 diem cach 0.28 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 2 diem cach 0.27 m (vat: ngoai ban do 13 diem) LECH ban do=tuong
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+DEN_NOI: ve_A xong theo tuyen 2 (cach dich 0.13 m).
+== 2026-11-10 18:57:44 gui_duong kieu mat di_B: ma 130 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+   CANH BAO: /chon_tuyen chua co ai nghe (lop_huong_dan?): "0" co the mat
+GIA_X: t1 2.02m + 10s; t2 2.04m + 10s; thu tu (1,2)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.02; 0.13) toi (1.60; 0.82)
+MEM: truoc 1 diem cach 0.30 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 13 diem cach 0.25 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 17 diem cach 0.24 m (vat: khong ban do, lidar vat)
+MEM: truoc 16 diem cach 0.22 m (tuong: khong chac, tren ban do, khong thang, bo cung r=0.07 chi 29 do)
+MEM: truoc 14 diem cach 0.19 m (tuong: tren ban do, goc 91 do)
+MEM: truoc 7 diem cach 0.16 m (tuong: tren ban do, goc 107 do)
+MEM: truoc 23 diem cach 0.13 m (tuong: tren ban do, thang)
+MEM: hong 4 diem cach 0.12 m (vat: khong ban do, lidar vat)
+MEM: truoc 19 diem cach 0.11 m (vat: khong ban do, lidar vat)
+MEM: hong 4 diem cach 0.12 m (tuong: tren ban do, thang)
+MEM: truoc 17 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: hong 1 diem cach 0.12 m (tuong: tren ban do, thang)
+GAC: dung im, truoc vat cach 0.13 m (0.74; 0.05)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.13 m (nhac doi), dung yen toi da 30 s.
+MEM: truoc 13 diem cach 0.09 m (vat: ngoai ban do 13 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 30 diem cach 0.08 m (vat: ngoai ban do 30 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 34 diem cach 0.08 m (vat: ngoai ban do 34 diem)
+MEM: truoc 30 diem cach 0.08 m (vat: ngoai ban do 30 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (vat: ngoai ban do 11 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.08 m (vat: ngoai ban do 15 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 1.38 m)
+MEM: truoc 11 diem cach 0.08 m (vat: ngoai ban do 11 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.08 m (vat: ngoai ban do 32 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 10 diem cach 0.08 m (vat: ngoai ban do 10 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+CHO_VAT: 10/30 s (cach dich 1.38 m)
+MEM: truoc 8 diem cach 0.08 m (vat: ngoai ban do 8 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (vat: ngoai ban do 12 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (vat: ngoai ban do 11 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.08 m (vat: ngoai ban do 14 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.08 m (vat: ngoai ban do 32 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 32 diem cach 0.08 m (vat: ngoai ban do 32 diem)
+CHO_VAT: 15/30 s (cach dich 1.38 m)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 30 diem cach 0.08 m (vat: ngoai ban do 30 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 29 diem cach 0.08 m (vat: ngoai ban do 29 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.08 m (vat: ngoai ban do 31 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 33 diem cach 0.08 m (vat: ngoai ban do 33 diem)
+CHO_VAT: 20/30 s (cach dich 1.38 m)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.08 m (vat: ngoai ban do 31 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (vat: ngoai ban do 11 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 11 diem cach 0.08 m (vat: ngoai ban do 11 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 12 diem cach 0.08 m (vat: ngoai ban do 12 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 14 diem cach 0.08 m (vat: ngoai ban do 14 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 15 diem cach 0.08 m (vat: ngoai ban do 15 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.08 m (vat: ngoai ban do 31 diem)
+MEM: truoc 28 diem cach 0.08 m (vat: ngoai ban do 28 diem) LECH ban do=tuong
+CHO_VAT: 25/30 s (cach dich 1.38 m)
+MEM: truoc 35 diem cach 0.08 m (vat: ngoai ban do 35 diem)
+MEM: truoc 27 diem cach 0.08 m (vat: ngoai ban do 27 diem) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.08 m (vat: ngoai ban do 13 diem)
+   khong den duoc (CHO_VAT_30s, cach dich 1.38 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+KINH_NGHIEM: tien=0.20 DUOC cach 0.03 m => bo (LiDAR: mui 0.069 <= 0.07)
+SEP_LIDAR: THOAT lui=0.10 (CHO_VAT_30s; cho chat: truoc 0.09, hong 0.08, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: hong 1 diem cach 0.10 m (vat: khong ban do, lidar vat)
+   THOAT_XONG: lui=0.10 => HUY (truoc vat 0.09 <= 0.10).
+DIEM_VUOT: bo (khong co vi tri / LiDAR).
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.09 m (vung do), dung yen toi da 30 s.
+MEM: hong 23 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: hong 3 diem cach 0.11 m (vat: khong ban do, lidar vat)
+MEM: hong 17 diem cach 0.11 m (tuong: tren ban do, thang)
+MEM: truoc 26 diem cach 0.09 m (vat: ngoai ban do 26 diem) LECH ban do=tuong
+MEM: truoc 31 diem cach 0.09 m (vat: ngoai ban do 31 diem)
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+MEM: truoc 26 diem cach 0.09 m (vat: ngoai ban do 26 diem) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.09 m (vat: ngoai ban do 13 diem)
+CHO_VAT: 15/30 s
+MEM: truoc 26 diem cach 0.09 m (vat: ngoai ban do 26 diem) LECH ban do=tuong
+MEM: truoc 13 diem cach 0.09 m (vat: ngoai ban do 13 diem)
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+KINH_NGHIEM: tien=0.20 DUOC cach 0.03 m => bo (LiDAR: mui 0.069 <= 0.07)
+SEP_LIDAR: THOAT lui=0.10 (VUNG_DO_30s; cho chat: truoc 0.09, hong 0.09, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 13 diem cach 0.12 m (vat: khong ban do, lidar vat)
+   THOAT_XONG: lui=0.10 => SUCCEEDED.
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: CHO_VI_TRI (khong co tf moi): dung yen, chi giao dich khi vi tri tin lai.
+CHO_VI_TRI: khong co tf moi qua 60 s, bao nguoi; van cho, vi tri tin lai thi tu di tiep (bam 정지 de dung).
+HUY_DICH_KHI_NGAT khong_co_dich
+== 2026-11-10 19:34:38 gui_duong kieu mat di_B: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+GIA_X: t1 2.15m + 10s; t2 2.15m + 10s; thu tu (1,2)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (1.60; 0.82), tuyen 1
+-- tuyen 1, lan 1/3: navigate_to_pose tu (0.01; 0.00) toi (1.60; 0.82)
+MEM: truoc 5 diem cach 0.30 m (vat: ngoai ban do 6 diem) LECH ban do=tuong
+MEM: truoc 6 diem cach 0.25 m (vat: ngoai ban do 6 diem) LECH ban do=tuong
+MEM: truoc 6 diem cach 0.21 m (vat: ngoai ban do 6 diem)
+MEM: truoc 6 diem cach 0.20 m (vat: ngoai ban do 6 diem) LECH ban do=tuong
+MEM: truoc 6 diem cach 0.19 m (vat: ngoai ban do 6 diem)
+MEM: truoc 5 diem cach 0.16 m (vat: ngoai ban do 5 diem) LECH ban do=tuong
+MEM: truoc 4 diem cach 0.14 m (vat: ngoai ban do 4 diem)
+MEM: truoc 5 diem cach 0.14 m (vat: ngoai ban do 5 diem) LECH ban do=tuong
+GAC: dung im, truoc vat cach 0.14 m (0.73; 0.01)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.14 m (nhac doi), dung yen toi da 30 s.
+GAC: het chan sau 2 s
+GAC: dung im, truoc vat cach 0.13 m (0.75; -0.02)
+SEP_LIDAR: DOI_VAT truoc vat cach 0.13 m (nhac doi), dung yen toi da 30 s.
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+CHO_VAT: 5/30 s (cach dich 1.38 m)
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 15 diem cach 0.10 m (vat: ngoai ban do 15 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 15 diem cach 0.10 m (vat: ngoai ban do 15 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 15 diem cach 0.10 m (vat: ngoai ban do 15 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 15 diem cach 0.10 m (vat: ngoai ban do 15 diem) LECH ban do=tuong
+CHO_VAT: 10/30 s (cach dich 1.38 m)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 15 diem cach 0.10 m (vat: ngoai ban do 15 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 11 diem cach 0.10 m (vat: ngoai ban do 11 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 17 diem cach 0.10 m (vat: ngoai ban do 17 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 11 diem cach 0.10 m (vat: ngoai ban do 11 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+CHO_VAT: 15/30 s (cach dich 1.38 m)
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 11 diem cach 0.10 m (vat: ngoai ban do 11 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 15 diem cach 0.10 m (vat: ngoai ban do 15 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+CHO_VAT: 20/30 s (cach dich 1.38 m)
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 11 diem cach 0.10 m (vat: ngoai ban do 11 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 11 diem cach 0.10 m (vat: ngoai ban do 11 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+CHO_VAT: 25/30 s (cach dich 1.38 m)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 17 diem cach 0.10 m (vat: ngoai ban do 17 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 15 diem cach 0.10 m (vat: ngoai ban do 15 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 16 diem cach 0.10 m (vat: ngoai ban do 16 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem)
+MEM: truoc 10 diem cach 0.10 m (vat: ngoai ban do 10 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem)
+MEM: truoc 8 diem cach 0.10 m (vat: ngoai ban do 8 diem) LECH ban do=tuong
+   khong den duoc (CHO_VAT_30s, cach dich 1.38 m).
+== Luot 1 bi chan (xa dich 1/3). ==
+KINH_NGHIEM: tien=0.20 DUOC cach 0.05 m => bo (LiDAR: mui 0.065 <= 0.07)
+SEP_LIDAR: THOAT xoay=+60 (CHO_VAT_30s; cho chat: truoc 0.10, hong 0.10, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 16 diem cach 0.10 m (vat: khong ban do, lidar vat)
+   THOAT_XONG: xoay=+60 => HUY (truoc vat 0.10 <= 0.10).
+DIEM_VUOT: P (0.48; 0.01) => V (1.08; -0.03), phia phai, ly do bac 1, than cach vat 0.17 / tuong 0.15, duong cach them -0.06.
+MEM: truoc 9 diem cach 0.09 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.09 m (vat: ngoai ban do 8 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 7 diem cach 0.10 m (vat: ngoai ban do 7 diem)
+   DIEM_VUOT_XONG: (1.08; -0.03) => HONG (truoc vat 0.09 <= 0.10).
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.08 m (vung do), dung yen toi da 30 s.
+MEM: truoc 5 diem cach 0.07 m (vat: ngoai ban do 5 diem)
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+KINH_NGHIEM: tien=0.20 DUOC cach 0.05 m => bo (LiDAR: cham vat: 0.057 < 0.060 (nguong 0.06 / luc dau))
+SEP_LIDAR: THOAT xoay=+135 (VUNG_DO_30s; cho chat: truoc 0.08, hong 0.07, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+   THOAT_XONG: xoay=+135 => HUY (truoc vat 0.08 <= 0.10).
+SEP_LIDAR: DOI_VAT truoc vat chac cach 0.07 m (nhac doi), dung yen toi da 30 s.
+CHO_VAT: 5/30 s
+CHO_VAT: 10/30 s
+CHO_VAT: 15/30 s
+CHO_VAT: 20/30 s
+CHO_VAT: 25/30 s
+KINH_NGHIEM: tien=0.20 DUOC cach 0.05 m => bo (LiDAR: mui 0.065 <= 0.07)
+SEP_LIDAR: THOAT xoay=+90 (CHO_VAT_30s; cho chat: truoc 0.08, hong 0.07, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 6 diem cach 0.10 m (vat: ngoai ban do 6 diem)
+MEM: truoc 9 diem cach 0.10 m (vat: ngoai ban do 9 diem) LECH ban do=tuong
+MEM: truoc 7 diem cach 0.10 m (vat: ngoai ban do 7 diem)
+MEM: truoc 11 diem cach 0.10 m (vat: ngoai ban do 11 diem) LECH ban do=tuong
+MEM: truoc 6 diem cach 0.09 m (vat: ngoai ban do 6 diem)
+MEM: sau 7 diem cach 0.10 m (tuong: tren ban do, thang, bo cung r=0.06 chi 21 do)
+MEM: truoc 5 diem cach 0.16 m (vat: ngoai ban do 4 diem) LECH ban do=tuong
+   THOAT_XONG: xoay=+90 => SUCCEEDED.
+KINH_NGHIEM: tien=0.20 DUOC cach 0.05 m => bo (LiDAR: mui 0.065 <= 0.07)
+SEP_LIDAR: THOAT tien=0.05 (CHO_VAT_30s; cho chat: truoc 0.17, hong 0.16, sau 0.09 => cuoi 0.11).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: sau 7 diem cach 0.09 m (vat: khong ban do, lidar vat)
+MEM: truoc 6 diem cach 0.17 m (vat: khong ban do, lidar vat)
+MEM: truoc 3 diem cach 0.13 m (vat: ngoai ban do 3 diem) LECH ban do=tuong
+   THOAT_XONG: tien=0.05 => SUCCEEDED.
+KINH_NGHIEM: xoay=-30 DUOC cach 0.09 m => bo (LiDAR: khong lam tot len (khe 0.084, thieu do 0.000))
+SEP_LIDAR: THOAT xoay=+30 (CHO_VAT_30s; cho chat: truoc 0.13, hong 0.12, sau - => cuoi 0.12).
+CANH BAO gac: mu (/scan cu > 0.5 s)
+MEM: truoc 3 diem cach 0.12 m (vat: khong ban do, lidar vat)
+MEM: truoc 5 diem cach 0.13 m (vat: ngoai ban do 5 diem) LECH ban do=tuong
+MEM: truoc 9 diem cach 0.14 m (tuong: tren ban do, thang)
+   THOAT_XONG: xoay=+30 => SUCCEEDED.
+KINH_NGHIEM: xoay=-30 DUOC cach 0.09 m => thu truoc
+SEP_LIDAR: THOAT xoay=-30 (CHO_VAT_30s; cho chat: truoc 0.14, hong 0.13, sau - => cuoi 0.12).
+MEM: truoc 6 diem cach 0.14 m (vat: ngoai ban do 6 diem) LECH ban do=tuong
+   THOAT_XONG: xoay=-30 => HUY (khe hong+duoi 0.13 < luc bat dau 0.134) (xe xoay 34 do).
+CHO_NGUOI: thoat hong 3 lan lien tiep, xe dung yen cho nguoi; tu thu lai sau 60 s (bam 정지 de dung).
+CHO_NGUOI: 5/60 s
+CHO_NGUOI: 10/60 s
+CHO_NGUOI: 15/60 s
+CHO_NGUOI: 20/60 s
+CHO_NGUOI: 25/60 s
+CHO_NGUOI: 30/60 s
+CHO_NGUOI: 35/60 s
+CHO_NGUOI: 40/60 s
+CHO_NGUOI: 45/60 s
+CHO_NGUOI: 50/60 s
+CHO_NGUOI: 55/60 s
+CHO_NGUOI: het 60 s, thu lai.
+SEP_LIDAR: DI dich (1.60; 0.82), Nav2 tu vach
+-- tuyen 0, lan 2/3: navigate_to_pose tu (0.49; 0.07) toi (1.60; 0.82) (Nav2 tu vach)
+MEM: truoc 8 diem cach 0.15 m (tuong: tren ban do, thang)
+MEM: hong 4 diem cach 0.12 m (vat: ngoai ban do 16 diem)
+MEM: sau 2 diem cach 0.10 m (vat: ngoai ban do 13 diem)
+MEM: truoc 5 diem cach 0.14 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: truoc 6 diem cach 0.14 m (tuong: tren ban do, thang)
+MEM: truoc 5 diem cach 0.14 m (vat: ngoai ban do 5 diem) LECH ban do=tuong
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 2 diem cach 0.30 m (tuong: tren ban do, thang)
+MEM: truoc 4 diem cach 0.25 m (tuong: tren ban do, thang)
+MEM: truoc 6 diem cach 0.21 m (tuong: tren ban do, thang)
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 2 diem cach 0.29 m (tuong: tren ban do, thang)
+MEM: truoc 5 diem cach 0.26 m (tuong: tren ban do, thang)
+MEM: truoc 6 diem cach 0.25 m (vat: ngoai ban do 2 diem) LECH ban do=tuong
+MEM: truoc 6 diem cach 0.23 m (tuong: tren ban do, goc 89 do)
+MEM: truoc 10 diem cach 0.19 m (tuong: tren ban do, thang)
+MEM: truoc 12 diem cach 0.15 m (vat: ngoai ban do 4 diem) LECH ban do=tuong
+MEM: truoc 8 diem cach 0.12 m (vat: ngoai ban do 8 diem) LECH ban do=tuong
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 5 diem cach 0.30 m (tuong: tren ban do, thang, bo cung r=0.11 chi 19 do)
+DEN_NOI: di_B xong theo duong Nav2 tu vach (cach dich 0.12 m).
+== 2026-11-10 19:36:52 gui_duong kieu mat ve_A: ma 0 ==
+KIEU gui_duong: mat (~/goc_dang_chay)
+GIA_X: t1 2.03m + 10s; t2 2.02m + 10s; thu tu (2,1)
+CANH BAO gac: mu (/scan cu > 0.5 s)
+SEP_LIDAR: DI dich (0.00; 0.00), tuyen 2
+-- tuyen 2, lan 1/3: navigate_to_pose tu (1.49; 0.77) toi (0.00; 0.00)
+MEM: truoc 5 diem cach 0.30 m (tuong: tren ban do, thang, bo cung r=0.11 chi 19 do)
+MEM: sach
+MEM: truoc 5 diem cach 0.28 m (tuong: tren ban do, thang)
+MEM: sach
+MEM: truoc 3 diem cach 0.30 m (tuong: tren ban do, goc 89 do)
+MEM: truoc 4 diem cach 0.26 m (tuong: tren ban do, goc 79 do)
+MEM: truoc 5 diem cach 0.22 m (tuong: khong chac, tren ban do, khong thang)
+MEM: sach
+MEM: truoc 3 diem cach 0.28 m (tuong: tren ban do, thang)
+MEM: truoc 4 diem cach 0.25 m (tuong: tren ban do, thang)
+MEM: truoc 2 diem cach 0.29 m (tuong: tren ban do, thang)
+MEM: truoc 4 diem cach 0.22 m (tuong: tren ban do, thang)
+MEM: truoc 4 diem cach 0.19 m (tuong: tren ban do, thang)
+MEM: truoc 4 diem cach 0.18 m (vat: ngoai ban do 4 diem) LECH ban do=tuong
+MEM: truoc 5 diem cach 0.14 m (vat: ngoai ban do 5 diem) LECH ban do=tuong
+MEM: hong 2 diem cach 0.12 m (vat: ngoai ban do 5 diem) LECH ban do=tuong
+MEM: truoc 3 diem cach 0.17 m (vat: ngoai ban do 4 diem) LECH ban do=tuong
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+MEM: truoc 6 diem cach 0.29 m (tuong: tren ban do, thang)
+MEM: truoc 8 diem cach 0.26 m (tuong: tren ban do, thang)
+MEM: truoc 3 diem cach 0.21 m (tuong: khong chac, tren ban do, khong thang)
+MEM: truoc 8 diem cach 0.20 m (vat: khong ban do, lidar vat)
+MEM: truoc 7 diem cach 0.19 m (tuong: tren ban do, thang)
+MEM: sach
+sep: CHO (NHAY_VI_TRI) (ghi, khong chan)
+DEN_NOI: ve_A xong theo tuyen 2 (cach dich 0.13 m).

@@ -1,0 +1,170 @@
+# hanh_vi_xe.yaml (bo 1e "nao xe", thiet ke Thien duyet 09/11; CHUA THU TREN XE). Tren Pi: /home/project1/hanh_vi_xe.yaml.
+# Ba tang nao: (1) ban_nang = an_toan (luat cam) + than_the (gioi han linh kien, co nguon / ngay_do): NGUOI doi khi co yeu cau
+#   moi hoac thay linh kien + do lai. (2) thoi_quen: NGUOI duyet, tu de xuat cua xe (~/de_xuat_hanh_vi.txt). (3) kinh nghiem:
+#   ~/kinh_nghiem.csv, xe tu ghi. XE KHONG BAO GIO TU SUA TEP NAY.
+# 09/11 18:36 (Thien chot): thoi_quen va ~/kinh_nghiem.csv CHI LA HUONG DAN (xe tham khao, co loi ra, khong bi khoa);
+#   luat cam chi o ban_nang (an_toan + than_the: ong >= 6 cm, collision_monitor, BackUp kiem sau, toc do, ban nang).
+# 09/11 20:33 vung quanh xe (Thien chot 19:57-20:33): DO = an_toan (mui 0,07 moi vat = vung_phanh_m / collision_monitor; truoc 0,10 VAT;
+#   hong 0,06 VAT; duoi 0,06 moi vat, chi chan lui). VANG = thoi_quen vang_* (huong dan). LiDAR quyet tuong/vat, ban do chi nhac (LECH).
+# Moi so thoi_quen = DUNG gia tri trong ma o 2607fee (mat-lai); dung_o = tep doc no. hanh_vi.py doc tep nay (khong co / hong
+# => mac dinh trong ma, cung so). So trong nav2_params_mat*.yaml / bt_mat.xml KHONG doc tu day: kiem_hanh_vi.py so cho khop.
+ban_nang:
+  an_toan:
+    cach_vat_toi_thieu_m: {gia_tri: 0.06, nguon: "luat cung: cach vat >= 6 cm (thiet ke nao xe 09/11); 20:33: do HONG, chi VAT (gui_duong dung)", ngay_do: null}
+    sep_phat_toc_do: {gia_tri: false, nguon: "luat cung: sep khong phat toc do (thiet ke nao xe 09/11)", ngay_do: null}
+    truoc_vat_do_m: {gia_tri: 0.1, nguon: "luat cung vung quanh xe (Thien chot 09/11 19:57-20:33): VAT cach mui <= so nay => gui_duong huy dich, dung im", ngay_do: null}
+    duoi_do_m: {gia_tri: 0.06, nguon: "luat cung vung quanh xe (Thien chot 09/11 19:57-20:33): moi vat cach duoi <= so nay => khong lui them (BackUp simulate_ahead_time, gui_duong rut quang lui)", ngay_do: null}
+  than_the:
+    v_min_mps: {gia_tri: 0.092, nguon: "do 07/11: banh khong quay duoi ~0,092 m/s (nav2_params_mat.yaml ghi chu, v_banh_nang 0,121)", ngay_do: "2026-11-07"}
+    lidar_range_min_m: {gia_tri: 0.1, nguon: "thiet ke nao xe 09/11 (LiDAR khong thay vat gan hon)", ngay_do: null}
+    ban_kinh_xoay_m: {gia_tri: 0.186, nguon: "tinh: hypot(0,145; 0,08) + 0,02 (lai_xe_lidar.R_XOAY)", ngay_do: null}
+    o_luoi_m: {gia_tri: 0.05, nguon: "costmap resolution (nav2_params_mat*.yaml)", ngay_do: null}
+    rong_xe_m: {gia_tri: 0.16, nguon: "footprint y +-0,08 (nav2_params_mat*.yaml)", ngay_do: null}
+    dai_xe_m: {gia_tri: 0.25, nguon: "footprint x -0,105..0,145 (nav2_params_mat*.yaml)", ngay_do: null}
+thoi_quen:
+  ve_lai_duong_hz: {gia_tri: 1.0, dung_o: "bt_mat.xml (kiem_hanh_vi.py so)", cho: "bt_mat.xml RateController hz"}
+  progress_s: {gia_tri: 10.0, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "progress_checker movement_time_allowance"}
+  vung_phanh_m: {gia_tri: 0.07, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "collision_monitor ThanTruoc mui 0,215 - footprint 0,145"}
+  nhin_truoc_phanh_s: {gia_tri: 1.5, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "collision_monitor ThanTruoc time_before_collision"}
+  tien_toi_thieu_m: {gia_tri: 0.1, dung_o: "gui_duong.py", cho: "cau_hinh tien_min (bien TIEN_MIN)"}
+  gan_dich_m: {gia_tri: 0.6, dung_o: "gui_duong.py", cho: "cau_hinh gan_dich_m (bien GAN_DICH_M)"}
+  cho_sep_s: {gia_tri: 10.0, dung_o: "gui_duong.py", cho: "cau_hinh cho_sep (bien SEP_CHO_S)"}
+  sep_lenh_tuoi_max_s: {gia_tri: 3.0, dung_o: "gui_duong.py", cho: "cau_hinh sep_tuoi (bien SEP_TUOI_MAX); doc_sep_lenh tuoi_max; 23:08: tin /sep/trang_thai cu hon => bo"}
+  toi_sai_so_m: {gia_tri: 0.2, dung_o: "gui_duong.py", cho: "cau_hinh toi_sai_so (bien TOI_SAI_SO)"}
+  tf_tuoi_max_s: {gia_tri: 1.0, dung_o: "gui_duong.py", cho: "cau_hinh tf_tuoi"}
+  cho_chon_tuyen_s: {gia_tri: 2.0, dung_o: "gui_duong.py", cho: "cau_hinh cho_chon"}
+  nhip_in_cho_s: {gia_tri: 5.0, dung_o: "gui_duong.py", cho: "cau_hinh nhip_cho"}
+  cho_san_sang_s: {gia_tri: 15.0, dung_o: "gui_duong.py", cho: "cho_tf_costmap / cho_san_sang giay"}
+  nhip_vi_tri_s: {gia_tri: 1.0, dung_o: "gui_duong.py", cho: "~/vi_tri_xe moi 1 s"}
+  cho_may_chu_s: {gia_tri: 5.0, dung_o: "gui_duong.py", cho: "wait_for_server + cho chap nhan dich"}
+  cho_huy_s: {gia_tri: 2.0, dung_o: "gui_duong.py", cho: "cho Nav2 tra loi huy dich"}
+  cho_nghe_chon_tuyen_s: {gia_tri: 3.0, dung_o: "gui_duong.py", cho: "/chon_tuyen cho co nguoi nghe"}
+  luot_lan_gui: {gia_tri: 3, dung_o: "gui_duong.py", cho: "kieu cu: cau_hinh luot (bien LUOT)"}
+  cho_hong_s: {gia_tri: 30.0, dung_o: "gui_duong.py", cho: "kieu cu: cau_hinh cho_hong (bien CHO_HONG)"}
+  qua_gio_lan_gui_s: {gia_tri: 130.0, dung_o: "gui_duong.py", cho: "kieu cu: cau_hinh to (bien TO)"}
+  lop2_cho_s: {gia_tri: 12.0, dung_o: "gui_duong.py", cho: "kieu cu: cau_hinh lop2_cho"}
+  lop2_tra_s: {gia_tri: 2.0, dung_o: "gui_duong.py", cho: "kieu cu: cau_hinh lop2_tra"}
+  nhip_duong_day_s: {gia_tri: 0.5, dung_o: "gui_duong.py", cho: "kieu cu: phat /duong_day 2 lan/giay"}
+  lo_quanh_xe_m: {gia_tri: 0.35, dung_o: "lop_huong_dan.py", cho: "R_THA"}
+  kinh_nghiem_so_lan: {gia_tri: 3, dung_o: "lop_huong_dan.py; tong_ket_kinh_nghiem.py", cho: "N_CUM"}
+  kinh_nghiem_ban_kinh_m: {gia_tri: 0.2, dung_o: "lop_huong_dan.py", cho: "R_CUM"}
+  vung_ton_diem_m: {gia_tri: 0.15, dung_o: "lop_huong_dan.py", cho: "R_VUNG"}
+  vung_ton_diem_gia_tri: {gia_tri: 0, dung_o: "lop_huong_dan.py", cho: "GIA_TON; 09/11 gia X: 50 -> 0 (thoi to vung ton diem, giu ma)"}
+  o_cam_gia_tri: {gia_tri: 99, dung_o: "lop_huong_dan.py", cho: "GIA_CAM; 09/11 18:44: 100 -> 99 (chi phi 251, khong inflation: huong dan rat ton, co loi ra)"}
+  t_cho_s: {gia_tri: 30.0, dung_o: "sep.py", cho: "T_CHO"}
+  t_cho_them_s: {gia_tri: 10.0, dung_o: "sep.py", cho: "T_CHO_THEM"}
+  t_cho_b_s: {gia_tri: 60.0, dung_o: "sep.py", cho: "T_CHO_B"}
+  lech_max_m: {gia_tri: 0.3, dung_o: "sep.py", cho: "LECH_MAX"}
+  tf_cu_s: {gia_tri: 5.0, dung_o: "sep.py", cho: "TF_CU"}
+  scan_cu_s: {gia_tri: 0.5, dung_o: "sep.py", cho: "SCAN_CU"}
+  r_tin_cay_m: {gia_tri: 3.0, dung_o: "sep.py", cho: "R_TIN_CAY"}
+  tc_tin: {gia_tri: 0.7, dung_o: "sep.py", cho: "TC_TIN"}
+  tc_nghi: {gia_tri: 0.5, dung_o: "sep.py", cho: "TC_NGHI"}
+  t_khong_tin_s: {gia_tri: 5.0, dung_o: "sep.py", cho: "T_KHONG_TIN"}
+  t_bao_s: {gia_tri: 15.0, dung_o: "sep.py", cho: "T_BAO"}
+  cua_so_ket_s: {gia_tri: 2.0, dung_o: "sep.py", cho: "CUA_SO_KET"}
+  lidar_doi_m: {gia_tri: 0.02, dung_o: "sep.py", cho: "LIDAR_DOI"}
+  pose_doi_m: {gia_tri: 0.02, dung_o: "sep.py", cho: "POSE_DOI"}
+  suc_lech_m: {gia_tri: 0.15, dung_o: "sep.py", cho: "SUC_LECH"}
+  suc_lech_max_m: {gia_tri: 0.2, dung_o: "sep.py", cho: "SUC_LECH_MAX"}
+  suc_nhanh_s: {gia_tri: 0.05, dung_o: "sep.py", cho: "SUC_NHANH"}
+  nhay_m: {gia_tri: 0.1, dung_o: "sep.py", cho: "NHAY_M"}
+  nhay_deg: {gia_tri: 5.0, dung_o: "sep.py", cho: "NHAY_DEG"}
+  nhay_dt_s: {gia_tri: 1.0, dung_o: "sep.py", cho: "NHAY_DT"}
+  nav2_lan_max: {gia_tri: 2, dung_o: "sep.py", cho: "NAV2_LAN_MAX"}
+  luot_thoat_max: {gia_tri: 3, dung_o: "sep.py", cho: "LUOT_THOAT_MAX"}
+  day_tuoi_s: {gia_tri: 3.0, dung_o: "sep.py", cho: "DAY_TUOI"}
+  p_day_xa_m: {gia_tri: 0.4, dung_o: "sep.py", cho: "P_DAY_XA"}
+  goc_dinh_deg: {gia_tri: 5.0, dung_o: "sep.py", cho: "GOC_DINH = radians(5.0)"}
+  t_lai_thoat_s: {gia_tri: 3.0, dung_o: "sep.py", cho: "T_LAI_THOAT"}
+  khe_tang_m: {gia_tri: 0.02, dung_o: "sep.py", cho: "KHE_TANG"}
+  khe_cua_so_s: {gia_tri: 3.0, dung_o: "sep.py", cho: "KHE_CUA_SO"}
+  nhin_xa_m: {gia_tri: 0.6, dung_o: "sep.py", cho: "NHIN_XA"}
+  xa_truoc_m: {gia_tri: 0.15, dung_o: "sep.py", cho: "XA_TRUOC"}
+  t_plan_xau_s: {gia_tri: 10.0, dung_o: "sep.py", cho: "T_PLAN_XAU"}
+  r_b_m: {gia_tri: 0.2, dung_o: "sep.py", cho: "R_B"}
+  t_ra2_tra_s: {gia_tri: 3.0, dung_o: "sep.py", cho: "T_RA2_TRA"}
+  t_ra2_cho_s: {gia_tri: 12.0, dung_o: "sep.py", cho: "T_RA2_CHO"}
+  r_vat_dich_m: {gia_tri: 0.3, dung_o: "sep.py", cho: "R_VAT_DICH"}
+  treo_s: {gia_tri: 1.0, dung_o: "sep.py", cho: "TREO"}
+  abort_nhanh_s: {gia_tri: 2.0, dung_o: "sep.py", cho: "ABORT_NHANH"}
+  cua_so_vong_s: {gia_tri: 10.0, dung_o: "sep.py", cho: "CUA_SO_VONG"}
+  t_dung_s: {gia_tri: 10.0, dung_o: "sep.py", cho: "P_MAC_DINH['t_dung'] (tham so ROS)"}
+  dich_dung_m: {gia_tri: 0.03, dung_o: "sep.py", cho: "P_MAC_DINH['dich_dung'] (tham so ROS)"}
+  sat_vat_m: {gia_tri: 0.1, dung_o: "sep.py", cho: "P_MAC_DINH['sat_vat'] (tham so ROS)"}
+  sat_vat_tat_m: {gia_tri: 0.12, dung_o: "sep.py", cho: "P_MAC_DINH['sat_vat_tat'] (tham so ROS)"}
+  kinh_nghiem_quan_sat_s: {gia_tri: 15.0, dung_o: "gui_duong.py", cho: "MOI 09/11 nao xe viec 4 (khong co o 2607fee): BT_LUI / GUI_LUI / CHO_DICH DUOC neu tien trong bay nhieu giay sau do"}
+  so_luot_chan: {gia_tri: 3, dung_o: "gui_duong.py", cho: "MOI 09/11 20:33; 23:07: xa dich, so luot bi chan (giao dich khong toi, ke ca sau thoat) truoc CHO_NGUOI"}
+  cho_lai_s: {gia_tri: 60.0, dung_o: "gui_duong.py", cho: "MOI 09/11 18:47 (i); 20:33: het so_luot_chan luot bi chan => CHO_NGUOI khong tim thay duong (dung yen, bao nguoi, KHONG thoat), sau bay nhieu giay tu thu lai 1 luot; <= 0 => HET_DUONG nhu 92ff3dc"}
+  gia_x_bat: {gia_tri: true, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: X = cho KET_CO_DUONG chua DA_GIAI (~/kinh_nghiem.csv) = cho can tim cach giai, KHONG phai vung ne; false = thu tu tuyen va khong ghi DA_GIAI nhu 8601d4c"}
+  gia_x_giay_mac_dinh: {gia_tri: 10.0, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: giay cua X khi cac dong khong co cho=N (cot cach)"}
+  gia_x_r_m: {gia_tri: 0.2, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: gop dong thanh X; X cach duong tuyen / vet xe <= so nay"}
+  gia_x_v_ms: {gia_tri: 0.11, dung_o: "gui_duong.py", cho: "MOI 09/11 gia X: gia tuyen = dai + v x tong giay X gan tuyen"}
+  footprint_padding_m: {gia_tri: 0.0, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (local + global costmap; kiem_hanh_vi.py so)", cho: "MOI 09/11 dung im ban 2 (A3, de xuat 83.8): footprint_padding (mac dinh Nav2 0.01); 09/11 17:07 0.06 -> 0.03 (ket cua K2); 20:33 -> 0.0 (tuong cach hong 0,05 khong bao va RPP)"}
+  # 09/11 20:33 vung quanh xe (Thien chot 19:57-20:33): vang = HUONG DAN (log MEM, chi phi costmap, cong sach); LiDAR lai, ban do chi nhac
+  vang_truoc_m: {gia_tri: 0.3, dung_o: "gac_vat_la.py, trang_v10.py", cho: "vang truoc mui"}
+  vang_hong_m: {gia_tri: 0.12, dung_o: "gac_vat_la.py, trang_v10.py", cho: "vang hong (= inflation_radius 0,20 - nua than 0,08)"}
+  vang_sau_m: {gia_tri: 0.1, dung_o: "gac_vat_la.py, trang_v10.py", cho: "vang sau duoi"}
+  vat_dai_max_m: {gia_tri: 0.25, dung_o: "gac_vat_la.py", cho: "cum LiDAR dai <= so nay, ho hai ben => VAT"}
+  tuong_dai_min_m: {gia_tri: 0.4, dung_o: "gac_vat_la.py", cho: "cum LiDAR dai >= so nay => TUONG; giua => khong chac => VAT"}
+  cum_cach_m: {gia_tri: 0.05, dung_o: "gac_vat_la.py", cho: "hai diem LiDAR ke nhau xa hon => tach cum"}
+  ho_hai_ben_m: {gia_tri: 0.1, dung_o: "gac_vat_la.py", cho: "tia ke dau cum xa hon bay nhieu (hoac khong co tia ve) => ho"}
+  gan_tuong_ban_do_m: {gia_tri: 0.18, dung_o: "gac_vat_la.py", cho: "cum cach o tuong /map_tinh <= so nay => ban do nhac TUONG (chi ghi LECH)"}
+  so_diem_toi_thieu: {gia_tri: 3, dung_o: "gac_vat_la.py", cho: "cum it diem hon => nhieu, bo"}
+  sach_s: {gia_tri: 2.0, dung_o: "gui_duong.py", cho: "khong VAT trong vang lien tuc bay lau => gui (lai) dich (truoc: gac_sach_s)"}
+  lidar_cu_s: {gia_tri: 0.5, dung_o: "gui_duong.py", cho: "/scan cu hon => mu, canh bao (truoc: gac_scan_cu_s)"}
+  inflation_radius_m: {gia_tri: 0.2, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "inflation_layer local + global"}
+  cost_scaling_factor: {gia_tri: 10.0, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "inflation_layer local + global; RPP inflation_cost_scaling_factor (rpp)"}
+  backup_nhin_truoc_s: {gia_tri: 0.7, dung_o: "nav2_params_mat.yaml, nav2_params_mat_rpp.yaml (kiem_hanh_vi.py so)", cho: "behavior_server simulate_ahead_time: BackUp nhin 0,06 m o 0,10 m/s => dung khi vat cach duoi 0,05-0,11"}
+  # 09/11 23:08 SEP LiDAR mot nguoi lai (Thien chot 21:54-23:08): thoi_quen = co van; sep LiDAR (gui_duong + sep_lidar) lay lam mac dinh,
+  #   quyet theo LiDAR; KHONG so nao duoc giu xe dung (chan duy nhat = ban_nang). CHUA THU TREN XE.
+  khong_tien_s: {gia_tri: 10.0, dung_o: "gui_duong.py", cho: "giao dich ma khong tien >= tien_toi_thieu_m bay lau => bi chan, kich thoat"}
+  cho_vat_s: {gia_tri: 30.0, dung_o: "gui_duong.py", cho: "nhac doi / vung do: dung yen toi da bay lau roi thoat"}
+  nhac_doi_m: {gia_tri: 0.14, dung_o: "sep_lidar.py", cho: "nhac doi: VAT CHAC (LiDAR VAT, khong LECH) trong hanh lang truoc mui <= so nay"}
+  cho_chat_m: {gia_tri: 0.12, dung_o: "sep_lidar.py", cho: "co diem cach than < so nay => dong tac nho; moi diem >= => sector"}
+  thoat_sector_deg: {gia_tri: 10.0, dung_o: "sep_lidar.py", cho: "sector cho thoang"}
+  thoat_trong_m: {gia_tri: 0.4, dung_o: "sep_lidar.py", cho: "sector trong truoc mui >= so nay"}
+  thoat_diem_min_m: {gia_tri: 0.3, dung_o: "sep_lidar.py", cho: "diem thoat cach xe toi thieu"}
+  thoat_diem_max_m: {gia_tri: 0.4, dung_o: "sep_lidar.py", cho: "diem thoat cach xe toi da"}
+  thoat_han_s: {gia_tri: 15.0, dung_o: "gui_duong.py", cho: "navigate_to_pose toi diem thoat: han"}
+  thoat_buoc_max: {gia_tri: 6, dung_o: "gui_duong.py", cho: "so dong tac nho toi da moi lan thoat"}
+  thoat_hong_max: {gia_tri: 3, dung_o: "gui_duong.py", cho: "thoat hong lien tiep => CHO_NGUOI"}
+  so_luot_gan_dich: {gia_tri: 2, dung_o: "gui_duong.py", cho: "Thien 23:07: gan dich (<= gan_dich_m) so luot bi chan truoc CHO_NGUOI"}
+  han_gan_dich_s: {gia_tri: 100.0, dung_o: "gui_duong.py", cho: "Thien 23:07: gan dich, han tinh tu lan bi chan dau tien gan dich => CHO_NGUOI"}
+  cho_vi_tri_s: {gia_tri: 60.0, dung_o: "gui_duong.py", cho: "Thien Q2: vi tri chua tin bay lau => CHO_VI_TRI (bao nguoi, van cho)"}
+  toc_do_thoat_mps: {gia_tri: 0.1, dung_o: "gui_duong.py", cho: "Thien Q3: drive_on_heading / backup cua dong tac thoat"}
+  xoay_thoat_rad_s: {gia_tri: 0.6, dung_o: "gui_duong.py (kiem_hanh_vi.py so)", cho: "= behavior_server min_rotational_vel; han Spin"}
+  # 10/11 A+ (Thien duyet 15:34): phan loai cum ba dau hieu + thoat ra xa. DUONG LUI: phan_loai_cum: cu + thoat_ra_xa: false = 629a17b
+  phan_loai_cum: {gia_tri: ba_dau_hieu, dung_o: "gac_vat_la.py (sep_lidar.py, gui_duong.py doc ket qua)", cho: "cu | ba_dau_hieu: cung ong / ngoai ban do => VAT; tren ban do + thang/gay goc => TUONG; khong chac: mui/duoi VAT, hong theo ban do"}
+  thoat_ra_xa: {gia_tri: true, dung_o: "sep_lidar.py, gui_duong.py", cho: "true: dang trong vung do van cho dong tac thoat neu khe nho nhat khong giam, khong cham; diem thoat giu k0 luc truoc khi chay"}
+  cung_r_min_m: {gia_tri: 0.06, dung_o: "gac_vat_la.py", cho: "cung ong: ban kinh toi thieu"}
+  cung_r_max_m: {gia_tri: 0.12, dung_o: "gac_vat_la.py", cho: "cung ong: ban kinh toi da"}
+  cung_rms_m: {gia_tri: 0.01, dung_o: "gac_vat_la.py", cho: "cung ong: sai so RMS toi da"}
+  cung_so_diem: {gia_tri: 5, dung_o: "gac_vat_la.py", cho: "cung ong: so diem toi thieu"}
+  ngoai_ban_do_m: {gia_tri: 0.08, dung_o: "gac_vat_la.py", cho: "diem cach o tuong /map_tinh hon so nay = ngoai ban do"}
+  ngoai_so_diem: {gia_tri: 2, dung_o: "gac_vat_la.py", cho: ">= so diem ngoai ban do => VAT"}
+  thang_rms_m: {gia_tri: 0.01, dung_o: "gac_vat_la.py", cho: "doan thang / gay goc: dung sai Douglas-Peucker"}
+  goc_gay_lech_deg: {gia_tri: 20.0, dung_o: "gac_vat_la.py", cho: "goc gay 90 (hoac thang 180) +- so nay"}
+  khong_cham_m: {gia_tri: 0.02, dung_o: "gac_vat_la.py, sep_lidar.py, gui_duong.py", cho: "hong + TUONG: khong vung do, chi giu khong cham (kc <= so nay = do)"}
+  # 10/11 A++ (16:27-16:30: goc K4 hop xop khop nham cung => CHO_VAT). DUONG LUI: ba khoa bool = false => y het 50e4146
+  ong_kiem_tam: {gia_tri: true, dung_o: "gac_vat_la.py", cho: "tam cung (khung ban do) sau trong o tuong > ong_tam_sau_m => khong phai ong; khong co ban do: nhu cu"}
+  ong_on_dinh: {gia_tri: true, dung_o: "gac_vat_la.py, gui_duong.py (Mat giu TheoDoiOng)", cho: "ong chi khi >= ong_ti_le so lan quet trong ong_cua_so_s ra cung (>= ong_so_quet_min lan)"}
+  mui_tuong_khong_doi: {gia_tri: true, dung_o: "gac_vat_la.py", cho: "mui + tren ban do + khong phai ong => TUONG: khong DOI_VAT / CHO_VAT 30 s (mui 0,07 collision_monitor van giu)"}
+  ong_tam_sau_m: {gia_tri: 0.05, dung_o: "gac_vat_la.py", cho: "tam cung sau trong tuong hon so nay => khong phai ong (A1 10/11: ong that ap tuong 0,035-0,045; cung nham goc K4 0-0,049 => KHONG tach duoc, chan nham la nho goc cung + on dinh)"}
+  ong_cach_cum_m: {gia_tri: 0.05, dung_o: "gac_vat_la.py", cho: "tam cum hai lan quet cach <= so nay = cung cum"}
+  ong_cua_so_s: {gia_tri: 1.0, dung_o: "gac_vat_la.py", cho: "cua so xet on dinh cung"}
+  ong_ti_le: {gia_tri: 0.6, dung_o: "gac_vat_la.py", cho: "ti le lan quet ra cung toi thieu de goi ong"}
+  ong_so_quet_min: {gia_tri: 3, dung_o: "gac_vat_la.py", cho: "so lan quet toi thieu trong cua so (lan quet le khong du)"}
+  ong_goc_min_deg: {gia_tri: 100.0, dung_o: "gac_vat_la.py", cho: "(ong_kiem_tam) cung phai thay >= so do nay (ong O18: 140-170 do; nhieu tren tuong / goc: 30-60 do)"}
+  # 10/11 muc 6 + 7 (Thien duyet 16:36): diem dan ve_A + diem vuot (HUONG DAN co loi ra: bi chan / Nav2 tu choi / qua han => bo diem, khong thoat, khong tinh luot, khong tinh han gan dich)
+  ve_A_diem_dan: {gia_tri: true, dung_o: "gui_duong.py", cho: "ve_A tuyen 1: diem dan giua khe K4-H0 (tinh tu ban do, x 0,45-0,90) roi moi toi A"}
+  diem_dan_cach_k4_m: {gia_tri: 0.15, dung_o: "gui_duong.py", cho: "tam xe tai diem dan cach mep tren K4 >= so nay"}
+  diem_dan_han_s: {gia_tri: 20.0, dung_o: "gui_duong.py", cho: "han toi diem dan"}
+  diem_vuot: {gia_tri: true, dung_o: "gui_duong.py", cho: "sau luot bi chan tai P + THOAT: chon V phia truoc P, lech phia thoang, di toi V roi gui dich"}
+  diem_vuot_han_s: {gia_tri: 25.0, dung_o: "gui_duong.py", cho: "han toi V"}
+  diem_vuot_d_min_m: {gia_tri: 0.35, dung_o: "gui_duong.py", cho: "V cach P toi thieu"}
+  diem_vuot_d_max_m: {gia_tri: 0.6, dung_o: "gui_duong.py", cho: "V cach P toi da"}
+  vuot_vat1_m: {gia_tri: 0.12, dung_o: "gui_duong.py", cho: "bac 1: THAN xe tai V cach VAT (LiDAR + ban do)"}
+  vuot_tuong1_m: {gia_tri: 0.05, dung_o: "gui_duong.py", cho: "bac 1: than cach TUONG"}
+  vuot_vat2_m: {gia_tri: 0.08, dung_o: "gui_duong.py", cho: "bac 2 (khong co V bac 1): than cach VAT 0,06 + 0,02"}
+  vuot_tuong2_m: {gia_tri: 0.04, dung_o: "gui_duong.py", cho: "bac 2: than cach TUONG 0,02 + 0,02"}

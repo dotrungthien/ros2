@@ -16,6 +16,15 @@ import sep_lidar as SL
 import tinh_tuyen as T
 
 DAY = os.path.dirname(os.path.abspath(__file__))
+HV = G.HV
+
+# 10/11 A+: cac test trong tep nay = hanh vi 629a17b => chay voi DUONG LUI (phan_loai_cum cu + thoat_ra_xa false), cung du lieu
+# cho cung quyet dinh. Test cua A+ (ba dau hieu, thoat ra xa) o test_phan_loai_cum.py (yaml mac dinh).
+def ghim_duong_lui():
+    HV._nap()['tq'].update(phan_loai_cum='cu', thoat_ra_xa=False)
+
+
+ghim_duong_lui()
 BAN = T.Ban(T.YAML)
 CFG = dict(G.cau_hinh({}), so_luot=2, cho_lai=0.0)   # ca cu: 2 luot (tuyen goi y, roi Nav2 tu vach), het thi HET_DUONG; ca moi dung CFG3
 CFG3 = G.cau_hinh({})
@@ -1378,6 +1387,7 @@ def test_68_yaml_so_luot_chan_va_khong_con_cong_tac_gac():
             os.environ['HANH_VI_YAML'] = cu
         with contextlib.redirect_stderr(_io.StringIO()):
             G.HV.nap_lai()
+        ghim_duong_lui()
     c = G.cau_hinh({})
     assert c['so_luot'] == 3 and 'gac' not in c and 'so_vong' not in c
 

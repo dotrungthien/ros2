@@ -12,6 +12,16 @@ import gac_vat_la as GV  # noqa: E402
 import sep_lidar as SL  # noqa: E402
 import the_gioi_gia as TG  # noqa: E402
 
+import hanh_vi as HV  # noqa: E402
+
+# 10/11 A+: cac test trong tep nay = hanh vi 629a17b => chay voi DUONG LUI (phan_loai_cum cu + thoat_ra_xa false), cung du lieu
+# cho cung quyet dinh. Test cua A+ (ba dau hieu, thoat ra xa) o test_phan_loai_cum.py (yaml mac dinh).
+def ghim_duong_lui():
+    HV._nap()['tq'].update(phan_loai_cum='cu', thoat_ra_xa=False)
+
+
+ghim_duong_lui()
+
 T = SL.tham_so()
 P0 = (0.0, 0.0, 0.0)
 

@@ -728,12 +728,14 @@ def _mo_ta(d):
     return '%s %s cach %.2f m' % (d['vung'], 'vat chac' if d['lidar'] == 'VAT' and not d['lech'] else 'vat', d['kc'])
 
 
-def kep(pts, pl, t):
+def kep(pts, pl, t, tuong=None):
     """Kep (thay LUI_NGAN bo / huy lui cu): sau duoi (hanh lang than, gac_vat_la.khoang_sau) <= duoi_do (khong lui duoc) VA
-    (hong <= 0,06 hoac truoc <= 0,10) - moi loai, ke ca tuong (khe vung sep_lidar.khe)."""
-    sau, k = GV.khoang_sau(pts, t['gac']), SL.khe(pl, t)
-    return (sau is not None and sau <= HV.an_toan('duoi_do_m') + 1e-9
-            and (k['hong'] <= t['hong_do'] + 1e-9 or k['hl'] <= t['truoc_do'] + 1e-9))
+    (hong <= 0,06 hoac truoc <= 0,10) - moi loai, ke ca tuong (khe vung sep_lidar.khe).
+    10/11 A+ (tuong: co cum TUONG cua ba dau hieu): hong = VAT <= 0,06 hoac TUONG <= khong_cham_m 0,02."""
+    sau, k = GV.khoang_sau(pts, t['gac']), SL.khe(pl, t, tuong=tuong)
+    hong = (k['hong'] <= t['hong_do'] + 1e-9 if tuong is None
+            else k['hong_v'] <= t['hong_do'] + 1e-9 or k['hong_t'] <= t['khong_cham'] + 1e-9)
+    return sau is not None and sau <= HV.an_toan('duoi_do_m') + 1e-9 and (hong or k['hl'] <= t['truoc_do'] + 1e-9)
 
 
 def truoc_khi_giao(io, cfg, kn, luot, nhac=True):
@@ -745,7 +747,8 @@ def truoc_khi_giao(io, cfg, kn, luot, nhac=True):
     if ds is None:
         return 'DI', None
     t = SL.tham_so()
-    if kep(pts, SL.diem_loc(pts, t['gac']), t):
+    pl, fl = SL.diem_loc_nhan(pts, t['gac'], ds)
+    if kep(pts, pl, t, fl):
         return 'THOAT', 'KEP'
     c, d = SL.vat_chac(ds, t) if nhac else None, SL.vung_do(ds, t)
     if c is None and d is None:
@@ -912,8 +915,8 @@ def thoat(io, cfg, kn, luot, dich, ly):
         if ds is None:
             io.bao('SEP_LIDAR: THOAT bo (khong co lan quet moi: mu).')
             return 'HONG'
-        pl = SL.diem_loc(pts, t['gac'])
-        k = SL.khe(pl, t)
+        pl, fl = SL.diem_loc_nhan(pts, t['gac'], ds)      # 10/11 A+: fl = co TUONG tung diem (None: phan_loai_cum cu)
+        k = SL.khe(pl, t, tuong=fl)
         tin = tin_sep(io, kn)
         p = io.pose()
         if k['nho'] >= t['cho_chat'] or buoc == int(cfg['thoat_buoc']):
@@ -923,7 +926,7 @@ def thoat(io, cfg, kn, luot, dich, ly):
         kc = cach_kinh_nghiem([d for d in io.doc_kinh_nghiem() if SL.doc_ten(d.get('cach'))], p, HV.so('gia_x_r_m'))
         if kc is not None:
             uu = SL.doc_ten(kc[1])
-        dt, c, bo = SL.chon_dong_tac(pl, t, hd, uu)
+        dt, c, bo = SL.chon_dong_tac(pl, t, hd, uu, fl)
         if uu is not None:
             ly_bo = next((l for n, l in bo if n == SL.ten_dong_tac(uu)), None)
             io.bao('KINH_NGHIEM: %s DUOC cach %.2f m => %s' % (kc[1], kc[2], 'thu truoc' if dt == uu else 'bo (LiDAR: %s)' % (ly_bo or 'khong tot bang')))
@@ -974,7 +977,9 @@ def di_diem(io, cfg, kn, luot, diem, yaw, k0=None):
     -> 'TOI' (SUCCEEDED / cach diem <= tien_min) | 'HONG_<ly>' | 'HAN_GAN'."""
     if not io.gui_nav(diem, yaw):
         return 'HONG_TU_CHOI'
-    t, mat, t0, k0 = SL.tham_so(), mat_cua(io, kn), io.now(), None
+    t, mat, t0 = SL.tham_so(), mat_cua(io, kn), io.now()
+    if not t['ra_xa']:
+        k0 = None                                        # 629a17b: k0 truyen vao bi bo, lay o lan quet dau khi xe da chay
     while True:
         kq = io.ket_qua()
         p = io.pose()

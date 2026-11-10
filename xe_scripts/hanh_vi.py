@@ -139,6 +139,18 @@ MAC_DINH = {
     'cho_vi_tri_s': 60.0,        # vi tri chua tin bay lau => CHO_VI_TRI (bao nguoi, van cho)
     'toc_do_thoat_mps': 0.1,     # drive_on_heading / backup cua dong tac thoat
     'xoay_thoat_rad_s': 0.6,     # Spin: = behavior_server min_rotational_vel (kiem_hanh_vi so); tinh han spin
+    # MOI 10/11 A+ (Thien duyet 15:34): phan loai cum ba dau hieu + thoat ra xa. Duong lui: phan_loai_cum cu + thoat_ra_xa false = 629a17b
+    'phan_loai_cum': 'ba_dau_hieu',  # cu | ba_dau_hieu
+    'thoat_ra_xa': True,         # true: dang trong vung do van cho buoc thoat neu khe nho nhat khong giam, khong cham
+    'cung_r_min_m': 0.06,        # cung ong: ban kinh toi thieu
+    'cung_r_max_m': 0.12,        # cung ong: ban kinh toi da
+    'cung_rms_m': 0.01,          # cung ong: sai so RMS toi da
+    'cung_so_diem': 5,           # cung ong: so diem toi thieu
+    'ngoai_ban_do_m': 0.08,      # diem cach o tuong ban do hon so nay = ngoai ban do
+    'ngoai_so_diem': 2,          # >= so diem ngoai ban do => cum co phan ngoai ban do => VAT
+    'thang_rms_m': 0.01,         # doan thang / gay goc: sai so toi da (Douglas-Peucker)
+    'goc_gay_lech_deg': 20.0,    # goc gay = 90 +- so nay (hoac thang 180 +- so nay)
+    'khong_cham_m': 0.02,        # hong + TUONG: chi giu khong cham (khe <= so nay = do)
 }
 
 COT_KINH_NGHIEM = 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do'     # ~/kinh_nghiem.csv tu 09/11 (nao xe viec 4)
@@ -148,6 +160,8 @@ _DA = {}
 
 
 def _dung_kieu(mac_dinh, x):
+    if isinstance(mac_dinh, str):                       # 10/11 A+: phan_loai_cum (cu | ba_dau_hieu)
+        return isinstance(x, str)
     if isinstance(mac_dinh, bool):
         return isinstance(x, bool)
     if isinstance(x, bool):

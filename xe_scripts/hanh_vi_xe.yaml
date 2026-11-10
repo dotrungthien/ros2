@@ -134,3 +134,15 @@ thoi_quen:
   cho_vi_tri_s: {gia_tri: 60.0, dung_o: "gui_duong.py", cho: "Thien Q2: vi tri chua tin bay lau => CHO_VI_TRI (bao nguoi, van cho)"}
   toc_do_thoat_mps: {gia_tri: 0.1, dung_o: "gui_duong.py", cho: "Thien Q3: drive_on_heading / backup cua dong tac thoat"}
   xoay_thoat_rad_s: {gia_tri: 0.6, dung_o: "gui_duong.py (kiem_hanh_vi.py so)", cho: "= behavior_server min_rotational_vel; han Spin"}
+  # 10/11 A+ (Thien duyet 15:34): phan loai cum ba dau hieu + thoat ra xa. DUONG LUI: phan_loai_cum: cu + thoat_ra_xa: false = 629a17b
+  phan_loai_cum: {gia_tri: ba_dau_hieu, dung_o: "gac_vat_la.py (sep_lidar.py, gui_duong.py doc ket qua)", cho: "cu | ba_dau_hieu: cung ong / ngoai ban do => VAT; tren ban do + thang/gay goc => TUONG; khong chac: mui/duoi VAT, hong theo ban do"}
+  thoat_ra_xa: {gia_tri: true, dung_o: "sep_lidar.py, gui_duong.py", cho: "true: dang trong vung do van cho dong tac thoat neu khe nho nhat khong giam, khong cham; diem thoat giu k0 luc truoc khi chay"}
+  cung_r_min_m: {gia_tri: 0.06, dung_o: "gac_vat_la.py", cho: "cung ong: ban kinh toi thieu"}
+  cung_r_max_m: {gia_tri: 0.12, dung_o: "gac_vat_la.py", cho: "cung ong: ban kinh toi da"}
+  cung_rms_m: {gia_tri: 0.01, dung_o: "gac_vat_la.py", cho: "cung ong: sai so RMS toi da"}
+  cung_so_diem: {gia_tri: 5, dung_o: "gac_vat_la.py", cho: "cung ong: so diem toi thieu"}
+  ngoai_ban_do_m: {gia_tri: 0.08, dung_o: "gac_vat_la.py", cho: "diem cach o tuong /map_tinh hon so nay = ngoai ban do"}
+  ngoai_so_diem: {gia_tri: 2, dung_o: "gac_vat_la.py", cho: ">= so diem ngoai ban do => VAT"}
+  thang_rms_m: {gia_tri: 0.01, dung_o: "gac_vat_la.py", cho: "doan thang / gay goc: dung sai Douglas-Peucker"}
+  goc_gay_lech_deg: {gia_tri: 20.0, dung_o: "gac_vat_la.py", cho: "goc gay 90 (hoac thang 180) +- so nay"}
+  khong_cham_m: {gia_tri: 0.02, dung_o: "gac_vat_la.py, sep_lidar.py, gui_duong.py", cho: "hong + TUONG: khong vung do, chi giu khong cham (kc <= so nay = do)"}

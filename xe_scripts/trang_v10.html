@@ -256,7 +256,7 @@ function bang(){
   else set('pa','-');
   // 09/11 20:33: MEM cua gui_duong (LiDAR quyet 벽 / 물체; LECH = ban do noi khac)
   var VT={truoc:'앞',hong:'옆',sau:'뒤'},mm=b.mem;
-  set('pmem',!mm?'-':Object.keys(mm).length?Object.keys(mm).map(function(k){var e=mm[k];return VT[k]+' '+(e.loai==='vat'?'물체':'벽')+' '+cm(e.kc)
+  set('pmem',!mm?'-':Object.keys(mm).length?Object.keys(mm).map(function(k){var e=mm[k];return VT[k]+' '+(e.loai==='tuong'?'벽':'물체')+' '+cm(e.kc)
       +(e.lech?' (지도와 다름)':'');}).join(' · '):'주변 깨끗');
   set('p9',b.xoay?(b.xoay.duoc?'가능':'불가')+' (중심~벽 '+cm(b.xoay.kc_m)+', 필요 > '+(b.xoay.r_xoay_m*100).toFixed(1)+' cm, 지도 기준)':'-');
   set('pm',b.nho?b.nho+'곳 막힘 (지도의 빨간 X)':'-');

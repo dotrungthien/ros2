@@ -119,6 +119,12 @@ def kiem(thu_muc, tq, at, tt):
     out.append(('b', 'thoat_diem_min_m %g <= thoat_diem_max_m %g; thoat_trong_m - truoc_vat_do_m %g >= thoat_diem_min_m' % (
         tq['thoat_diem_min_m'], tq['thoat_diem_max_m'], r), tq['thoat_diem_min_m'] <= tq['thoat_diem_max_m'] and r >= tq['thoat_diem_min_m'] - SAI_SO))
     out.append(('b', 'cho_lai_s %g > 0 (het luot cho nguoi, khong thoat)' % tq['cho_lai_s'], tq['cho_lai_s'] > 0))   # 09/11 18:47 (i)
+    # 10/11 A+: phan loai ba dau hieu
+    out.append(('b', 'phan_loai_cum %s thuoc {cu, ba_dau_hieu}' % tq['phan_loai_cum'], tq['phan_loai_cum'] in ('cu', 'ba_dau_hieu')))
+    out.append(('b', 'cung_r_min_m %g < cung_r_max_m %g, cung_so_diem %d >= 3' % (tq['cung_r_min_m'], tq['cung_r_max_m'], tq['cung_so_diem']),
+                tq['cung_r_min_m'] < tq['cung_r_max_m'] and tq['cung_so_diem'] >= 3))
+    out.append(('c', 'khong_cham_m %g > 0 va <= cach_vat_toi_thieu_m %g (tuong hong chi nhe hon vat)' % (tq['khong_cham_m'], at['cach_vat_toi_thieu_m']),
+                0 < tq['khong_cham_m'] <= at['cach_vat_toi_thieu_m'] + SAI_SO))
     import tinh_tuyen as TT
     out.append(('c', 'vung_ton_diem_gia_tri %g < NGUONG_CAM %g' % (tq['vung_ton_diem_gia_tri'], TT.NGUONG_CAM),
                 tq['vung_ton_diem_gia_tri'] < TT.NGUONG_CAM))

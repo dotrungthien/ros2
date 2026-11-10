@@ -469,7 +469,7 @@ def sep_lidar_cuoi(dong):
     return None
 
 
-_RE_MEM = re.compile(r'^MEM: (truoc|hong|sau) (\d+) diem cach ([0-9.]+) m \((tuong|vat)\)(?: LECH ban do=(tuong|vat))?$')
+_RE_MEM = re.compile(r'^MEM: (truoc|hong|sau) (\d+) diem cach (-?[0-9.]+) m \((tuong|vat|ong)(?:: [^)]*)?\)(?: LECH ban do=(tuong|vat))?$')   # 10/11 A+: + ong, ly do
 
 
 def mem_vung(dong):

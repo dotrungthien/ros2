@@ -20,6 +20,11 @@ moi dong tac giao cho Nav2 (drive_on_heading / backup / spin / navigate_to_pose)
   - Huy dong tac dang chay (moi lan quet; Thien Q3): truoc <= 0,07 moi vat; truoc <= 0,10 VAT; hong <= 0,06 VAT; khe hong+duoi
     (nho nhat chung, trong vang) nho hon luc bat dau. Dieu kien da dung ngay luc bat dau thi chi huy khi khe NHO HON luc bat dau (khong thi ca 21:50 khong ra duoc).
   - Nhac doi: VAT CHAC (LiDAR VAT: cum ho hai ben, KHONG LECH) trong hanh lang than truoc mui <= nhac_doi_m 0,14.
+  - 10/11 A+ (Thien duyet 15:34). phan_loai_cum ba_dau_hieu: diem cua cum TUONG (theo luat hong: gac_vat_la.ba_dau_hieu) mang co
+    `tuong`; khe() them hs_v / hs_t (hong+duoi cua VAT / cua TUONG), thieu() doi VAT >= 0,06 nhung TUONG chi >= khong_cham_m 0,02
+    (hong + tuong khong phai vung do). VAT CHAC = cung ong / ngoai ban do. thoat_ra_xa: dong tac duoc ke ca khi dang trong vung do
+    neu khe nho nhat (moi diem) KHONG GIAM (trong cho_chat) suot quang quet; xoay khong con cam truoc theo ban_kinh_xoay_m (quet
+    kiem). Duong lui: phan_loai_cum cu + thoat_ra_xa false = 629a17b.
 """
 import json
 import math
@@ -39,7 +44,7 @@ def tham_so():
     return dict(hong_do=at('cach_vat_toi_thieu_m'), truoc_do=at('truoc_vat_do_m'), mui_do=h('vung_phanh_m'),
                 cho_chat=h('cho_chat_m'), r_xoay=HV.than_the('ban_kinh_xoay_m'), nhac_doi=h('nhac_doi_m'),
                 sector=math.radians(h('thoat_sector_deg')), trong=h('thoat_trong_m'), r_min=h('thoat_diem_min_m'),
-                r_max=h('thoat_diem_max_m'), gac=GV.tham_so())
+                r_max=h('thoat_diem_max_m'), gac=GV.tham_so(), ra_xa=h('thoat_ra_xa'), khong_cham=h('khong_cham_m'))
 
 
 def ten_dong_tac(dt):
@@ -72,6 +77,21 @@ def diem_loc(pts, t):
     return out
 
 
+def diem_loc_nhan(pts, t, ds):
+    """10/11 A+: nhu diem_loc + co tung diem: True = diem cua cum TUONG theo luat hong (danh_gia ba dau hieu, khoa 'ks' / 'tuong_k').
+    ds khong co nhan (phan_loai_cum cu) => (diem_loc, None) y het cu."""
+    tuong = {k for d in ds or () if d.get('tuong_k') for k in d.get('ks', ())}
+    if not any('ks' in d for d in ds or ()):
+        return diem_loc(pts, t), None
+    out, fl = [], []
+    for a, b in GV.cum(pts, t):
+        ks = [(a + i) % len(pts) for i in range((b - a) % len(pts) + 1)]
+        if len(ks) >= t['so_diem']:
+            out += [pts[k] for k in ks]
+            fl += [k in tuong for k in ks]
+    return out, fl
+
+
 def _ve(p, tt):
     """Diem p (khung xe luc dau) -> khung than xe dat o tu the tt = (dx, dy, dth) (khung xe luc dau)."""
     dx, dy, th = tt
@@ -87,20 +107,29 @@ def kc_than(p):
     return vung, math.hypot(max(x - X_MUI, X_DUOI - x, 0.0), max(abs(y) - Y_HONG, 0.0))
 
 
-def khe(pts, t, tt=(0.0, 0.0, 0.0)):
+def khe(pts, t, tt=(0.0, 0.0, 0.0), tuong=None):
     """-> dict(truoc, hong, sau: khe VUNG (chi diem trong vang; vo cung neu khong co); hl: truoc mui trong hanh lang than |y| <= 0,08
     (luat truoc 0,10 cua vung do); hs: khe hong+duoi = min(hong, sau, diem CHEO truoc mui) (luat 0,06); nho: khe nho nhat MOI diem)."""
     out = dict(truoc=math.inf, hong=math.inf, sau=math.inf, nho=math.inf, hl=math.inf, cheo=math.inf)
+    if tuong is not None:                                # 10/11 A+: hong+duoi tach VAT (_v) / TUONG (_t)
+        out.update(hs_v=math.inf, hs_t=math.inf, hong_v=math.inf, hong_t=math.inf, nho_v=math.inf, nho_t=math.inf)
     g = t['gac']
-    for p in pts:
+    for i, p in enumerate(pts):
         q = _ve(p, tt)
         v, kc = kc_than(q)
         out['nho'] = min(out['nho'], kc)
+        if tuong is not None:                            # khe nho nhat MOI diem (ca ngoai vang) cua VAT / TUONG
+            out['nho_t' if tuong[i] else 'nho_v'] = min(out['nho_t' if tuong[i] else 'nho_v'], kc)
         _, _, vang, _ = GV.vung_diem(q, g)
         if vang:
             out[v] = min(out[v], kc)
             if v == 'truoc':
                 out['hl' if abs(q[1]) <= Y_HONG else 'cheo'] = min(out['hl' if abs(q[1]) <= Y_HONG else 'cheo'], kc)
+            if tuong is not None and not (v == 'truoc' and abs(q[1]) <= Y_HONG):
+                h = '_t' if tuong[i] else '_v'
+                out['hs' + h] = min(out['hs' + h], kc)
+                if v == 'hong':
+                    out['hong' + h] = min(out['hong' + h], kc)
     out['hs'] = min(out['hong'], out['sau'], out['cheo'])
     return out
 
@@ -114,16 +143,30 @@ def tu_the_luc(dt, s):
     return 0.0, 0.0, s * g
 
 
-def cham(pts, dt, t):
-    """Cham mot dong tac tren SUOT quang quet. -> dict(kha_thi, ly, cuoi (khe() o tu the cuoi))."""
-    if dt[0] == 'xoay':
+def cham(pts, dt, t, tuong=None):
+    """Cham mot dong tac tren SUOT quang quet (moi BUOC_RAD 1 do / BUOC_M 5 mm, moi diem so voi DA GIAC than 25 x 16 o tu the do).
+    -> dict(kha_thi, ly, cuoi (khe() o tu the cuoi)).
+    10/11 A+ thoat_ra_xa (Thien 16:xx): bo cam xoay theo ban_kinh_xoay_m va bo hai luat cu (khe hong+duoi khong giam, truoc <= 0,10);
+    thay bang KHONG CHAM o MOI mau: VAT >= hong_do 0,06, TUONG >= khong_cham_m 0,02 (khong co nhan: moi diem la VAT); luc dau da
+    duoi nguong thi khoang cach do khong duoc giam o mau nao; them mui: truoc hanh lang than (moi vat) khong vao <= vung_phanh 0,07
+    (da <= thi khong giam)."""
+    ra_xa = t.get('ra_xa', False)
+    if dt[0] == 'xoay' and not ra_xa:
         gan = min((math.hypot(*p) for p in pts), default=math.inf)
         if gan <= t['r_xoay']:
             return dict(kha_thi=False, ly='xoay: diem cach tam %.3f <= %.3f' % (gan, t['r_xoay']), cuoi=None)
-    k0 = khe(pts, t)
+    k0 = khe(pts, t, tuong=tuong)
     n = max(1, int(math.ceil(abs(dt[1]) / (BUOC_RAD if dt[0] == 'xoay' else BUOC_M))))
     for i in range(1, n + 1):
-        k = khe(pts, t, tu_the_luc(dt, i / n))
+        k = khe(pts, t, tu_the_luc(dt, i / n), tuong)
+        if ra_xa:
+            for ten, khoa, nguong in (('vat', 'nho_v', t['hong_do']), ('tuong', 'nho_t', t['khong_cham'])):
+                g, g0 = k.get(khoa, k['nho'] if khoa == 'nho_v' else math.inf), k0.get(khoa, k0['nho'] if khoa == 'nho_v' else math.inf)
+                if g < min(nguong, g0) - SAI:
+                    return dict(kha_thi=False, ly='cham %s: %.3f < %s (nguong %.2f / luc dau)' % (ten, g, _m(min(nguong, g0)), nguong), cuoi=None)
+            if k['hl'] <= t['mui_do'] and k['hl'] < k0['hl'] - SAI:
+                return dict(kha_thi=False, ly='mui %.3f <= %.2f' % (k['hl'], t['mui_do']), cuoi=None)
+            continue
         if k['hs'] < k0['hs'] - SAI:
             return dict(kha_thi=False, ly='khe hong+duoi %.3f < luc dau %s' % (k['hs'], _m(k0['hs'])), cuoi=None)
         if k['hl'] <= t['truoc_do'] and k['hl'] < k0['hl'] - SAI:
@@ -141,6 +184,9 @@ def _lech_goc(a):
 
 def thieu(k, t):
     """Phan thieu so voi vung do (m): truoc phai > truoc_do (moi diem, coi nhu vat), hong+duoi phai >= hong_do. 0 = ra khoi do."""
+    if 'hs_v' in k:                                      # 10/11 A+: TUONG o hong / duoi chi can khong cham
+        return (max(0.0, t['truoc_do'] + SAI - k['hl']) + max(0.0, t['hong_do'] - k['hs_v'])
+                + max(0.0, t['khong_cham'] - k['hs_t']))
     return max(0.0, t['truoc_do'] + SAI - k['hl']) + max(0.0, t['hong_do'] - k['hs'])
 
 
@@ -148,15 +194,15 @@ def huong_dong_tac(dt):
     return {'tien': 0.0, 'lui': math.pi}.get(dt[0], dt[1])
 
 
-def chon_dong_tac(pts, t, huong_dich=None, uu_tien=None):
+def chon_dong_tac(pts, t, huong_dich=None, uu_tien=None, tuong=None):
     """Cho chat: chon MOT dong tac nho. huong_dich: goc toi dich trong khung xe (None: khong biet vi tri => uu tien thang truoc).
     uu_tien: dong tac tu kinh nghiem DUOC (thu truoc neu kha thi va lam khe tot len). -> (dt | None, cham, danh sach ly do bo)."""
-    k0 = khe(pts, t)
+    k0 = khe(pts, t, tuong=tuong)
     nho0, th0 = k0['nho'], thieu(k0, t)
     hd = 0.0 if huong_dich is None else huong_dich
     ung, bo = [], []
     for dt in ([uu_tien] if uu_tien else []) + [d for d in DONG_TAC if d != uu_tien]:
-        c = cham(pts, dt, t)
+        c = cham(pts, dt, t, tuong)
         if not c['kha_thi']:
             bo.append((ten_dong_tac(dt), c['ly']))
             continue
@@ -240,8 +286,8 @@ def ly_do_huy(k, k0, t, xet_khe=True):
 
 def vat_chac(ds, t):
     """Nhac doi: VAT CHAC (lidar VAT, khong LECH) trong hanh lang than truoc mui <= nhac_doi_m. -> dict danh_gia | None."""
-    return next((d for d in ds if d['vung'] == 'truoc' and d['lidar'] == 'VAT' and not d['lech']
-                 and d.get('hl') is not None and d['hl'] <= t['nhac_doi'] + 1e-9), None)
+    return next((d for d in ds if d['vung'] == 'truoc' and (d['chac'] if 'chac' in d else d['lidar'] == 'VAT' and not d['lech'])
+                 and d.get('hl') is not None and d['hl'] <= t['nhac_doi'] + 1e-9), None)       # 10/11 A+: chac = ong / ngoai ban do
 
 
 def vung_do(ds, t):

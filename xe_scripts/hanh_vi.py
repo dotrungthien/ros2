@@ -161,6 +161,18 @@ MAC_DINH = {
     'ong_ti_le': 0.6,            # ti le lan quet ra cung toi thieu
     'ong_so_quet_min': 3,        # so lan quet toi thieu trong cua so (lan quet le khong du)
     'ong_goc_min_deg': 100.0,    # (ong_kiem_tam) cung that thay duoc toi thieu bay nhieu do (song nhieu tren tuong: 30-60 do)
+    # MOI 10/11 muc 6 + 7 (Thien duyet 16:36; huong dan co loi ra): diem dan ve_A, diem vuot sau luot bi chan
+    've_A_diem_dan': True,       # ve_A tuyen 1: di qua diem dan giua khe K4-H0 truoc khi toi A
+    'diem_dan_cach_k4_m': 0.15,  # tam xe tai diem dan cach mep tren K4 toi thieu
+    'diem_dan_han_s': 20.0,      # han toi diem dan (qua => bo, di thang A)
+    'diem_vuot': True,           # sau luot bi chan + THOAT: di qua diem vuot V roi moi gui lai dich
+    'diem_vuot_han_s': 25.0,     # han toi V
+    'diem_vuot_d_min_m': 0.35,   # V cach diem bi chan P toi thieu
+    'diem_vuot_d_max_m': 0.60,   # V cach P toi da
+    'vuot_vat1_m': 0.12,         # bac 1: THAN xe tai V cach VAT
+    'vuot_tuong1_m': 0.05,       # bac 1: than cach TUONG
+    'vuot_vat2_m': 0.08,         # bac 2: than cach VAT (0,06 + 0,02 du)
+    'vuot_tuong2_m': 0.04,       # bac 2: than cach TUONG (0,02 + 0,02 du)
 }
 
 COT_KINH_NGHIEM = 'gio,chuyen,x,y,huong,su_co,cach,ket_qua,ly_do'     # ~/kinh_nghiem.csv tu 09/11 (nao xe viec 4)

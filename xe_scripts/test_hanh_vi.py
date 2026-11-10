@@ -115,7 +115,11 @@ MOI_NAO_XE = {'kinh_nghiem_quan_sat_s': 15.0,           # so MOI cua nao xe (kho
               'khong_cham_m': 0.02,
               # 10/11 A++: on dinh ong, mui tren ban do
               'ong_kiem_tam': True, 'ong_on_dinh': True, 'mui_tuong_khong_doi': True, 'ong_tam_sau_m': 0.05, 'ong_cach_cum_m': 0.05,
-              'ong_cua_so_s': 1.0, 'ong_ti_le': 0.6, 'ong_so_quet_min': 3, 'ong_goc_min_deg': 100.0}
+              'ong_cua_so_s': 1.0, 'ong_ti_le': 0.6, 'ong_so_quet_min': 3, 'ong_goc_min_deg': 100.0,
+              # 10/11 muc 6 + 7: diem dan ve_A, diem vuot
+              've_A_diem_dan': True, 'diem_dan_cach_k4_m': 0.15, 'diem_dan_han_s': 20.0, 'diem_vuot': True, 'diem_vuot_han_s': 25.0,
+              'diem_vuot_d_min_m': 0.35, 'diem_vuot_d_max_m': 0.6, 'vuot_vat1_m': 0.12, 'vuot_tuong1_m': 0.05, 'vuot_vat2_m': 0.08,
+              'vuot_tuong2_m': 0.04}
 CU_AN_TOAN = {'cach_vat_toi_thieu_m': 0.06, 'sep_phat_toc_do': False, 'truoc_vat_do_m': 0.10, 'duoi_do_m': 0.06}   # 20:33: + 2 luat do
 
 
@@ -153,6 +157,7 @@ def test_03_cac_tep_lay_so_tu_hanh_vi_bang_so_cu():
                cho_chon='cho_chon_tuyen_s', nhip_cho='nhip_in_cho_s', luot='luot_lan_gui',
                cho_hong='cho_hong_s', to='qua_gio_lan_gui_s', lop2_cho='lop2_cho_s', lop2_tra='lop2_tra_s')
     assert c.pop('so_luot') == 3 and c.pop('cho_lai') == 60.0                         # 09/11 20:33 (thay gac, so_vong), 18:47 (i): so MOI
+    assert (c.pop('diem_dan'), c.pop('diem_dan_han'), c.pop('diem_vuot'), c.pop('vuot_han')) == (True, 20.0, True, 25.0)   # 10/11 muc 6 + 7
     moi = dict(khong_tien='khong_tien_s', cho_vat='cho_vat_s', so_luot_gan='so_luot_gan_dich', han_gan='han_gan_dich_s',
                cho_vi_tri='cho_vi_tri_s', v_thoat='toc_do_thoat_mps', thoat_buoc='thoat_buoc_max', thoat_hong='thoat_hong_max',
                thoat_han='thoat_han_s')                                                 # 23:08 sep LiDAR

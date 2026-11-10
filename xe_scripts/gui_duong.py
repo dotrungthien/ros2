@@ -94,7 +94,9 @@ def cau_hinh(env=os.environ):
                 # moi lan thoat; thoat hong lien tiep => CHO_NGUOI; han di toi diem thoat (s)
                 khong_tien=h('khong_tien_s'), cho_vat=h('cho_vat_s'), so_luot_gan=h('so_luot_gan_dich'), han_gan=h('han_gan_dich_s'),
                 cho_vi_tri=h('cho_vi_tri_s'), v_thoat=h('toc_do_thoat_mps'), thoat_buoc=h('thoat_buoc_max'),
-                thoat_hong=h('thoat_hong_max'), thoat_han=h('thoat_han_s'))
+                thoat_hong=h('thoat_hong_max'), thoat_han=h('thoat_han_s'),
+                # 10/11 muc 6 + 7: diem dan ve_A, diem vuot (huong dan co loi ra)
+                diem_dan=h('ve_A_diem_dan'), diem_dan_han=h('diem_dan_han_s'), diem_vuot=h('diem_vuot'), vuot_han=h('diem_vuot_han_s'))
 
 
 # ---------- 08/11 bo 1e: kieu mat (phan thuan) ----------
@@ -510,6 +512,109 @@ class Luot:
         self.t_gan0, self.hong_lien = None, 0
 
 
+def _cot_tu_do(ban, x, y0, buoc=0.01, ymax=1.5):
+    """Tu (x, y0) o trong: di xuong / len toi o tuong dau tien -> (y mep duoi, y mep tren) | None neu (x, y0) la tuong."""
+    if ban.la_tuong(x, y0):
+        return None
+    lo, hi = y0, y0
+    while lo > y0 - ymax and not ban.la_tuong(x, lo - buoc):
+        lo -= buoc
+    while hi < y0 + ymax and not ban.la_tuong(x, hi + buoc):
+        hi += buoc
+    return lo, hi
+
+
+def diem_dan_ve_A(ban, cach=0.15, x0=0.45, x1=0.90, y_doan=0.08, dich=None):
+    """10/11 muc 6: diem dan ve_A tinh tu ban do goc: doan x0..x1, khe K4 (duoi) - H0 (tren) quanh y_doan. Mep K4 = mep duoi cao
+    nhat, mep H0 = mep tren thap nhat tren doan; tam giua khe, cach K4 >= cach (neu khe hep thi giua). -> (x, y, yaw, kc_K4, kc_H0) | None."""
+    dich = dich or TT.A
+    cot = [_cot_tu_do(ban, x0 + k * (x1 - x0) / 9, y_doan) for k in range(10)]
+    if any(c is None for c in cot):
+        return None
+    yk, yh = max(c[0] for c in cot), min(c[1] for c in cot)
+    y = (yk + yh) / 2
+    if y - yk < cach and yh - yk >= 2 * cach:
+        y = yk + cach
+    x = (x0 + x1) / 2
+    return x, y, math.atan2(dich[1] - y, dich[0] - x), y - yk, yh - y
+
+
+def _ve_than(p, tu_the):
+    """Diem ban do -> khung than xe dat o tu_the (x, y, yaw)."""
+    dx, dy, c, s_ = p[0] - tu_the[0], p[1] - tu_the[1], math.cos(tu_the[2]), math.sin(tu_the[2])
+    return dx * c + dy * s_, -dx * s_ + dy * c
+
+
+def khe_than(tu_the, vat, tuong):
+    """(khe THAN xe 25 x 16 toi VAT gan nhat, toi TUONG gan nhat) tai tu_the; diem khung ban do."""
+    kv = min((SL.kc_than(_ve_than(p, tu_the))[1] for p in vat), default=math.inf)
+    kt = min((SL.kc_than(_ve_than(p, tu_the))[1] for p in tuong), default=math.inf)
+    return kv, kt
+
+
+def diem_phan_loai(ds, pts, pose, ban, t):
+    """LiDAR luc nay -> (diem VAT, diem TUONG) khung ban do. Cum TUONG (ba dau hieu) => tuong; ong / vat chac => vat; diem ngoai cum
+    danh gia: gan o tuong ban do <= 0,08 => tuong, khac => vat. Them tam o tuong ban do trong 1 m (ban do cung la tuong)."""
+    c, s_ = math.cos(pose[2]), math.sin(pose[2])
+    to_map = lambda q: (pose[0] + q[0] * c - q[1] * s_, pose[1] + q[0] * s_ + q[1] * c)
+    nhan = {}
+    for d in ds or ():
+        for k in d.get('ks', ()):
+            nhan[k] = 'tuong' if d.get('tuong_k') and not d.get('chac') else 'vat'
+    vat, tuong = [], []
+    for k, q in enumerate(pts or ()):
+        if q is None:
+            continue
+        m = to_map(q)
+        n = nhan.get(k) or ('tuong' if ban is not None and ban.gan_tuong(m[0], m[1], 0.08) else 'vat')
+        (tuong if n == 'tuong' else vat).append(m)
+    if ban is not None:
+        i0, j0 = int((pose[0] - ban.ox) / ban.res), int((pose[1] - ban.oy) / ban.res)
+        r = int(1.0 / ban.res)
+        for j in range(j0 - r, j0 + r + 1):
+            for i in range(i0 - r, i0 + r + 1):
+                g = ban.gia(i, j)
+                if g is not None and g >= GV.O_TUONG_MIN:
+                    tuong.append((ban.ox + (i + 0.5) * ban.res, ban.oy + (j + 0.5) * ban.res))
+    return vat, tuong
+
+
+def chon_diem_vuot(P, dich, pose, vat, tuong, ban, h=HV.so):
+    """10/11 muc 7 (+K1): diem vuot V phia TRUOC P (huong P -> dich), lech +-0/20/40/60 do, cach P d_min..d_max. Dieu kien do theo
+    THAN xe (tai V quay ve dich): bac 1 VAT >= vuot_vat1, TUONG >= vuot_tuong1; khong co thi bac 2 (vuot_vat2 / vuot_tuong2). V o o
+    trong ban do. Chon: bac nho, roi khe duong thang xe -> V lon (chi XEP HANG, khong loai: Nav2 tu vach duong), roi gan dich.
+    -> dict(V, yaw, bac, phia, khe, ly) | None."""
+    phi = math.atan2(dich[1] - P[1], dich[0] - P[0])
+    ds_d = [h('diem_vuot_d_min_m'), (h('diem_vuot_d_min_m') + h('diem_vuot_d_max_m')) / 2, h('diem_vuot_d_max_m')]
+    ung = []
+    for dg in (0, 20, -20, 40, -40, 60, -60):
+        a = phi + math.radians(dg)
+        for d in ds_d:
+            V = (P[0] + d * math.cos(a), P[1] + d * math.sin(a))
+            if ban is not None and (ban.gia(int((V[0] - ban.ox) / ban.res), int((V[1] - ban.oy) / ban.res)) is None
+                                    or ban.la_tuong(*V)):
+                continue
+            yaw = math.atan2(dich[1] - V[1], dich[0] - V[0])
+            kv, kt = khe_than((V[0], V[1], yaw), vat, tuong)
+            bac = (1 if kv >= h('vuot_vat1_m') - 1e-9 and kt >= h('vuot_tuong1_m') - 1e-9 else
+                   2 if kv >= h('vuot_vat2_m') - 1e-9 and kt >= h('vuot_tuong2_m') - 1e-9 else None)
+            if bac is None:
+                continue
+            L = math.hypot(V[0] - pose[0], V[1] - pose[1])
+            yd = math.atan2(V[1] - pose[1], V[0] - pose[0])
+            duong = min((min(khe_than((pose[0] + (V[0] - pose[0]) * u / 10, pose[1] + (V[1] - pose[1]) * u / 10, yd), vat, tuong)[0] - 0.06,
+                             khe_than((pose[0] + (V[0] - pose[0]) * u / 10, pose[1] + (V[1] - pose[1]) * u / 10, yd), vat, tuong)[1] - 0.02)
+                         for u in range(1, 11)), default=0.0) if L > 0.02 else 0.0
+            ung.append((bac, -round(duong, 3), round(math.hypot(dich[0] - V[0], dich[1] - V[1]), 3), V, yaw, dg, kv, kt))
+    if not ung:
+        return None
+    ung.sort(key=lambda u: u[:3])
+    bac, nd, _, V, yaw, dg, kv, kt = ung[0]
+    return dict(V=V, yaw=yaw, bac=bac, phia='thang' if dg == 0 else 'trai' if dg > 0 else 'phai',
+                ly='bac %d, than cach vat %s / tuong %s, duong cach them %.2f' % (bac, '-' if kv == math.inf else '%.2f' % kv,
+                                                                            '-' if kt == math.inf else '%.2f' % kt, -nd))
+
+
 def huong_toi(p, dich):
     """Goc toi dich trong khung xe (rad)."""
     return math.atan2(dich[1] - p[1], dich[0] - p[0]) - p[2]
@@ -582,6 +687,7 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
     thu_tu = thu_tu_gia_x(io, thu_tu, pose, ban, dich, yaw_cuoi)     # 09/11 gia X (c): chi goi y cho luot 1
     io.ghi(nhan, thu_tu[0], 1, 0, 'KIEM_DAT', 0)
     luot, lan, can_thoat, nhac = Luot(cfg), 0, None, True
+    diem_chan, da_dan = None, False                      # 10/11 muc 7: P (diem bi chan) cho diem vuot; muc 6: diem dan da dung
 
     def cho_nguoi_luot(ly):
         if cfg.get('cho_lai', 0) <= 0:
@@ -610,6 +716,9 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
                 luot.hong_lien = 0
             if ma is not None:
                 return ma
+            if kq not in ('KEP', 'HAN_GAN') and diem_chan is not None and cfg.get('diem_vuot'):
+                di_vuot(io, cfg, kn, luot, diem_chan, dich)        # 10/11 muc 7: huong dan, loi ra = bo V
+            diem_chan = None
         kq, ly = truoc_khi_giao(io, cfg, kn, luot, nhac)  # LiDAR truoc: kep / vung do / nhac doi (muc 4: khong can vi tri tin)
         if kq == 'HAN_GAN':
             ma = cho_nguoi_luot('gan dich qua %d s' % int(cfg['han_gan']))
@@ -627,6 +736,18 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
         lan += 1
         io.chon_tuyen('0' if r == 0 else '%d %.3f %.3f' % (r, pose[0], pose[1]))
         io.ngu(cfg['cho_chon'])
+        if huong == 've_A' and r == 1 and cfg.get('diem_dan') and not da_dan:     # 10/11 muc 6: diem dan giua khe K4-H0
+            da_dan = True
+            dd = diem_dan_ve_A(io.gac_ban(), HV.so('diem_dan_cach_k4_m')) if io.gac_ban() is not None else None
+            p0 = io.pose()
+            if dd is not None and p0 is not None and p0[0] > dd[0] + 0.10:
+                io.bao('DIEM_DAN: (%.2f; %.2f) huong %+d do, cach K4 %.2f m, cach H0 %.2f m (ban do).' % (
+                    dd[0], dd[1], int(round(math.degrees(dd[2]))), dd[3], dd[4]))
+                if di_phu(io, cfg, kn, luot, (dd[0], dd[1]), dd[2], cfg['diem_dan_han'], 'DIEM_DAN') != 'TOI':
+                    io.bao('DIEM_DAN: bo, di thang A (Nav2 tu vach, khong tinh luot).')
+                    r = 0
+                    io.chon_tuyen('0')
+                    io.ngu(cfg['cho_chon'])
         p = io.pose() or pose
         t0 = io.now()
         io.bao('SEP_LIDAR: DI dich (%.2f; %.2f), %s' % (dx, dy, 'tuyen %d' % r if r else 'Nav2 tu vach'))
@@ -653,6 +774,7 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
         else:
             luot.xa += 1
         kn.ngay('LUOT_CHAN', kq, 'HONG', ly_do_kinh_nghiem(io.tuoi_plan(), cfg['khong_tien']), p)
+        diem_chan = None if p is None else (p[0], p[1])  # 10/11 muc 7
         io.chup(huong, 'luot bi chan (tuyen %d, %s)' % (r, kq))
         io.bao('   khong den duoc (%s%s).' % (kq, '' if lech is None else ', cach dich %.2f m' % lech))
         io.ghi(nhan, r, 1, lan, 'KHONG_DAT', giay, '-' if lech is None else '%.2f' % lech)
@@ -973,12 +1095,13 @@ def thoat(io, cfg, kn, luot, dich, ly):
     return 'XONG'
 
 
-def di_diem(io, cfg, kn, luot, diem, yaw, k0=None):
+def di_diem(io, cfg, kn, luot, diem, yaw, k0=None, han=None, phu=False):
     """navigate_to_pose toi diem thoat, han thoat_han_s; vung do TE HON luc bat dau (k0, Q3 khong xet khe) => huy.
     -> 'TOI' (SUCCEEDED / cach diem <= tien_min) | 'HONG_<ly>' | 'HAN_GAN'."""
     if not io.gui_nav(diem, yaw):
         return 'HONG_TU_CHOI'
     t, mat, t0 = SL.tham_so(), mat_cua(io, kn), io.now()
+    han = cfg['thoat_han'] if han is None else han       # 10/11 muc 6/7: diem dan / diem vuot co han rieng; phu: khong xet han gan (K3)
     if not t['ra_xa']:
         k0 = None                                        # 629a17b: k0 truyen vao bi bo, lay o lan quet dau khi xe da chay
     while True:
@@ -994,14 +1117,43 @@ def di_diem(io, cfg, kn, luot, diem, yaw, k0=None):
             if ly is not None:
                 io.huy()
                 return 'TOI' if toi else 'HONG (%s)' % ly
-        if luot.het_han_gan(io.now()):
+        if not phu and luot.het_han_gan(io.now()):
             io.huy()
             return 'HAN_GAN'
-        if io.now() - t0 >= cfg['thoat_han'] - 1e-9:
+        if io.now() - t0 >= han - 1e-9:
             io.huy()
-            return 'TOI' if toi else 'HONG_HET_%ds' % int(cfg['thoat_han'])
+            return 'TOI' if toi else 'HONG_HET_%ds' % int(han)
         kn.nhip()
         io.ngu(0.1)
+
+
+def di_vuot(io, cfg, kn, luot, P, dich):
+    """10/11 muc 7: sau luot bi chan tai P (va THOAT xong): chon V (chon_diem_vuot, LiDAR tai cho + ban do), di toi V (han vuot_han)
+    roi nguoi goi gui dich. Khong co V / hong => bo (Nav2 tu vach nhu cu). -> 'TOI' | 'BO'."""
+    ds, pts = quet_moi(io, kn)
+    p = io.pose()
+    if p is None or pts is None:
+        io.bao('DIEM_VUOT: bo (khong co vi tri / LiDAR).')
+        return 'BO'
+    vat, tuong = diem_phan_loai(ds, pts, p, io.gac_ban(), SL.tham_so())
+    c = chon_diem_vuot(P, dich, p, vat, tuong, io.gac_ban())
+    if c is None:
+        io.bao('DIEM_VUOT: P (%.2f; %.2f) => khong co V hop le, bo (Nav2 tu vach).' % P)
+        return 'BO'
+    io.bao('DIEM_VUOT: P (%.2f; %.2f) => V (%.2f; %.2f), phia %s, ly do %s.' % (P[0], P[1], c['V'][0], c['V'][1], c['phia'], c['ly']))
+    return di_phu(io, cfg, kn, luot, c['V'], c['yaw'], cfg['vuot_han'], 'DIEM_VUOT')
+
+
+def di_phu(io, cfg, kn, luot, diem, yaw, han, ten):
+    """10/11 muc 6 / 7 + K2 + K3: di toi diem phu (dan / vuot). Nav2 tu choi / huy / vung do / qua han => 'BO' (KHONG thoat, KHONG tinh
+    luot). Thoi gian di khong tinh vao han gan dich. -> 'TOI' | 'BO'."""
+    t0 = io.now()
+    k0 = SL.tom_tat(quet_moi(io, kn)[0] or [])
+    kq = di_diem(io, cfg, kn, luot, diem, yaw, k0, han=han, phu=True)
+    if luot.t_gan0 is not None:
+        luot.t_gan0 += io.now() - t0                     # K3: khong tinh vao han gan dich
+    io.bao('   %s_XONG: (%.2f; %.2f) => %s.' % (ten, diem[0], diem[1], kq))
+    return 'TOI' if kq == 'TOI' else 'BO'
 
 
 def don_sau_chuyen(io, ma, huong):

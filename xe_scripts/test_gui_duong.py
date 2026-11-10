@@ -26,8 +26,8 @@ def ghim_duong_lui():
 
 ghim_duong_lui()
 BAN = T.Ban(T.YAML)
-CFG = dict(G.cau_hinh({}), so_luot=2, cho_lai=0.0)   # ca cu: 2 luot (tuyen goi y, roi Nav2 tu vach), het thi HET_DUONG; ca moi dung CFG3
-CFG3 = G.cau_hinh({})
+CFG = dict(G.cau_hinh({}), so_luot=2, cho_lai=0.0, diem_dan=False, diem_vuot=False)   # ca cu: 2 luot (tuyen goi y, roi Nav2 tu vach), het thi HET_DUONG; ca moi dung CFG3
+CFG3 = dict(G.cau_hinh({}), diem_dan=False, diem_vuot=False)   # 10/11 muc 6/7 tat: test cu = hanh vi truoc muc 6/7 (duong lui)
 CFG_GAC = CFG               # 20:33: khong con cong tac gac (vung quanh xe luon bat; IOMat khong khai bao quet => mu)
 
 

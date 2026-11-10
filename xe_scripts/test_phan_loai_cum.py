@@ -446,6 +446,82 @@ def test_14_duong_lui_ba_khoa_false_cung_quyet_dinh_50e4146():
     assert any('(ong:' in m for x in ja for m in x['mem'])
 
 
+# ==== 10/11 muc 6 (diem dan ve_A) + muc 7 (diem vuot) + K1-K3 ====
+CFG67 = dict(X.CFG3, diem_dan=True, diem_vuot=True)
+B_POSE = (1.60, 0.82, math.pi)
+
+
+def _chay(pose, tuong, cfg, cach=0.16, huong='ve_A', vat=()):
+    c0 = TG.CACH
+    TG.CACH = cach
+    try:
+        io = X.NgatKhiChoNguoi(pose, tuong=tuong, vat=list(vat))
+        try:
+            ma = G.chay_mat(io, huong, 1, cfg)
+        except KeyboardInterrupt:
+            ma = 'CHO_NGUOI'
+        return ma, io
+    finally:
+        TG.CACH = c0
+
+
+def ong_hong_K4(ho):
+    """Ong O18 doi dien K4 qua khe: hong xe - ong `ho` khi xe cach mep tren K4 6 cm (khe that = 0,06 + 0,16 + ho)."""
+    return ong(0.60, -0.165 + 0.06 + 0.16 + ho + 0.09)
+
+
+def test_15_diem_dan_ve_A_tu_B_co_va_khong_ong():
+    """Muc 6: ve_A tu B qua diem dan (tinh tu ban do, giua khe K4-H0), co / khong ong gan K4 (hong 17,5 / 23 cm) => DEN_NOI."""
+    dd = G.diem_dan_ve_A(BAN, HV.so('diem_dan_cach_k4_m'))
+    assert dd is not None and 0.45 <= dd[0] <= 0.90 and dd[3] >= 0.15, dd
+    print('   diem dan: (%.3f; %.3f) huong %+d do, cach K4 %.3f m, cach H0 %.3f m (ban do v3)' % (dd[0], dd[1], round(math.degrees(dd[2])), dd[3], dd[4]))
+    for ten, tuong in (('khong ong', X.TUONG), ('ong 17,5', X.TUONG + ong_hong_K4(0.175)), ('ong 23', X.TUONG + ong_hong_K4(0.23))):
+        ma, io = _chay(B_POSE, tuong, CFG67)
+        assert ma == 0 and X.CUA(io.rows)[-1] == 'DEN_NOI', (ten, ma, io.cau[-12:])
+        dan = [c for c in io.cau if c.startswith(('DIEM_DAN', '   DIEM_DAN'))]
+        assert dan and dan[0].startswith('DIEM_DAN: (0.68; 0.09)'), (ten, dan)
+        print('   %-9s %s | %s' % (ten, dan[-1].strip(), 'CHO_NGUOI' if 'CHO_NGUOI' in X.CUA(io.rows) else 'khong CHO_NGUOI'))
+
+
+def test_16_diem_vuot_mot_minh_qua_goc_K4_ca_1627():
+    """Muc 7 (i): goc K4 hop xop ca 16:27, diem dan TAT; Nav2 gia om sat goc (CACH 0,12) => bi chan => THOAT => DIEM_VUOT => DEN_NOI,
+    khong CHO_NGUOI. Ghi lai ket qua khi diem vuot cung tat (bao Thien)."""
+    p, _ = lui_toi_mui(K4_TRON, TU_THE_K4[0])
+    ma, io = _chay(p, K4_TRON, dict(CFG67, diem_dan=False), cach=0.12)
+    vuot = [c for c in io.cau if 'DIEM_VUOT' in c]
+    assert ma == 0 and 'CHO_NGUOI' not in X.CUA(io.rows), (ma, io.cau[-15:])
+    ma0, io0 = _chay(p, K4_TRON, dict(CFG67, diem_dan=False, diem_vuot=False), cach=0.12)
+    print('   diem vuot: %s | ket qua %s, %d luot; tat diem vuot: %s, CSV %s' % (vuot[:2], ma, X.CUA(io.rows).count('KHONG_DAT'), ma0, X.CUA(io0.rows)[-3:]))
+
+
+def test_17_ong_chan_kin_khe_K4_H0_khong_V_trong_khe_khong_treo():
+    """Muc 7 (iii): ong chan kin khe K4-H0 (hai ben < than + 2 x 0,12) => khong V hop le trong khe => bo V, Nav2 tu vach; ket thuc
+    (DEN_NOI qua duong tren hoac CHO_NGUOI), khong treo."""
+    chan = TG.doan_hop(0.62, 0.085, 0.30, 0.10)                         # hop 30 cm giua khe (ben: (0,50 - 0,30) / 2 = 0,10 < 0,40)
+    ma, io = _chay(B_POSE, X.TUONG, dict(CFG67, diem_dan=False), vat=[(chan, 0.0, 1e9)])
+    assert ma in (0, 'CHO_NGUOI'), (ma, io.cau[-10:])
+    print('   chan kin khe: %s; %s' % (ma, [c for c in io.cau if 'DIEM_VUOT' in c][:3]))
+
+
+def test_18_chon_V_bac_2_khe_30cm_voi_K4():
+    """K1: ong tao khe 30 cm voi mep tren K4 (than 16 + 2 x 0,07): co V hop le (do theo THAN xe, LiDAR tai cho + ban do).
+    KET QUA THAT (bao Thien): V chon o SAU khe (x < ong), bac 1, khong phai bac 2 trong khe; chua chay xe qua khe trong gia lap."""
+    o = ong(0.60, -0.165 + 0.30 + 0.09)
+    W = X.TUONG + o
+    pose = (0.95, 0.0, math.pi)
+    q = TG.quet(W, pose)
+    m = GV.bien_doi(q, pose)
+    ds = GV.danh_gia(q, m, BAN, GV.tham_so())
+    vat, tuong = G.diem_phan_loai(ds, q, pose, BAN, SL.tham_so())
+    c = G.chon_diem_vuot((0.80, -0.015), TG_A(), pose, vat, tuong, BAN)
+    assert c is not None and c['V'][0] < 0.60, c
+    print('   khe 30 cm: V (%.2f; %.2f) bac %d phia %s (%s)' % (c['V'][0], c['V'][1], c['bac'], c['phia'], c['ly']))
+
+
+def TG_A():
+    return (0.0, 0.0)
+
+
 if __name__ == '__main__':
     import traceback
     ca = sorted((k, f) for k, f in globals().items() if k.startswith('test_') and callable(f))

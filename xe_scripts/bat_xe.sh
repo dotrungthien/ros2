@@ -211,6 +211,24 @@ echo "[shm] /dev/shm co $(ls /dev/shm 2>/dev/null | wc -l) tep truoc khi bat ($(
 echo "== B1: bat he thong (XE DUNG YEN, KHONG CHAM VAO XE) =="
 [ -f "$LOG1" ] && mv -f "$LOG1" "$LOG1.cu"
 setsid nohup ros2 launch my_bot mapping_my_bot.launch.py access_code:="$ACCESS" bat_dong_co:=true bat_lidar:=true bat_rf2o:=false bat_camera:=false bat_gyro:=true bat_mo_hinh_san:=true slam_params_file:="$SLAM" > "$LOG1" 2>&1 < /dev/null &
+# 10/11 (Thien chot): tu day da co tien trinh chay nen. Moi loi ra ma != 0 (ke ca 130 Ctrl-C, 143 TERM) => tu "bash $0 tat"
+# roi thoat GIU ma cu, in TU_TAT_SAU_LOI. Ma 2 (thieu ~/kiem_xe.sh, de doc tay) KHONG tat. Trap tu go minh truoc khi tat (khong
+# lap: lenh tat la tien trinh rieng, nhanh "tat" thoat truoc dong nay nen khong co trap; tat loi chi in, khong goi lai).
+# exec (bat lai Nav2 lan 2) thay tien trinh: trap cu khong chay, ban moi tu dat trap lai o dong nay.
+tu_tat_khi_loi() {
+  local rc=$?
+  trap - EXIT INT TERM
+  if [ "$rc" -eq 2 ]; then
+    echo "CON_CHAY_DE_DOC_TAY: tat bang: bash ~/bat_xe.sh tat"
+  elif [ "$rc" -ne 0 ]; then
+    echo "TU_TAT_SAU_LOI (ma $rc): bash $0 tat"
+    bash "$0" tat || echo "TU_TAT_SAU_LOI: tat chua sach (ma $?), xem dong CON_CHAY o tren; khong thu lai"
+  fi
+  exit "$rc"
+}
+trap tu_tat_khi_loi EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 doi "$LOG1" "보정 완료" "$T1" "[r]os2 launch my_bot mapping_my_bot"
 R=$?

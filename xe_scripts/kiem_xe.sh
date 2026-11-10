@@ -16,17 +16,46 @@
 
 KQ=0
 
+# 10/11 (Thien chot): muc DOC LOI (rong / qua han lenh ros2, KHONG phai gia tri sai) => doc lai rieng muc do toi da 3 lan,
+# cach KIEM_DOC_LAI_S (3 s). Tong thoi gian doc lai moi lan chay <= KIEM_DOC_LAI_TONG_S (30 s): lan doc lai chi duoc bat dau khi
+# con > KIEM_DOC_LAI_S, han lenh doc lai = min(han thuong, phan con lai); het => "HET_NGAN_SACH_DOC_LAI", muc con lai bao nhu cu.
+# Gia tri sai: KHONG DAT ngay, khong doc lai. Khong doi nguong nao.
+DOC_LAI_S="${KIEM_DOC_LAI_S:-3}"
+NGAN_SACH="${KIEM_DOC_LAI_TONG_S:-30}"
+DOC_LAI_DA=0; HET_NS=""; HAN_LAI=""; T_LAI=0
+# doc_lai_duoc TEN LAN HAN: 0 = duoc doc lai lan LAN (da cho DOC_LAI_S, dat HAN_LAI = han lenh lan nay); 1 = thoi
+doc_lai_duoc() {
+  local con
+  [ "$2" -le 3 ] || return 1
+  con=$((NGAN_SACH - DOC_LAI_DA))
+  if [ -n "$HET_NS" ] || [ "$con" -le "$DOC_LAI_S" ]; then
+    [ -z "$HET_NS" ] && echo "HET_NGAN_SACH_DOC_LAI: da dung ${DOC_LAI_DA}/${NGAN_SACH} s; muc con lai khong doc lai ($1)"
+    HET_NS=1
+    return 1
+  fi
+  HAN_LAI=$(( $3 < con - DOC_LAI_S ? $3 : con - DOC_LAI_S ))
+  echo "DOC_LAI    $1: lan $2/3 sau ${DOC_LAI_S} s (han ${HAN_LAI} s, ngan sach con ${con} s)"
+  T_LAI=$SECONDS
+  sleep "$DOC_LAI_S"
+  return 0
+}
+# goi ngay sau lenh doc lai: cong thoi gian that da dung vao ngan sach (+1 s: SECONDS dem nguyen giay, tinh du de khong vuot)
+xong_doc_lai() { DOC_LAI_DA=$((DOC_LAI_DA + SECONDS - T_LAI + 1)); }
+
 # 02/11: moi lenh ros2 co han 10 s (lenh ros2 tren Pi hay treo); qua gio thi in chu HET_GIO thay cho gia tri
 lay() {
   local out
-  out=$(timeout 10 ros2 param get "$1" "$2" 2>/dev/null)
+  out=$(timeout "${HAN_DOC:-10}" ros2 param get "$1" "$2" 2>/dev/null)
   if [ $? -eq 124 ]; then echo HET_GIO; return; fi
   printf '%s\n' "$out" | sed -n 's/.*value is: *//p' | tail -1
 }
 
 kiem_tp() { # $5 = bo_qua: qua 10 s thi in BO_QUA (khong tinh khong dat), dung o Buoc 8
-  local ten="$1" node="$2" tp="$3" mong="$4" v
+  local ten="$1" node="$2" tp="$3" mong="$4" v lan=1
   v=$(lay "$node" "$tp")
+  while { [ "$v" = "HET_GIO" ] || [ -z "$v" ]; } && doc_lai_duoc "$ten" "$lan" 10; do     # 10/11: doc loi => doc lai
+    v=$(HAN_DOC=$HAN_LAI lay "$node" "$tp"); xong_doc_lai; lan=$((lan + 1))
+  done
   if [ "$v" = "HET_GIO" ]; then
     if [ "$5" = "bo_qua" ]; then
       echo "BO_QUA     $ten: ros2 param get qua 10 s ($node $tp)"
@@ -79,7 +108,8 @@ else
 fi
 
 echo "== Buoc 7: vi tri xe tren ban do (doc khoang 8 giay) =="
-TF=$(timeout 8 ros2 run tf2_ros tf2_echo map base_link 2>&1)
+doc_vi_tri() {   # $1 = han (s); dat TF, POSE
+TF=$(timeout "$1" ros2 run tf2_ros tf2_echo map base_link 2>&1)
 POSE=$(printf '%s\n' "$TF" | python3 -c '
 import re, sys
 t = sys.stdin.read()
@@ -89,6 +119,10 @@ dg = re.findall(r"RPY \(degree\) \[" + num + ", " + num + ", " + num + r"\]", t)
 if tr and dg:
     print(tr[-1][0], tr[-1][1], dg[-1][2])
 ')
+}
+doc_vi_tri 8
+lan=1
+while [ -z "$POSE" ] && doc_lai_duoc "vi tri" "$lan" 8; do doc_vi_tri "$HAN_LAI"; xong_doc_lai; lan=$((lan + 1)); done   # 10/11
 
 if [ -z "$POSE" ]; then
   echo "KHONG DAT  khong doc duoc vi tri (Nav2 hoac SLAM chua len, hoac chua co TF map -> base_link)"
@@ -138,6 +172,11 @@ done
 NL=$(timeout 10 ros2 node list 2>/dev/null)
 RC_NL=$?
 NN=$(printf '%s\n' "$NL" | grep -c '^/')
+lan=1
+while { [ "$RC_NL" -eq 124 ] || [ "$NN" -lt 3 ]; } && doc_lai_duoc "ros2 node list" "$lan" 10; do     # 10/11
+  NL=$(timeout "$HAN_LAI" ros2 node list 2>/dev/null); RC_NL=$?; xong_doc_lai
+  NN=$(printf '%s\n' "$NL" | grep -c '^/'); lan=$((lan + 1))
+done
 DUP=$(printf '%s\n' "$NL" | sort | uniq -d)
 if [ "$RC_NL" -eq 124 ]; then
   echo "BO_QUA     ros2 node list qua 10 s: khong kiem node trung ten"
@@ -165,6 +204,10 @@ echo "GHI LAI    costmap toan cuc: ${FP:-khong doc duoc} (so voi tf o Buoc 7; tu
 # (Humble 1.1.20 planner_server.cpp:274-281) => thieu luoi /lop_huong_dan la treo. Kieu cu: bo qua buoc nay.
 if [ "$(head -1 ~/goc_dang_chay 2>/dev/null)" = "mat" ]; then
   NPUB=$(timeout 10 ros2 topic info /lop_huong_dan 2>/dev/null | sed -n 's/^Publisher count: *//p')
+  lan=1
+  while [ -z "$NPUB" ] && doc_lai_duoc "/lop_huong_dan" "$lan" 10; do     # 10/11: khong in gi = doc loi ("0" = gia tri, khong doc lai)
+    NPUB=$(timeout "$HAN_LAI" ros2 topic info /lop_huong_dan 2>/dev/null | sed -n 's/^Publisher count: *//p'); xong_doc_lai; lan=$((lan + 1))
+  done
   if [ "$NPUB" = "1" ]; then
     echo "DAT        /lop_huong_dan: 1 publisher"
   else
@@ -181,6 +224,8 @@ if [ "$(head -1 ~/goc_dang_chay 2>/dev/null)" = "mat" ]; then
   python3 ~/gac_vat_la.py --kiem-map 10 || KQ=1               # 09/11 (K13); 20:33: /map_tinh chi de ban do NHAC tuong (LECH); LiDAR van lai
   # 09/11 23:08 sep LiDAR: dong tac thoat cua gui_duong can 3 action cua behavior_server (drive_on_heading moi them)
   AL=$(timeout 10 ros2 action list 2>/dev/null)
+  lan=1
+  while [ -z "$AL" ] && doc_lai_duoc "ros2 action list" "$lan" 10; do AL=$(timeout "$HAN_LAI" ros2 action list 2>/dev/null); xong_doc_lai; lan=$((lan + 1)); done   # 10/11
   for A in /backup /drive_on_heading /spin; do
     if echo "$AL" | grep -qx "$A"; then echo "DAT        action $A co"; else echo "KHONG DAT  action $A khong co (behavior_plugins?)"; KQ=1; fi
   done

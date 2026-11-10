@@ -522,6 +522,57 @@ def TG_A():
     return (0.0, 0.0)
 
 
+# ==== 10/11 muc 9 (anh huong tinh nang khac) ====
+def test_19_ong_ap_tuong_K4_H0_ban_do_lech_hong_luon_la_VAT_006():
+    """9a: ong ap tuong duoi / mep tren K4 / mep duoi H0, ban do lech 0 / 8 / 12 cm (vi tri tin lech ve phia tuong => ong hien vao
+    trong tuong ban do), nhieu +-5 mm, 10 lan quet co theo doi: o HONG cum ong luon la VAT va hong 0,05 la DO (luat 0,06)."""
+    ca = [('tuong duoi', (1.30, -0.365 + 0.09), (1.30, -0.365 + 0.09 + 0.09 + 0.05 + 0.08, 0.0), (0.0, -1.0)),
+          ('K4', (0.60, -0.165 + 0.09), (0.60, -0.165 + 0.09 + 0.09 + 0.05 + 0.08, math.pi), (0.0, -1.0)),
+          ('H0', (0.80, 0.335 - 0.09), (0.80, 0.335 - 0.09 - 0.09 - 0.05 - 0.08, 0.0), (0.0, 1.0))]
+    for ten, tam, pose, n in ca:
+        for o in (0.0, 0.08, 0.12):
+            rd, th, T = random.Random(19), GV.TheoDoiOng(), GV.tham_so()
+            W = X.TUONG + ong(*tam)
+            q0 = TG.quet(W, pose)
+            tin = (pose[0] + o * n[0], pose[1] + o * n[1], pose[2])                  # vi tri tin (lech) => ong hien lech o vao tuong
+            for i in range(10):
+                q = nhieu(q0, rd)
+                m = GV.bien_doi(q, tin)
+                ds = GV.danh_gia(q, m, BAN, T, th, i * 0.1)
+                w = GV.bien_doi(q, pose)                                              # khung the gioi that: chon cum cua ong
+                hh = [d for d in ds if d['vung'] == 'hong' and any(w[k] is not None and math.dist(w[k], tam) <= 0.10 for k in d['ks'])]
+                assert hh and all(d['loai'] == 'VAT' and not d['tuong_k'] for d in hh), (ten, o, i, [GV.dong_mem(d) for d in hh])
+                assert GV.do_vat(hh) is not None, (ten, o, i, [GV.dong_mem(d) for d in hh])
+            print('   %-10s lech %.2f: hong %s' % (ten, o, GV.dong_mem(hh[0])))
+
+
+def test_20_gan_dich_V_khong_vuot_dich_va_gan_dich_hon_P():
+    """9b: ong gan B; xe cach B <= 0,60: V khong vuot qua B (khong vao sau ngo B) va gan B hon P."""
+    B = (1.60, 0.82)
+    o = ong(1.30, 0.70)
+    pose = (1.10, 0.70, 0.0)
+    q = TG.quet(X.TUONG + o, pose)
+    ds = GV.danh_gia(q, GV.bien_doi(q, pose), BAN, GV.tham_so())
+    vat, tuong = G.diem_phan_loai(ds, q, pose, BAN, SL.tham_so())
+    P = (1.15, 0.70)
+    c = G.chon_diem_vuot(P, B, pose, vat, tuong, BAN)
+    if c is not None:
+        V = c['V']
+        dP, dV = math.dist(P, B), math.dist(V, B)
+        doc = ((V[0] - P[0]) * (B[0] - P[0]) + (V[1] - P[1]) * (B[1] - P[1])) / dP
+        assert dV < dP and doc <= dP + 1e-9, (c, dP, dV)
+    print('   gan B: %s' % (None if c is None else '(%.2f; %.2f) %s' % (c['V'][0], c['V'][1], c['ly'])))
+
+
+def test_21_vi_tri_khong_tin_khong_dung_V():
+    """9c: vi tri khong tin (sep KHONG_TIN) => di_vuot bo ngay (cach cu), khong gui Nav2."""
+    io = X.IOThe((0.95, 0.0, math.pi))
+    io.tin_sep = lambda: dict(tin=False, muc_tin='KHONG_TIN', di=None, ly_do=None, nav2_song=True)
+    kn = G.SoKinhNghiem(io, 've_A', 'thu', 15.0, 0.05)
+    assert G.di_vuot(io, CFG67, kn, G.Luot(CFG67), (0.80, 0.0), (0.0, 0.0)) == 'BO'
+    assert 'DIEM_VUOT: bo (vi tri khong tin).' in io.cau and io.nav_ds == [], io.cau
+
+
 if __name__ == '__main__':
     import traceback
     ca = sorted((k, f) for k, f in globals().items() if k.startswith('test_') and callable(f))

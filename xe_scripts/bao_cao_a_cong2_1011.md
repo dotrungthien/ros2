@@ -80,3 +80,19 @@ Mốc 1: c703fe3 (A++ mục 1–5 + A1). Mốc 2: commit này (mục 6, 7, K1–
 - Mục 7 (i): giả lập không tái hiện kẹt ở góc K4, nên chưa chứng minh điểm vượt đưa xe qua.
 - K1: chưa có ca V bậc 2 thật sự (V sau khe là bậc 1); chưa chạy xe qua khe 30 cm.
 - collision_monitor approach + bánh chết dưới 0,092 là khoá ẩn ở mọi chỗ mũi gần tường (≈ 0,21 m). Chỉ báo, chưa đổi.
+
+# Mục 9 — ảnh hưởng tới tính năng khác (commit sau c2d8875)
+- **9a** (gac_vat_la.ba_dau_hieu trả thêm `co_cung`): cụm có cung dạng ống (r / rms / lồi / góc ≥ 100°) nhưng bị loại vì tâm sâu trong
+  tường hoặc chưa ổn định ⇒ ở HÔNG là VẬT (6 cm), không mang cờ tường. Cung bị loại vì góc nhỏ (< 100°: nhiễu tường / góc K4) KHÔNG tính
+  (nếu tính thì tường nhiễu lại thành VẬT ở hông — khoá như 15:53). test_19: ống áp tường dưới / mép trên K4 / mép dưới H0, vị trí tin
+  lệch 0 / 8 / 12 cm về phía tường, nhiễu ±5 mm, 10 lần quét: hông 0,05 luôn VẬT + đỏ (ở mọi ca nhãn là "ong, on dinh 10/10").
+- **9b** (chon_diem_vuot): bỏ V có hình chiếu theo hướng P→đích vượt quá đích; xe cách đích ≤ gan_dich_m 0,60 ⇒ V phải gần đích hơn P.
+  test_20: ống gần B, xe (1,10; 0,70) ⇒ V (1,49; 0,79), gần B hơn P, không vượt B.
+- **9c**: vị trí không tin (tin_sep: KHONG_TIN / BAO) ⇒ không dùng điểm dẫn, `DIEM_VUOT: bo (vi tri khong tin).` (test_21).
+- **9d CPU** (PC, process_time, 600 lần quét = 60 s ở 10 Hz, nhiễu ±5 mm, 4 cảnh: góc K4, ống cạnh K4, sàn, ống giữa sàn; danh_gia +
+  diem_loc_nhan + khe mỗi lần quét): 50e4146 2,64 ms/quét; mã mới ba khoá tắt 2,63; mã mới mặc định 2,68 ⇒ **+1,5 %** (< 20 %).
+  Theo dõi cụm chỉ cho cụm có điểm trong vàng (≤ 0,30 trước / 0,12 hông / 0,10 sau), cửa sổ 1 s.
+- **9e D(1)**: trang_v10 `chuyen_cuoi_ct`: `DIEM_DAN: (..)` và `DIEM_VUOT: P .. => V ..` = 이동 (DI); `DIEM_*: bo ..`, `.._XONG` giữ trạng
+  thái trước (THOAT / CHO). ~/kinh_nghiem.csv: mục 6 / 7 KHÔNG ghi dòng mới, không thêm cột ⇒ người đọc (hanh_vi.doc_kinh_nghiem,
+  lop_huong_dan, cach_kinh_nghiem) không đổi. cau_noi không đọc DIEM_*.
+Test: test_phan_loai_cum 22/22 (gia lap); hồi quy như trên.

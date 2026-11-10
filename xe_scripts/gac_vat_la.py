@@ -233,7 +233,8 @@ class TheoDoiOng:
 
 def ba_dau_hieu(P, M, ban, t, theo=None, tq=None):
     """10/11 A+: P = diem cum khung xe theo tia, M = diem khung ban do (None tung diem / ca cum khi khong co TF ban do).
-    -> (nhan 'ong' | 'ngoai' | 'tuong' | 'khong_chac', ly do, tren_ban_do True | False | None (khong co ban do)).
+    -> (nhan 'ong' | 'ngoai' | 'tuong' | 'khong_chac', ly do, tren_ban_do True | False | None (khong co ban do), co_cung).
+    co_cung (10/11 9a): co cung dang ong (r, rms, loi, goc du) nhung bi loai vi tam sau trong tuong / chua on dinh => o HONG la VAT.
     10/11 A++: ong_kiem_tam: tam cung (khop lai tren diem ban do) nam SAU trong o tuong > ong_tam_sau_m => khong phai ong;
     ong_on_dinh + theo (TheoDoiOng) + tq: chi "ong" khi cung on dinh qua cac lan quet; khong => xet tiep nhu tuong / khong chac."""
     # a. cung: chuoi doan NGAN (<= 0,06) lien tiep cua Douglas-Peucker 0,005
@@ -251,7 +252,7 @@ def ba_dau_hieu(P, M, ban, t, theo=None, tq=None):
     if chay:
         ung.append((chay[0], chay[-1]))
     lid = (X_LIDAR, 0.0)
-    cung, ly_bo = None, ''
+    cung, ly_bo, co_cung = None, '', False
     for a, b in ung:
         Q = P[a:b + 1]
         if len(Q) < t['cung_n']:
@@ -272,6 +273,7 @@ def ba_dau_hieu(P, M, ban, t, theo=None, tq=None):
                 fm = khop_tron(M[a:b + 1])                       # cung tron, khung ban do (khop khong doi khi doi khung)
                 if fm is not None and ban.do_sau(fm[0], fm[1]) > t['ong_tam_sau']:
                     ly_bo = 'cung r=%.2f tam sau %.2f trong tuong' % (r, ban.do_sau(fm[0], fm[1]))
+                    co_cung = True                         # 9a: cung dang ong bi loai => o hong van la VAT
                     continue
             cung = 'cung r=%.2f rms=%.3f' % (r, rms)
             break
@@ -281,11 +283,11 @@ def ba_dau_hieu(P, M, ban, t, theo=None, tq=None):
         xy = (sum(p[0] for p in ref) / len(ref), sum(p[1] for p in ref) / len(ref))
         od, k, n = theo.cap_nhat(tq, xy, cung is not None, t)
         if cung is not None and not od:
-            ly_bo, cung = '%s chua on dinh %d/%d' % (cung, k, n), None
+            ly_bo, cung, co_cung = '%s chua on dinh %d/%d' % (cung, k, n), None, True
         elif cung is not None:
             cung = '%s, on dinh %d/%d' % (cung, k, n)
     if cung is not None:
-        return 'ong', cung, None
+        return 'ong', cung, None, True
     # b. ban do
     tren = None
     if ban is not None and M is not None:
@@ -293,7 +295,7 @@ def ba_dau_hieu(P, M, ban, t, theo=None, tq=None):
         if Mm:
             ngoai = sum(not ban.gan_tuong(x, y, t['ngoai_m']) for x, y in Mm)
             if ngoai >= t['ngoai_n']:
-                return 'ngoai', 'ngoai ban do %d diem' % ngoai, False
+                return 'ngoai', 'ngoai ban do %d diem' % ngoai, False, co_cung
             tren = True
     # c. thang / gay goc
     dinh = _dp(P, t['thang_rms'])
@@ -302,8 +304,9 @@ def ba_dau_hieu(P, M, ban, t, theo=None, tq=None):
     hinh = 'thang' if not goc else 'goc %d do' % round(next((g for g in goc if abs(g - 90) <= math.degrees(t['goc_lech'])), goc[0]))
     bo = ', bo %s' % ly_bo if ly_bo else ''              # A++: cung bi loai (tam trong tuong / chua on dinh) ghi vao ly do
     if tren and thang_gay:
-        return 'tuong', 'tren ban do, %s%s' % (hinh, bo), True
-    return 'khong_chac', '%s, %s%s' % ('tren ban do' if tren else 'khong ban do' if tren is None else '-', hinh if thang_gay else 'khong thang', bo), tren
+        return 'tuong', 'tren ban do, %s%s' % (hinh, bo), True, co_cung
+    return ('khong_chac', '%s, %s%s' % ('tren ban do' if tren else 'khong ban do' if tren is None else '-', hinh if thang_gay else 'khong thang', bo),
+            tren, co_cung)
 
 
 def danh_gia(pts_xe, pts_map, ban, t, theo=None, tq=None):
@@ -334,7 +337,7 @@ def danh_gia(pts_xe, pts_map, ban, t, theo=None, tq=None):
                 bd = 'TUONG' if 2 * sum(ban.gan_tuong(x, y, t['gan_tuong']) for x, y in pm) >= len(pm) else 'VAT'
         moi = t.get('phan_loai', 'cu') == 'ba_dau_hieu'
         if moi:                                                  # 10/11 A+: ba dau hieu (cu: y het 629a17b o tren)
-            nhan, ly, tren = ba_dau_hieu([pts_xe[k] for k in ks], None if pts_map is None else [pts_map[k] for k in ks], ban, t, theo, tq)
+            nhan, ly, tren, co_cung = ba_dau_hieu([pts_xe[k] for k in ks], None if pts_map is None else [pts_map[k] for k in ks], ban, t, theo, tq)
         for v, (n, kc, do, k0) in theo_vung.items():
             d = dict(vung=v, loai=loai, lidar=lidar, bd=bd, lech=bd is not None and bd != loai, n=n, kc=kc, do=do,
                      xy=None if pts_map is None else pts_map[k0], hl=hl if v == 'truoc' else None)
@@ -342,11 +345,11 @@ def danh_gia(pts_xe, pts_map, ban, t, theo=None, tq=None):
                 d.update(nhan='lidar', ly='khong ban do, lidar %s' % lidar.lower(), chac=lidar == 'VAT' and not d['lech'], ks=ks,
                          tuong_k=loai == 'TUONG', cham=loai == 'TUONG' and v == 'hong' and kc <= t['khong_cham'] + 1e-9)
             elif moi:
-                lo = ('VAT' if nhan in ('ong', 'ngoai') else 'TUONG' if nhan == 'tuong'
+                lo = ('VAT' if nhan in ('ong', 'ngoai') or (co_cung and v == 'hong') else 'TUONG' if nhan == 'tuong'   # 9a: cung bi loai o hong = VAT
                       else 'TUONG' if v == 'truoc' and tren and t.get('mui_tuong')        # A++: mui + tren ban do + khong ong
                       else 'VAT' if v in ('truoc', 'sau') or not tren else 'TUONG')          # khong chac: mui / duoi VAT, hong theo ban do
                 d.update(loai=lo, nhan=nhan, ly=ly, chac=nhan in ('ong', 'ngoai'), lech=bd is not None and bd != lo, ks=ks,
-                         tuong_k=nhan == 'tuong' or (nhan == 'khong_chac' and bool(tren)),
+                         tuong_k=not co_cung and (nhan == 'tuong' or (nhan == 'khong_chac' and bool(tren))),
                          cham=lo == 'TUONG' and v == 'hong' and kc <= t['khong_cham'] + 1e-9)
             out.append(d)
     return sorted(out, key=lambda d: d['kc'])

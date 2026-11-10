@@ -591,6 +591,11 @@ def chon_diem_vuot(P, dich, pose, vat, tuong, ban, h=HV.so):
         a = phi + math.radians(dg)
         for d in ds_d:
             V = (P[0] + d * math.cos(a), P[1] + d * math.sin(a))
+            dP, dV = math.hypot(dich[0] - P[0], dich[1] - P[1]), math.hypot(dich[0] - V[0], dich[1] - V[1])
+            if (V[0] - P[0]) * math.cos(phi) + (V[1] - P[1]) * math.sin(phi) > dP + 1e-9:
+                continue                                 # 9b: khong vuot qua dich (vd vao sau ngo B)
+            if math.hypot(dich[0] - pose[0], dich[1] - pose[1]) <= h('gan_dich_m') and dV >= dP - 1e-9:
+                continue                                 # 9b: gan dich: V phai gan dich hon P
             if ban is not None and (ban.gia(int((V[0] - ban.ox) / ban.res), int((V[1] - ban.oy) / ban.res)) is None
                                     or ban.la_tuong(*V)):
                 continue
@@ -736,7 +741,7 @@ def _chay_mat(io, huong, tuyen_dau, cfg, kn):
         lan += 1
         io.chon_tuyen('0' if r == 0 else '%d %.3f %.3f' % (r, pose[0], pose[1]))
         io.ngu(cfg['cho_chon'])
-        if huong == 've_A' and r == 1 and cfg.get('diem_dan') and not da_dan:     # 10/11 muc 6: diem dan giua khe K4-H0
+        if huong == 've_A' and r == 1 and cfg.get('diem_dan') and not da_dan and tin_sep(io, kn):   # muc 6 (9c: chi khi vi tri tin)
             da_dan = True
             dd = diem_dan_ve_A(io.gac_ban(), HV.so('diem_dan_cach_k4_m')) if io.gac_ban() is not None else None
             p0 = io.pose()
@@ -1130,6 +1135,9 @@ def di_diem(io, cfg, kn, luot, diem, yaw, k0=None, han=None, phu=False):
 def di_vuot(io, cfg, kn, luot, P, dich):
     """10/11 muc 7: sau luot bi chan tai P (va THOAT xong): chon V (chon_diem_vuot, LiDAR tai cho + ban do), di toi V (han vuot_han)
     roi nguoi goi gui dich. Khong co V / hong => bo (Nav2 tu vach nhu cu). -> 'TOI' | 'BO'."""
+    if not tin_sep(io, kn):                              # 9c: vi tri khong tin => khong dung V (cach cu)
+        io.bao('DIEM_VUOT: bo (vi tri khong tin).')
+        return 'BO'
     ds, pts = quet_moi(io, kn)
     p = io.pose()
     if p is None or pts is None:
